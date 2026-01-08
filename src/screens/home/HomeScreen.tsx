@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,14 +10,31 @@ type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { profile } = useAuthStore();
-  const { loadObjectives } = useWorkoutStore();
+  const { loadObjectives, objectives } = useWorkoutStore();
+  const [showBackendWarning, setShowBackendWarning] = useState(false);
 
   useEffect(() => {
-    loadObjectives();
+    loadObjectives().catch(() => {
+      // If objectives fail to load, show backend warning
+      setShowBackendWarning(true);
+    });
   }, []);
 
   return (
     <ScrollView style={styles.container}>
+      {/* Backend Warning Banner */}
+      {showBackendWarning && (
+        <View style={styles.warningBanner}>
+          <Text style={styles.warningIcon}>⚠️</Text>
+          <View style={styles.warningContent}>
+            <Text style={styles.warningTitle}>Backend Offline</Text>
+            <Text style={styles.warningText}>
+              Some features may be limited. Authentication still works!
+            </Text>
+          </View>
+        </View>
+      )}
+
       <View style={styles.header}>
         <Text style={styles.greeting}>
           Hello{profile?.firstName ? `, ${profile.firstName}` : ''}!
@@ -71,6 +88,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  warningBanner: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF3CD',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFE69C',
+    padding: 12,
+    alignItems: 'center',
+  },
+  warningIcon: {
+    fontSize: 20,
+    marginRight: 12,
+  },
+  warningContent: {
+    flex: 1,
+  },
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 2,
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#856404',
   },
   header: {
     padding: 20,

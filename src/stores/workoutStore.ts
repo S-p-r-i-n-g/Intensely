@@ -37,6 +37,9 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       set({ objectives: response.data });
     } catch (error) {
       console.error('Failed to load objectives:', error);
+      // Set empty array so app doesn't crash, but rethrow for caller to handle
+      set({ objectives: [] });
+      throw error;
     } finally {
       set({ isLoading: false });
     }

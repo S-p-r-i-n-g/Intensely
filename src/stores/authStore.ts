@@ -169,7 +169,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const response = await usersApi.sync();
       set({ profile: response.data });
     } catch (error) {
-      console.error('Failed to sync profile:', error);
+      console.error('Failed to sync profile with backend:', error);
+      // Backend sync is optional - create a minimal profile from Supabase user
+      const { user } = get();
+      if (user) {
+        set({
+          profile: {
+            id: user.id,
+            email: user.email || '',
+            firstName: user.user_metadata?.firstName || null,
+            lastName: user.user_metadata?.lastName || null,
+            createdAt: user.created_at,
+            updatedAt: new Date().toISOString(),
+            preferences: null,
+          } as ApiUser,
+        });
+      }
     }
   },
 }));
