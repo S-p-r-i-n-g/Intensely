@@ -17,7 +17,20 @@ export const MainNavigator = () => {
       screenOptions={{
         headerShown: false, // Let nested navigators handle their own headers
         tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: '#666',
+        tabBarInactiveTintColor: '#999',
+        tabBarStyle: {
+          backgroundColor: '#fff',
+          borderTopWidth: 1,
+          borderTopColor: '#f0f0f0',
+          paddingTop: 8,
+          paddingBottom: 8,
+          height: 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+          marginTop: 4,
+        },
       }}
     >
       <Tab.Screen
