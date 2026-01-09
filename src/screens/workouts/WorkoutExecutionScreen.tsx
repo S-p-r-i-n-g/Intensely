@@ -7,6 +7,8 @@ import {
   SafeAreaView,
   Alert,
   Dimensions,
+  Platform,
+  Modal,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,6 +42,7 @@ const WorkoutExecutionScreen = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [totalElapsedTime, setTotalElapsedTime] = useState(0);
+  const [showQuitModal, setShowQuitModal] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -240,28 +243,24 @@ const WorkoutExecutionScreen = () => {
   };
 
   const handleQuit = () => {
-    Alert.alert(
-      'Quit Workout?',
-      'Are you sure you want to quit? Your progress will not be saved.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Quit',
-          style: 'destructive',
-          onPress: async () => {
-            stopTimer();
-            if (sessionId) {
-              try {
-                await sessionsApi.cancel(sessionId);
-              } catch (error) {
-                console.error('Failed to cancel session:', error);
-              }
-            }
-            navigation.navigate('HomeMain');
-          },
-        },
-      ]
-    );
+    setShowQuitModal(true);
+  };
+
+  const confirmQuit = async () => {
+    setShowQuitModal(false);
+    stopTimer();
+    if (sessionId) {
+      try {
+        await sessionsApi.cancel(sessionId);
+      } catch (error) {
+        console.error('Failed to cancel session:', error);
+      }
+    }
+    navigation.navigate('HomeMain');
+  };
+
+  const cancelQuit = () => {
+    setShowQuitModal(false);
   };
 
   if (!workout || !workout.circuits) {
@@ -369,6 +368,37 @@ const WorkoutExecutionScreen = () => {
           <Text style={styles.secondaryButtonText}>Skip →</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Quit Confirmation Modal */}
+      <Modal
+        visible={showQuitModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelQuit}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Quit Workout?</Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to quit? Your progress will not be saved.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={cancelQuit}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalQuitButton]}
+                onPress={confirmQuit}
+              >
+                <Text style={styles.modalQuitButtonText}>Quit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -522,6 +552,65 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: width * 0.85,
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelButton: {
+    backgroundColor: '#f5f5f5',
+  },
+  modalCancelButtonText: {
+    color: '#333',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalQuitButton: {
+    backgroundColor: '#FF3B30',
+  },
+  modalQuitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 
