@@ -72,9 +72,19 @@ const LetUsCurateScreen = () => {
       setCurrentWorkout(response.data);
     } catch (error: any) {
       console.error('Failed to generate workout:', error);
+
+      // Extract error message
+      let errorMessage = 'Could not generate workout. Please try again.';
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       Alert.alert(
         'Generation Failed',
-        error.response?.data?.message || 'Could not generate workout. Please try again.'
+        errorMessage + '\n\nTip: Make sure the backend server is running.',
+        [{ text: 'OK' }]
       );
     } finally {
       setIsLoading(false);

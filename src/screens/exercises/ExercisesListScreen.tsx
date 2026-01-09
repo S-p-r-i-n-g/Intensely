@@ -72,7 +72,8 @@ const ExercisesListScreen = () => {
         (ex) =>
           ex.name.toLowerCase().includes(query) ||
           ex.description?.toLowerCase().includes(query) ||
-          ex.targetMuscleGroups?.some((muscle) => muscle.toLowerCase().includes(query))
+          ex.primaryMuscles?.some((muscle) => muscle.toLowerCase().includes(query)) ||
+          ex.secondaryMuscles?.some((muscle) => muscle.toLowerCase().includes(query))
       );
     }
 
@@ -84,7 +85,10 @@ const ExercisesListScreen = () => {
     // Muscle group filter
     if (selectedMuscleGroup) {
       filtered = filtered.filter((ex) =>
-        ex.targetMuscleGroups?.some(
+        ex.primaryMuscles?.some(
+          (muscle) => muscle.toLowerCase() === selectedMuscleGroup.toLowerCase()
+        ) ||
+        ex.secondaryMuscles?.some(
           (muscle) => muscle.toLowerCase() === selectedMuscleGroup.toLowerCase()
         )
       );
@@ -128,22 +132,28 @@ const ExercisesListScreen = () => {
         </Text>
       )}
 
-      {item.targetMuscleGroups && item.targetMuscleGroups.length > 0 && (
+      {(item.primaryMuscles || item.secondaryMuscles) && (
         <View style={styles.muscleGroupsContainer}>
-          {item.targetMuscleGroups.slice(0, 3).map((muscle) => (
-            <View key={muscle} style={styles.muscleTag}>
-              <Text style={styles.muscleTagText}>{muscle}</Text>
-            </View>
-          ))}
-          {item.targetMuscleGroups.length > 3 && (
-            <Text style={styles.moreText}>+{item.targetMuscleGroups.length - 3}</Text>
+          {[...(item.primaryMuscles || []), ...(item.secondaryMuscles || [])]
+            .slice(0, 3)
+            .map((muscle, index) => (
+              <View key={`${muscle}-${index}`} style={styles.muscleTag}>
+                <Text style={styles.muscleTagText}>{muscle}</Text>
+              </View>
+            ))}
+          {[...(item.primaryMuscles || []), ...(item.secondaryMuscles || [])].length > 3 && (
+            <Text style={styles.moreText}>
+              +{[...(item.primaryMuscles || []), ...(item.secondaryMuscles || [])].length - 3}
+            </Text>
           )}
         </View>
       )}
 
       <View style={styles.exerciseFooter}>
         <Text style={styles.equipmentText}>
-          {item.equipmentRequired || 'No equipment'}
+          {item.equipment && item.equipment.length > 0
+            ? item.equipment.join(', ')
+            : 'No equipment'}
         </Text>
         {item.videoUrl && <Text style={styles.videoIndicator}>📹 Video</Text>}
       </View>

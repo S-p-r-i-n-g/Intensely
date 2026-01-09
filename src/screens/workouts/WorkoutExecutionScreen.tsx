@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -43,6 +43,7 @@ const WorkoutExecutionScreen = () => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const elapsedTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldAutoProgressRef = useRef(true);
 
   useEffect(() => {
     loadWorkoutAndStartSession();
@@ -52,8 +53,41 @@ const WorkoutExecutionScreen = () => {
     };
   }, []);
 
+  // Auto-restart timer when exercise/set/circuit changes or time is reset
+  useEffect(() => {
+    if (workout && !isPaused && timeRemaining > 0 && shouldAutoProgressRef.current) {
+      console.log('Timer restart triggered:', {
+        exercise: currentExerciseIndex,
+        set: currentSetIndex,
+        circuit: currentCircuitIndex,
+        intervalType,
+        timeRemaining
+      });
+      // Clear any existing timer
+      if (timerRef.current) clearInterval(timerRef.current);
+
+      // Start new timer
+      timerRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            // Timer reached 0, move to next interval on next tick
+            if (timerRef.current) clearInterval(timerRef.current);
+            setTimeout(() => moveToNextInterval(), 0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [workout, currentExerciseIndex, currentSetIndex, currentCircuitIndex, intervalType, timeRemaining, isPaused]);
+
   const loadWorkoutAndStartSession = async () => {
     try {
+      shouldAutoProgressRef.current = false; // Prevent auto-start during load
       const response = await workoutsApi.getById(route.params.workoutId);
       const workoutData = response.data;
       setWorkout(workoutData);
@@ -65,7 +99,9 @@ const WorkoutExecutionScreen = () => {
       // Initialize first interval
       setTimeRemaining(workoutData.intervalSeconds);
       setIntervalType('work');
-      startTimer();
+
+      // Enable auto-progress and start timers
+      shouldAutoProgressRef.current = true;
       startElapsedTimer();
     } catch (error: any) {
       console.error('Failed to load workout:', error);
@@ -74,18 +110,6 @@ const WorkoutExecutionScreen = () => {
     }
   };
 
-  const startTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          moveToNextInterval();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
 
   const startElapsedTimer = () => {
     if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
@@ -102,51 +126,55 @@ const WorkoutExecutionScreen = () => {
   const moveToNextInterval = () => {
     if (!workout) return;
 
-    if (intervalType === 'work') {
-      // Move to rest after work
-      setIntervalType('rest');
-      setTimeRemaining(workout.restSeconds);
-    } else if (intervalType === 'rest') {
-      // Move to next exercise or set or circuit
-      moveToNextExercise();
-    }
-  };
-
-  const moveToNextExercise = () => {
-    if (!workout) return;
-
     const currentCircuit = workout.circuits![currentCircuitIndex];
     const isLastExerciseInCircuit = currentExerciseIndex === currentCircuit.exercises.length - 1;
 
-    if (isLastExerciseInCircuit) {
-      // End of circuit - check if we need another set
-      const isLastSet = currentSetIndex === workout.setsPerCircuit - 1;
-
-      if (isLastSet) {
-        // Move to next circuit or finish workout
-        const isLastCircuit = currentCircuitIndex === workout.circuits!.length - 1;
-
-        if (isLastCircuit) {
-          completeWorkout();
-          return;
-        } else {
-          // Move to next circuit
-          setCurrentCircuitIndex(currentCircuitIndex + 1);
-          setCurrentSetIndex(0);
-          setCurrentExerciseIndex(0);
-          setIntervalType('circuitRest');
-          setTimeRemaining(workout.circuitRestSeconds || 60);
-        }
+    if (intervalType === 'work') {
+      // After work interval, check if we need rest or move to next exercise
+      if (isLastExerciseInCircuit) {
+        // Last exercise in set - move to rest
+        setIntervalType('rest');
+        setTimeRemaining(workout.restSeconds);
       } else {
-        // Move to next set, back to first exercise
-        setCurrentSetIndex(currentSetIndex + 1);
-        setCurrentExerciseIndex(0);
-        setIntervalType('work');
+        // Not last exercise - move directly to next exercise (no rest)
+        setCurrentExerciseIndex((prev) => prev + 1);
         setTimeRemaining(workout.intervalSeconds);
+        // intervalType stays as 'work'
+      }
+    } else if (intervalType === 'rest') {
+      // After rest, move to next set or circuit
+      moveToNextSet();
+    } else if (intervalType === 'circuitRest') {
+      // After circuit rest, start next circuit
+      setIntervalType('work');
+      setTimeRemaining(workout.intervalSeconds);
+    }
+  };
+
+  const moveToNextSet = () => {
+    if (!workout) return;
+
+    const isLastSet = currentSetIndex === workout.setsPerCircuit - 1;
+
+    if (isLastSet) {
+      // Move to next circuit or finish workout
+      const isLastCircuit = currentCircuitIndex === workout.circuits!.length - 1;
+
+      if (isLastCircuit) {
+        completeWorkout();
+        return;
+      } else {
+        // Move to next circuit
+        setCurrentCircuitIndex((prev) => prev + 1);
+        setCurrentSetIndex(0);
+        setCurrentExerciseIndex(0);
+        setIntervalType('circuitRest');
+        setTimeRemaining(workout.circuitRestSeconds || 60);
       }
     } else {
-      // Move to next exercise in circuit
-      setCurrentExerciseIndex(currentExerciseIndex + 1);
+      // Move to next set, back to first exercise
+      setCurrentSetIndex((prev) => prev + 1);
+      setCurrentExerciseIndex(0);
       setIntervalType('work');
       setTimeRemaining(workout.intervalSeconds);
     }
@@ -176,7 +204,7 @@ const WorkoutExecutionScreen = () => {
 
   const togglePause = () => {
     if (isPaused) {
-      startTimer();
+      // Resume - useEffect will restart countdown timer
       startElapsedTimer();
       setIsPaused(false);
     } else {
