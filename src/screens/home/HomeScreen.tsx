@@ -67,7 +67,7 @@ const HomeScreen = () => {
 
         <TouchableOpacity
           style={styles.card}
-          onPress={() => navigation.navigate('WorkoutFlowSelection')}
+          onPress={() => navigation.navigate('TakeTheWheel')}
         >
           <Text style={styles.cardTitle}>Take the Wheel</Text>
           <Text style={styles.cardDescription}>

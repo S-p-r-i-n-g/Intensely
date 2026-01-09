@@ -14,7 +14,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
-import { useWorkoutStore } from '../../stores';
+import { useWorkoutStore, useAuthStore } from '../../stores';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'TakeTheWheel'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'TakeTheWheel'>;
@@ -23,25 +23,79 @@ const TakeTheWheelScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const { setCurrentWorkout } = useWorkoutStore();
+  const { user } = useAuthStore();
 
+  const isEditMode = !!route.params?.workoutId;
   const [isLoading, setIsLoading] = useState(false);
   const [workout, setWorkout] = useState<any>(null);
 
-  // Workout customization state
-  const [workoutName, setWorkoutName] = useState('My Custom Workout');
-  const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([]);
+  // Workout customization state - initialize from route params if available
+  const [workoutName, setWorkoutName] = useState(route.params?.workoutName || '');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>(
+    route.params?.selectedExerciseIds || []
+  );
+  const [circuits, setCircuits] = useState(route.params?.circuits || 3);
+  const [setsPerCircuit, setSetsPerCircuit] = useState(route.params?.setsPerCircuit || 3);
+  const [workInterval, setWorkInterval] = useState(route.params?.workInterval || 20);
+  const [restInterval, setRestInterval] = useState(route.params?.restInterval || 60);
 
   // Update selected exercises when returning from ExerciseSelection
   useEffect(() => {
     if (route.params?.selectedExerciseIds) {
       setSelectedExerciseIds(route.params.selectedExerciseIds);
     }
-  }, [route.params?.selectedExerciseIds]);
-  const [circuits, setCircuits] = useState(3);
-  const [setsPerCircuit, setSetsPerCircuit] = useState(2);
-  const [workInterval, setWorkInterval] = useState(45);
-  const [restInterval, setRestInterval] = useState(15);
-  const [circuitRest, setCircuitRest] = useState(60);
+    if (route.params?.workoutName) {
+      setWorkoutName(route.params.workoutName);
+    }
+    if (route.params?.circuits !== undefined) {
+      setCircuits(route.params.circuits);
+    }
+    if (route.params?.setsPerCircuit !== undefined) {
+      setSetsPerCircuit(route.params.setsPerCircuit);
+    }
+    if (route.params?.workInterval !== undefined) {
+      setWorkInterval(route.params.workInterval);
+    }
+    if (route.params?.restInterval !== undefined) {
+      setRestInterval(route.params.restInterval);
+    }
+  }, [route.params]);
+
+  // Validate workout name for duplicates
+  useEffect(() => {
+    const checkNameUniqueness = async () => {
+      if (!workoutName.trim() || !user) {
+        setNameError(null);
+        return;
+      }
+
+      try {
+        const response = await workoutsApi.getAll({});
+        const duplicate = response.data.find(
+          (w: any) =>
+            w.name.toLowerCase() === workoutName.trim().toLowerCase() &&
+            w.createdBy === user.id &&
+            !w.deletedAt &&
+            w.id !== route.params?.workoutId // Exclude current workout in edit mode
+        );
+
+        if (duplicate) {
+          setNameError('You already have a workout with this name');
+        } else {
+          setNameError(null);
+        }
+      } catch (error) {
+        console.error('Error checking workout name:', error);
+        // Don't block user if check fails
+        setNameError(null);
+      }
+    };
+
+    // Debounce the check
+    const timeoutId = setTimeout(checkNameUniqueness, 500);
+    return () => clearTimeout(timeoutId);
+  }, [workoutName, user, route.params?.workoutId]);
 
   const generateWorkout = async () => {
     if (selectedExerciseIds.length === 0) {
@@ -54,33 +108,74 @@ const TakeTheWheelScreen = () => {
       return;
     }
 
+    if (nameError) {
+      Alert.alert('Invalid Name', nameError);
+      return;
+    }
+
     try {
       setIsLoading(true);
 
-      // Build circuits array - each circuit has the same exercises
-      const circuitsData = Array.from({ length: circuits }, () => ({
-        exercises: selectedExerciseIds,
-        sets: setsPerCircuit,
-        intervalSeconds: workInterval,
-        restSeconds: restInterval,
-      }));
+      if (isEditMode && route.params?.workoutId) {
+        // Update existing workout by deleting and recreating
+        // This allows updating the full workout structure (circuits, exercises, etc.)
+        // not just metadata
 
-      const params = {
-        name: workoutName,
-        circuits: circuitsData,
-        intervalSeconds: workInterval,
-        restSeconds: restInterval,
-        sets: setsPerCircuit,
-      };
+        // Delete the old workout first
+        await workoutsApi.delete(route.params.workoutId);
 
-      const response = await workoutsApi.takeTheWheel(params);
-      setWorkout(response.data);
-      setCurrentWorkout(response.data);
+        // Build circuits array - each circuit has the same exercises
+        const circuitsData = Array.from({ length: circuits }, () => ({
+          exercises: selectedExerciseIds,
+          sets: setsPerCircuit,
+          intervalSeconds: workInterval,
+          restSeconds: restInterval,
+        }));
+
+        const params = {
+          name: workoutName,
+          circuits: circuitsData,
+          intervalSeconds: workInterval,
+          restSeconds: restInterval,
+          sets: setsPerCircuit,
+        };
+
+        // Create the new workout
+        const response = await workoutsApi.takeTheWheel(params);
+
+        // Navigate back to WorkoutPreview with the NEW workout ID
+        // @ts-ignore - navigating across stacks
+        navigation.navigate('Workouts', {
+          screen: 'WorkoutPreview',
+          params: { workoutId: response.data.id }
+        });
+      } else {
+        // Create new workout
+        // Build circuits array - each circuit has the same exercises
+        const circuitsData = Array.from({ length: circuits }, () => ({
+          exercises: selectedExerciseIds,
+          sets: setsPerCircuit,
+          intervalSeconds: workInterval,
+          restSeconds: restInterval,
+        }));
+
+        const params = {
+          name: workoutName,
+          circuits: circuitsData,
+          intervalSeconds: workInterval,
+          restSeconds: restInterval,
+          sets: setsPerCircuit,
+        };
+
+        const response = await workoutsApi.takeTheWheel(params);
+        setWorkout(response.data);
+        setCurrentWorkout(response.data);
+      }
     } catch (error: any) {
-      console.error('Failed to generate custom workout:', error);
+      console.error('Failed to save workout:', error);
       Alert.alert(
-        'Generation Failed',
-        error.response?.data?.message || 'Could not generate workout. Please try again.'
+        isEditMode ? 'Update Failed' : 'Generation Failed',
+        error.response?.data?.message || `Could not ${isEditMode ? 'update' : 'generate'} workout. Please try again.`
       );
     } finally {
       setIsLoading(false);
@@ -167,12 +262,18 @@ const TakeTheWheelScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Workout Name</Text>
         <TextInput
-          style={styles.textInput}
+          style={[
+            styles.textInput,
+            nameError && styles.textInputError
+          ]}
           value={workoutName}
           onChangeText={setWorkoutName}
           placeholder="Enter workout name"
           placeholderTextColor="#999"
         />
+        {nameError && (
+          <Text style={styles.errorText}>{nameError}</Text>
+        )}
       </View>
 
       {/* Exercise Selection */}
@@ -181,7 +282,14 @@ const TakeTheWheelScreen = () => {
         <TouchableOpacity
           style={styles.selectButton}
           onPress={() => {
-            navigation.navigate('ExerciseSelection', { selectedIds: selectedExerciseIds });
+            navigation.navigate('ExerciseSelection', {
+              selectedIds: selectedExerciseIds,
+              workoutName,
+              circuits,
+              setsPerCircuit,
+              workInterval,
+              restInterval,
+            });
           }}
         >
           <Text style={styles.selectButtonText}>
@@ -237,7 +345,7 @@ const TakeTheWheelScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Work Interval (seconds)</Text>
         <View style={styles.intervalButtons}>
-          {[30, 45, 60, 90].map((seconds) => (
+          {[10, 15, 20, 30, 45, 60].map((seconds) => (
             <TouchableOpacity
               key={seconds}
               style={[
@@ -263,7 +371,7 @@ const TakeTheWheelScreen = () => {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>Rest Interval (seconds)</Text>
         <View style={styles.intervalButtons}>
-          {[10, 15, 20, 30].map((seconds) => (
+          {[15, 30, 60, 90, 120].map((seconds) => (
             <TouchableOpacity
               key={seconds}
               style={[
@@ -285,42 +393,36 @@ const TakeTheWheelScreen = () => {
         </View>
       </View>
 
-      {/* Circuit Rest */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Circuit Rest (seconds)</Text>
-        <View style={styles.intervalButtons}>
-          {[30, 60, 90, 120].map((seconds) => (
-            <TouchableOpacity
-              key={seconds}
-              style={[
-                styles.intervalButton,
-                circuitRest === seconds && styles.intervalButtonActive,
-              ]}
-              onPress={() => setCircuitRest(seconds)}
-            >
-              <Text
-                style={[
-                  styles.intervalButtonText,
-                  circuitRest === seconds && styles.intervalButtonTextActive,
-                ]}
-              >
-                {seconds}s
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
       <View style={styles.buttonContainer}>
+        {isEditMode && (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              // @ts-ignore - navigating across stacks
+              navigation.navigate('Workouts', {
+                screen: 'WorkoutPreview',
+                params: { workoutId: route.params?.workoutId }
+              });
+            }}
+            disabled={isLoading}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity
-          style={styles.generateButton}
+          style={[
+            styles.generateButton,
+            (isLoading || nameError) && styles.generateButtonDisabled
+          ]}
           onPress={generateWorkout}
-          disabled={isLoading}
+          disabled={isLoading || !!nameError}
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.generateButtonText}>Create Workout</Text>
+            <Text style={styles.generateButtonText}>
+              {isEditMode ? 'Update Workout' : 'Create Workout'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>
@@ -363,6 +465,16 @@ const styles = StyleSheet.create({
     padding: 16,
     fontSize: 16,
     color: '#333',
+  },
+  textInputError: {
+    borderWidth: 2,
+    borderColor: '#DC2626',
+    backgroundColor: '#FEF2F2',
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    marginTop: 8,
   },
   selectButton: {
     backgroundColor: '#f5f5f5',
@@ -435,11 +547,27 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 40,
   },
+  cancelButton: {
+    backgroundColor: '#f5f5f5',
+    padding: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontSize: 18,
+    fontWeight: '600',
+  },
   generateButton: {
     backgroundColor: '#FF6B35',
     padding: 18,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  generateButtonDisabled: {
+    backgroundColor: '#CCC',
+    opacity: 0.6,
   },
   generateButtonText: {
     color: '#fff',

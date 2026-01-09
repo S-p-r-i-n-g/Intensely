@@ -4,12 +4,10 @@ import { MainTabParamList } from './types';
 
 // Stack navigators
 import { HomeStackNavigator } from './HomeStackNavigator';
+import { WorkoutsStackNavigator } from './WorkoutsStackNavigator';
 import { ExercisesStackNavigator } from './ExercisesStackNavigator';
 import { ProgressStackNavigator } from './ProgressStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
-
-// Placeholder screens - will be implemented later
-import WorkoutsScreen from '../screens/workouts/WorkoutsScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -32,9 +30,10 @@ export const MainNavigator = () => {
       />
       <Tab.Screen
         name="Workouts"
-        component={WorkoutsScreen}
+        component={WorkoutsStackNavigator}
         options={{
           title: 'Workouts',
+          headerShown: false,
         }}
       />
       <Tab.Screen

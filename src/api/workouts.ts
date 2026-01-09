@@ -73,4 +73,24 @@ export const workoutsApi = {
   }): Promise<ApiResponse<Workout>> => {
     return apiClient.post('/flows/take-the-wheel', data);
   },
+
+  /**
+   * Update a workout
+   */
+  update: async (id: string, data: {
+    name?: string;
+    description?: string;
+    difficulty?: string;
+    durationMinutes?: number;
+    isPublic?: boolean;
+  }): Promise<ApiResponse<Workout>> => {
+    return apiClient.put(`/workouts/${id}`, data);
+  },
+
+  /**
+   * Delete a workout
+   */
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/workouts/${id}`);
+  },
 };

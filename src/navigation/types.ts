@@ -27,8 +27,23 @@ export type HomeStackParamList = {
   WorkoutFlowSelection: undefined;
   JumpRightIn: undefined;
   LetUsCurate: { objectiveSlug?: string };
-  TakeTheWheel: { selectedExerciseIds?: string[] };
-  ExerciseSelection: { selectedIds?: string[] };
+  TakeTheWheel: {
+    workoutId?: string; // If provided, we're editing an existing workout
+    selectedExerciseIds?: string[];
+    workoutName?: string;
+    circuits?: number;
+    setsPerCircuit?: number;
+    workInterval?: number;
+    restInterval?: number;
+  };
+  ExerciseSelection: {
+    selectedIds?: string[];
+    workoutName?: string;
+    circuits?: number;
+    setsPerCircuit?: number;
+    workInterval?: number;
+    restInterval?: number;
+  };
   WorkoutPreview: { workoutId: string };
   WorkoutExecution: { workoutId: string };
   WorkoutComplete: { sessionId: string; durationSeconds: number; caloriesBurned?: number };
@@ -37,8 +52,8 @@ export type HomeStackParamList = {
 // Workouts Stack
 export type WorkoutsStackParamList = {
   WorkoutsList: undefined;
-  WorkoutDetail: { workoutId: string };
-  WorkoutExecution: { sessionId: string };
+  WorkoutPreview: { workoutId: string };
+  WorkoutExecution: { workoutId: string };
   WorkoutComplete: { sessionId: string; durationSeconds: number; caloriesBurned?: number };
 };
 

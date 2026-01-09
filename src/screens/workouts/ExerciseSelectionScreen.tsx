@@ -83,8 +83,15 @@ const ExerciseSelectionScreen = () => {
       return;
     }
 
-    // Navigate back with selected IDs
-    navigation.navigate('TakeTheWheel', { selectedExerciseIds: selectedIds });
+    // Navigate back with selected IDs and preserve other state
+    navigation.navigate('TakeTheWheel', {
+      selectedExerciseIds: selectedIds,
+      workoutName: route.params?.workoutName,
+      circuits: route.params?.circuits,
+      setsPerCircuit: route.params?.setsPerCircuit,
+      workInterval: route.params?.workInterval,
+      restInterval: route.params?.restInterval,
+    });
   };
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => {
