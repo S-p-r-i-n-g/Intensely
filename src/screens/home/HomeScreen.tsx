@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
 import { useAuthStore, useWorkoutStore } from '../../stores';
+import { designTokens } from '../../config/design-tokens';
+import { Button } from '../../components/ui';
+import { StatsCard, WorkoutFlowCard } from '../../components/home';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
 
@@ -12,6 +15,11 @@ const HomeScreen = () => {
   const { profile } = useAuthStore();
   const { loadObjectives, objectives } = useWorkoutStore();
   const [showBackendWarning, setShowBackendWarning] = useState(false);
+
+  // Stats (placeholder - will be connected to actual data later)
+  const workoutMinutes = 0;
+  const totalWorkouts = 0;
+  const streak = 0;
 
   useEffect(() => {
     loadObjectives().catch(() => {
@@ -42,43 +50,65 @@ const HomeScreen = () => {
         <Text style={styles.subtitle}>Ready to work out?</Text>
       </View>
 
+      {/* Stats Section */}
+      <View style={styles.statsContainer}>
+        <StatsCard value={`${workoutMinutes} min`} label="Workout" />
+        <StatsCard value={totalWorkouts} label="Workouts" />
+        <StatsCard value={`🔥${streak}`} label="Streak" icon="🔥" />
+      </View>
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Start</Text>
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          icon="⚡️"
+          title="Jump Right In"
+          description="Get an instant workout based on your preferences. No thinking required."
+          badge="FASTEST"
+          badgeVariant="primary"
+          estimatedTime="~20 min"
+          difficulty="Any level"
           onPress={() => navigation.navigate('JumpRightIn')}
-        >
-          <Text style={styles.cardTitle}>Jump Right In</Text>
-          <Text style={styles.cardDescription}>
-            Get an instant workout based on your preferences
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          icon="🎯"
+          title="Let Us Curate"
+          description="Choose your goal, then customize duration, difficulty, and constraints."
+          badge="RECOMMENDED"
+          badgeVariant="success"
+          estimatedTime="~20-45 min"
+          difficulty="Any level"
           onPress={() => navigation.navigate('LetUsCurate', {})}
-        >
-          <Text style={styles.cardTitle}>Let Us Curate</Text>
-          <Text style={styles.cardDescription}>
-            Choose your goal and customize your workout
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          icon="🛠️"
+          title="Take the Wheel"
+          description="Build your own workout from scratch. Choose exercises, sets, and timing."
+          badge="CUSTOM"
+          badgeVariant="info"
           onPress={() => navigation.navigate('TakeTheWheel')}
-        >
-          <Text style={styles.cardTitle}>Take the Wheel</Text>
-          <Text style={styles.cardDescription}>
-            Build your own custom workout
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <Text style={styles.emptyText}>No recent workouts</Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyIcon}>📊</Text>
+          <Text style={styles.emptyTitle}>No workouts yet</Text>
+          <Text style={styles.emptyText}>
+            Start your first workout to see your activity here!
+          </Text>
+          <Button
+            variant="secondary"
+            size="medium"
+            onPress={() => navigation.navigate('JumpRightIn')}
+            style={styles.emptyButton}
+          >
+            Start First Workout
+          </Button>
+        </View>
       </View>
     </ScrollView>
   );
@@ -87,78 +117,84 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: designTokens.colors.neutral.background,
   },
   warningBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FFF3CD',
+    backgroundColor: designTokens.colors.semantic.warningLight,
     borderBottomWidth: 1,
-    borderBottomColor: '#FFE69C',
-    padding: 12,
+    borderBottomColor: designTokens.colors.semantic.warning,
+    padding: designTokens.spacing.md,
     alignItems: 'center',
   },
   warningIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: designTokens.spacing.md,
   },
   warningContent: {
     flex: 1,
   },
   warningTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#856404',
+    ...designTokens.typography.label,
+    color: designTokens.colors.semantic.warning,
     marginBottom: 2,
   },
   warningText: {
-    fontSize: 12,
-    color: '#856404',
+    ...designTokens.typography.caption,
+    color: designTokens.colors.semantic.warning,
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: designTokens.spacing.md,
+    paddingTop: designTokens.spacing.xl,
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    ...designTokens.typography.h1,
+    color: designTokens.colors.text.primary,
+    marginBottom: designTokens.spacing.sm,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    ...designTokens.typography.bodyMedium,
+    color: designTokens.colors.text.secondary,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: designTokens.spacing.md,
+    paddingBottom: designTokens.spacing.md,
+    gap: designTokens.spacing.sm,
   },
   section: {
-    padding: 20,
+    padding: designTokens.spacing.md,
     paddingTop: 0,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    ...designTokens.typography.h2,
+    color: designTokens.colors.text.primary,
+    marginBottom: designTokens.spacing.md,
   },
-  card: {
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
+  emptyState: {
+    alignItems: 'center',
+    padding: designTokens.spacing.xl,
+    backgroundColor: designTokens.colors.neutral.surface,
+    borderRadius: designTokens.borderRadius.md,
+    ...designTokens.shadows.sm,
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: designTokens.spacing.md,
   },
-  cardDescription: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 22,
+  emptyTitle: {
+    ...designTokens.typography.h3,
+    color: designTokens.colors.text.primary,
+    marginBottom: designTokens.spacing.sm,
   },
   emptyText: {
-    fontSize: 14,
-    color: '#999',
-    fontStyle: 'italic',
+    ...designTokens.typography.bodyMedium,
+    color: designTokens.colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: designTokens.spacing.lg,
+  },
+  emptyButton: {
+    minWidth: 200,
   },
 });
 
