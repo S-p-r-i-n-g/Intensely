@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   // Text
   text: {
-    fontWeight: '600',
+    fontWeight: 600,
     textAlign: 'center',
   },
   primaryText: {

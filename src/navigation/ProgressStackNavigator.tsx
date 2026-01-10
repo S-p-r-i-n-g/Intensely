@@ -16,7 +16,7 @@ export const ProgressStackNavigator = () => {
         headerShown: true,
         headerTintColor: '#FF6B35',
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: 600,
         },
       }}
     >

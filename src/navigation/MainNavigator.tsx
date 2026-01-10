@@ -28,7 +28,7 @@ export const MainNavigator = () => {
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: 600,
           marginTop: 4,
         },
       }}

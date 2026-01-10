@@ -598,7 +598,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF6B35',
     marginBottom: 4,
-    textTransform: 'capitalize',
   },
   statLabel: {
     fontSize: 11,
@@ -622,7 +621,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
-    textTransform: 'capitalize',
   },
   metricLabel: {
     fontSize: 12,

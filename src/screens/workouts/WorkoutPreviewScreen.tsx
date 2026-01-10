@@ -336,7 +336,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
-    textTransform: 'capitalize',
   },
   metricLabel: {
     fontSize: 12,

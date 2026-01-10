@@ -60,19 +60,19 @@ export const designTokens = {
     // Headings
     h1: {
       fontSize: 32,
-      fontWeight: '700' as const,
+      fontWeight: 700,
       lineHeight: 38,
       letterSpacing: -0.5,
     },
     h2: {
       fontSize: 24,
-      fontWeight: '600' as const,
+      fontWeight: 600,
       lineHeight: 32,
       letterSpacing: -0.3,
     },
     h3: {
       fontSize: 20,
-      fontWeight: '600' as const,
+      fontWeight: 600,
       lineHeight: 28,
       letterSpacing: 0,
     },
@@ -80,39 +80,39 @@ export const designTokens = {
     // Body Text
     bodyLarge: {
       fontSize: 18,
-      fontWeight: '400' as const,
+      fontWeight: 400,
       lineHeight: 27,
     },
     bodyMedium: {
       fontSize: 16,
-      fontWeight: '400' as const,
+      fontWeight: 400,
       lineHeight: 24,
     },
     bodySmall: {
       fontSize: 14,
-      fontWeight: '400' as const,
+      fontWeight: 400,
       lineHeight: 21,
     },
     caption: {
       fontSize: 12,
-      fontWeight: '400' as const,
+      fontWeight: 400,
       lineHeight: 16,
     },
 
     // Special
     button: {
       fontSize: 16,
-      fontWeight: '600' as const,
+      fontWeight: 600,
       lineHeight: 24,
     },
     timer: {
       fontSize: 72,
-      fontWeight: '700' as const,
+      fontWeight: 700,
       lineHeight: 86,
     },
     label: {
       fontSize: 14,
-      fontWeight: '500' as const,
+      fontWeight: 500,
       lineHeight: 20,
     },
   },

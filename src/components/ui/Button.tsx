@@ -47,7 +47,7 @@ export const Button: React.FC<ButtonProps> = ({
   ];
 
   const textStyles = [
-    styles.text,
+    styles.baseText,
     styles[`${variant}Text`],
     styles[`${size}Text`],
     (disabled || loading) && styles.disabledText,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     minHeight: designTokens.touchTargets.comfortable,
   },
   // Text styles
-  text: {
+  baseText: {
     ...designTokens.typography.button,
     textAlign: 'center',
   },
