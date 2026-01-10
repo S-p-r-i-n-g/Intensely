@@ -61,7 +61,6 @@ const HomeScreen = () => {
         <Text style={styles.sectionTitle}>Quick Start</Text>
 
         <WorkoutFlowCard
-          icon="⚡️"
           title="Jump Right In"
           description="Get an instant workout based on your preferences. No thinking required."
           badge="FASTEST"
@@ -72,7 +71,6 @@ const HomeScreen = () => {
         />
 
         <WorkoutFlowCard
-          icon="🎯"
           title="Let Us Curate"
           description="Choose your goal, then customize duration, difficulty, and constraints."
           badge="RECOMMENDED"
@@ -83,7 +81,6 @@ const HomeScreen = () => {
         />
 
         <WorkoutFlowCard
-          icon="🛠️"
           title="Take the Wheel"
           description="Build your own workout from scratch. Choose exercises, sets, and timing."
           badge="CUSTOM"

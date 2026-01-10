@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { WorkoutsStackParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
@@ -61,6 +61,13 @@ const WorkoutsScreen = () => {
   useEffect(() => {
     loadWorkouts();
   }, [user]);
+
+  // Reload workouts when screen comes into focus (e.g., after deleting a workout)
+  useFocusEffect(
+    useCallback(() => {
+      loadWorkouts();
+    }, [user])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

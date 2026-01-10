@@ -5,7 +5,7 @@ import { Badge } from '../ui/Badge';
 import { designTokens } from '../../config/design-tokens';
 
 interface WorkoutFlowCardProps {
-  icon: string;
+  icon?: string;
   title: string;
   description: string;
   badge?: string;
@@ -39,7 +39,6 @@ export const WorkoutFlowCard: React.FC<WorkoutFlowCardProps> = ({
     >
       <CardContent>
         <View style={styles.header}>
-          <Text style={styles.icon}>{icon}</Text>
           {badge && (
             <Badge variant={badgeVariant} size="small">
               {badge}
@@ -77,12 +76,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'flex-start',
     marginBottom: designTokens.spacing.sm,
-  },
-  icon: {
-    fontSize: 48,
   },
   title: {
     ...designTokens.typography.h3,

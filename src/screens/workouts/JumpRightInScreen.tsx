@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,6 +22,8 @@ const JumpRightInScreen = () => {
   const { setCurrentWorkout } = useWorkoutStore();
   const [isLoading, setIsLoading] = useState(false);
   const [workout, setWorkout] = useState<any>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const generateWorkout = async () => {
     try {
@@ -54,6 +57,34 @@ const JumpRightInScreen = () => {
     if (!workout) return;
     // Navigate directly to execution screen
     navigation.navigate('WorkoutExecution', { workoutId: workout.id });
+  };
+
+  const handleDeletePress = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!workout) return;
+
+    try {
+      setIsDeleting(true);
+      await workoutsApi.delete(workout.id);
+      setShowDeleteModal(false);
+      Alert.alert('Success', 'Workout deleted successfully');
+      setWorkout(null); // Reset to initial state
+    } catch (error: any) {
+      console.error('Failed to delete workout:', error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Could not delete workout. Please try again.'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   if (isLoading && !workout) {
@@ -106,78 +137,150 @@ const JumpRightInScreen = () => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.workoutHeader}>
-        <Text style={styles.workoutTitle}>{workout.name}</Text>
-        {workout.description && (
-          <Text style={styles.workoutDescription}>{workout.description}</Text>
-        )}
-      </View>
+    <>
+      <ScrollView style={styles.container}>
+        <View style={styles.workoutHeader}>
+          <Text style={styles.workoutTitle}>{workout.name}</Text>
+          {workout.description && (
+            <Text style={styles.workoutDescription}>{workout.description}</Text>
+          )}
+        </View>
 
-      <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{workout.totalCircuits}</Text>
-          <Text style={styles.statLabel}>Circuits</Text>
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.deleteButton]}
+            onPress={handleDeletePress}
+          >
+            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{workout.estimatedDurationMinutes}</Text>
-          <Text style={styles.statLabel}>Minutes</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{workout.estimatedCalories}</Text>
-          <Text style={styles.statLabel}>Calories</Text>
-        </View>
-        <View style={styles.statBox}>
-          <Text style={styles.statValue}>{workout.difficultyLevel}</Text>
-          <Text style={styles.statLabel}>Level</Text>
-        </View>
-      </View>
 
-      <View style={styles.circuitsSection}>
-        <Text style={styles.sectionTitle}>Circuits</Text>
-        {workout.circuits?.map((circuit: any, index: number) => (
-          <View key={circuit.id} style={styles.circuitCard}>
-            <Text style={styles.circuitTitle}>Circuit {index + 1}</Text>
-            <Text style={styles.circuitInfo}>
-              {circuit.exercises.length} exercises • {workout.setsPerCircuit} sets
+        <View style={styles.statsContainer}>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{workout.totalCircuits}</Text>
+            <Text style={styles.statLabel}>Circuits</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{workout.setsPerCircuit}</Text>
+            <Text style={styles.statLabel}>Sets</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{workout.intervalSeconds}s</Text>
+            <Text style={styles.statLabel}>Work</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statValue}>{workout.restSeconds}s</Text>
+            <Text style={styles.statLabel}>Rest</Text>
+          </View>
+        </View>
+
+        <View style={styles.metricsRow}>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>
+              {workout.estimatedDurationMinutes} min
             </Text>
-            <View style={styles.exercisesList}>
-              {circuit.exercises.map((ex: any) => (
-                <Text key={ex.id} style={styles.exerciseItem}>
-                  • {ex.exercise.name}
-                </Text>
-              ))}
+            <Text style={styles.metricLabel}>Duration</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>
+              {workout.estimatedCalories} cal
+            </Text>
+            <Text style={styles.metricLabel}>Est. Calories</Text>
+          </View>
+          <View style={styles.metricCard}>
+            <Text style={styles.metricValue}>
+              {workout.difficultyLevel}
+            </Text>
+            <Text style={styles.metricLabel}>Difficulty</Text>
+          </View>
+        </View>
+
+        <View style={styles.circuitsSection}>
+          <Text style={styles.sectionTitle}>Workout Breakdown</Text>
+          {workout.circuits?.map((circuit: any, index: number) => (
+            <View key={circuit.id} style={styles.circuitCard}>
+              <Text style={styles.circuitTitle}>Circuit {index + 1}</Text>
+              <Text style={styles.circuitInfo}>
+                {workout.setsPerCircuit} sets × {circuit.exercises.length} exercises
+              </Text>
+              <View style={styles.exercisesList}>
+                {circuit.exercises.map((ex: any, exIndex: number) => (
+                  <View key={ex.id} style={styles.exerciseItem}>
+                    <Text style={styles.exerciseNumber}>{exIndex + 1}</Text>
+                    <Text style={styles.exerciseName}>{ex.exercise.name}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.regenerateButton}
+            onPress={generateWorkout}
+            disabled={isLoading}
+          >
+            <Text style={styles.regenerateButtonText}>
+              Generate New Workout
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.readyText}>Ready to start?</Text>
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={startWorkout}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.startButtonText}>
+                Start Workout
+              </Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleDeleteCancel}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Delete Workout?</Text>
+            <Text style={styles.modalMessage}>
+              Are you sure you want to delete "{workout.name}"? This action cannot be undone.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton]}
+                onPress={handleDeleteCancel}
+                disabled={isDeleting}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalDeleteButton]}
+                onPress={handleDeleteConfirm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.modalDeleteButtonText}>Delete</Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
-        ))}
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.regenerateButton}
-          onPress={generateWorkout}
-          disabled={isLoading}
-        >
-          <Text style={styles.regenerateButtonText}>
-            Generate New Workout
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.startButton}
-          onPress={startWorkout}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.startButtonText}>
-              Start Workout
-            </Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        </View>
+      </Modal>
+    </>
   );
 };
 
@@ -265,10 +368,35 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 22,
   },
+  actionsContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    gap: 12,
+    justifyContent: 'flex-end',
+  },
+  actionButton: {
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  deleteButton: {
+    backgroundColor: '#FEE',
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  deleteButtonText: {
+    color: '#DC2626',
+  },
   statsContainer: {
     flexDirection: 'row',
-    padding: 20,
-    paddingTop: 0,
+    paddingHorizontal: 20,
+    marginBottom: 16,
   },
   statBox: {
     flex: 1,
@@ -279,12 +407,37 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#FF6B35',
     marginBottom: 4,
+    textTransform: 'capitalize',
   },
   statLabel: {
+    fontSize: 11,
+    color: '#666',
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  metricCard: {
+    flex: 1,
+    backgroundColor: '#FFF5F2',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 4,
+    alignItems: 'center',
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+    textTransform: 'capitalize',
+  },
+  metricLabel: {
     fontSize: 12,
     color: '#666',
   },
@@ -292,10 +445,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   circuitCard: {
     backgroundColor: '#f5f5f5',
@@ -304,7 +457,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   circuitTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: '#333',
     marginBottom: 4,
@@ -312,15 +465,32 @@ const styles = StyleSheet.create({
   circuitInfo: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   exercisesList: {
     marginTop: 8,
   },
   exerciseItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  exerciseNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#FF6B35',
+    color: '#fff',
     fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 28,
+    marginRight: 12,
+  },
+  exerciseName: {
+    fontSize: 16,
     color: '#333',
-    marginBottom: 4,
+    flex: 1,
   },
   buttonContainer: {
     padding: 20,
@@ -338,16 +508,76 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  readyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
   startButton: {
     backgroundColor: '#FF6B35',
-    padding: 18,
+    padding: 20,
     borderRadius: 12,
     alignItems: 'center',
   },
   startButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 12,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#666',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  modalCancelButton: {
+    backgroundColor: '#F5F5F5',
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
     fontWeight: '600',
+    color: '#333',
+  },
+  modalDeleteButton: {
+    backgroundColor: '#DC2626',
+  },
+  modalDeleteButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
 
