@@ -5,16 +5,20 @@ This guide outlines the process for migrating existing screens to use the new de
 
 ## Migration Status
 
-### ✅ Completed (3/24)
-- **App.tsx** - ThemeProvider added
-- **HomeScreen** - Fully migrated to design system
-- **WelcomeScreen** - Fully migrated to design system
+### ✅ Completed (7/24)
+- **App.tsx** - ThemeProvider added ✅
+- **HomeScreen** - Fully migrated to design system ✅
+- **WelcomeScreen** - Fully migrated to design system ✅
+- **LoginScreen** - Fully migrated with validation ✅
+- **SignUpScreen** - Fully migrated with validation ✅
+- **WorkoutFlowSelectionScreen** - Fully migrated ✅
 
-### 🔄 Remaining Screens (21/24)
+### 🔄 Remaining Screens (17/24)
 
-#### Auth Screens (2/3 remaining)
-- [ ] `src/screens/auth/LoginScreen.tsx`
-- [ ] `src/screens/auth/SignUpScreen.tsx`
+#### Auth Screens (0/3 remaining) ✅ COMPLETE
+- [x] `src/screens/auth/WelcomeScreen.tsx` ✅
+- [x] `src/screens/auth/LoginScreen.tsx` ✅
+- [x] `src/screens/auth/SignUpScreen.tsx` ✅
 
 #### Exercise Screens (4/4 remaining)
 - [ ] `src/screens/exercises/ExerciseDetailScreen.tsx`
@@ -35,14 +39,14 @@ This guide outlines the process for migrating existing screens to use the new de
 - [ ] `src/screens/progress/ProgressOverviewScreen.tsx`
 - [ ] `src/screens/progress/ProgressScreen.tsx`
 
-#### Workout Screens (9/9 remaining)
+#### Workout Screens (8/9 remaining)
 - [ ] `src/screens/workouts/ExerciseSelectionScreen.tsx`
 - [ ] `src/screens/workouts/JumpRightInScreen.tsx`
 - [ ] `src/screens/workouts/LetUsCurateScreen.tsx`
 - [ ] `src/screens/workouts/TakeTheWheelScreen.tsx`
 - [ ] `src/screens/workouts/WorkoutCompleteScreen.tsx`
 - [ ] `src/screens/workouts/WorkoutExecutionScreen.tsx`
-- [ ] `src/screens/workouts/WorkoutFlowSelectionScreen.tsx`
+- [x] `src/screens/workouts/WorkoutFlowSelectionScreen.tsx` ✅
 - [ ] `src/screens/workouts/WorkoutPreviewScreen.tsx`
 - [ ] `src/screens/workouts/WorkoutsScreen.tsx`
 
