@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    backgroundColor: '#FFF5F2',
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 4,
@@ -334,12 +334,14 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: '#1a1a1a',
     marginBottom: 4,
   },
   metricLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#4a4a4a',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   circuitsSection: {
     padding: 20,
