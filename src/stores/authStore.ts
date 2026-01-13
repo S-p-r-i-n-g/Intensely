@@ -65,12 +65,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ profile: null });
         }
       });
-
-      set({ isInitialized: true });
     } catch (error) {
       console.error('Failed to initialize auth:', error);
     } finally {
-      set({ isLoading: false });
+      // Always set initialized to true, even if there's an error
+      // This prevents the app from being stuck on the loading screen
+      set({ isInitialized: true, isLoading: false });
     }
   },
 
