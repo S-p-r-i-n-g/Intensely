@@ -23,10 +23,16 @@ class ApiClient {
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       async (config) => {
-        const { data: { session } } = await supabase.auth.getSession();
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
 
-        if (session?.access_token) {
-          config.headers.Authorization = `Bearer ${session.access_token}`;
+          if (session?.access_token) {
+            config.headers.Authorization = `Bearer ${session.access_token}`;
+          }
+        } catch (error) {
+          // If session retrieval fails, continue without auth token
+          // The backend will handle unauthorized requests appropriately
+          console.warn('Failed to get session for API request:', error);
         }
 
         return config;
