@@ -96,7 +96,9 @@ const WorkoutExecutionScreen = () => {
       setWorkout(workoutData);
 
       // Start session
+      console.log('Starting workout session for workout:', workoutData.id);
       const sessionResponse = await sessionsApi.start(workoutData.id);
+      console.log('Session started:', sessionResponse.data);
       setSessionId(sessionResponse.data.sessionId);
 
       // Initialize first interval
@@ -107,8 +109,14 @@ const WorkoutExecutionScreen = () => {
       shouldAutoProgressRef.current = true;
       startElapsedTimer();
     } catch (error: any) {
-      console.error('Failed to load workout:', error);
-      Alert.alert('Error', 'Could not load workout. Please try again.');
+      console.error('Failed to load workout or start session:', error);
+      console.error('Error details:', error.response?.data || error.message);
+
+      const errorMessage = error.response?.status === 401
+        ? 'You must be signed in to start a workout session.'
+        : error.response?.data?.message || 'Could not load workout. Please try again.';
+
+      Alert.alert('Error', errorMessage);
       navigation.goBack();
     }
   };
