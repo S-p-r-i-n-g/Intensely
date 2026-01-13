@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
   },
   selectButtonArrow: {
     fontSize: 18,
-    color: colors.neutral[400],
+    color: colors.secondary[400],
   },
   counterContainer: {
     flexDirection: 'row',
