@@ -267,10 +267,10 @@ const WorkoutExecutionScreen = () => {
       });
     }
 
-    console.log('Navigating to HomeMain');
-    // Use setTimeout to ensure navigation happens even if there are state update issues
+    console.log('Navigating back to home');
+    // Use popToTop to go back to the root of the stack (HomeMain)
     setTimeout(() => {
-      navigation.navigate('HomeMain');
+      navigation.popToTop();
     }, 100);
   };
 
