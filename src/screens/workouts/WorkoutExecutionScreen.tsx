@@ -251,23 +251,29 @@ const WorkoutExecutionScreen = () => {
   };
 
   const handleQuit = () => {
+    console.log('Quit button pressed, showing modal');
     setShowQuitModal(true);
   };
 
   const confirmQuit = async () => {
+    console.log('Confirm quit pressed');
     setShowQuitModal(false);
     stopTimer();
     if (sessionId) {
       try {
+        console.log('Canceling session:', sessionId);
         await sessionsApi.cancel(sessionId);
+        console.log('Session canceled successfully');
       } catch (error) {
         console.error('Failed to cancel session:', error);
       }
     }
+    console.log('Navigating to HomeMain');
     navigation.navigate('HomeMain');
   };
 
   const cancelQuit = () => {
+    console.log('Cancel quit pressed');
     setShowQuitModal(false);
   };
 
