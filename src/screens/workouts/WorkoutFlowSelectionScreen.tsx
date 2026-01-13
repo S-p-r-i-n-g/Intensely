@@ -1,66 +1,92 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
+import { Card, Text } from '../../components/ui';
+import { useTheme } from '../../theme';
+import { spacing, borderRadius, colors } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'WorkoutFlowSelection'>;
 
 const WorkoutFlowSelectionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Choose Your Workout</Text>
-        <Text style={styles.subtitle}>Three ways to get started</Text>
+        <Text variant="h1" style={styles.title}>
+          Choose Your Workout
+        </Text>
+        <Text variant="body" color="secondary">
+          Three ways to get started
+        </Text>
       </View>
 
       <View style={styles.flowsContainer}>
         {/* Jump Right In */}
-        <TouchableOpacity
-          style={[styles.flowCard, styles.primaryCard]}
+        <Card
+          variant="elevated"
+          padding="large"
           onPress={() => navigation.navigate('JumpRightIn')}
+          style={[styles.flowCard, styles.primaryCard]}
         >
           <Text style={styles.flowIcon}>⚡️</Text>
-          <Text style={styles.flowTitle}>Jump Right In</Text>
-          <Text style={styles.flowDescription}>
+          <Text variant="h3" style={styles.flowTitle}>
+            Jump Right In
+          </Text>
+          <Text variant="body" color="secondary" style={styles.flowDescription}>
             Get an instant workout based on your preferences. No thinking required.
           </Text>
-          <View style={styles.flowBadge}>
-            <Text style={styles.flowBadgeText}>FASTEST</Text>
+          <View style={[styles.flowBadge, styles.primaryBadge]}>
+            <Text variant="caption" style={styles.flowBadgeText}>
+              FASTEST
+            </Text>
           </View>
-        </TouchableOpacity>
+        </Card>
 
         {/* Let Us Curate */}
-        <TouchableOpacity
-          style={styles.flowCard}
+        <Card
+          variant="elevated"
+          padding="large"
           onPress={() => navigation.navigate('LetUsCurate', {})}
+          style={styles.flowCard}
         >
           <Text style={styles.flowIcon}>🎯</Text>
-          <Text style={styles.flowTitle}>Let Us Curate</Text>
-          <Text style={styles.flowDescription}>
+          <Text variant="h3" style={styles.flowTitle}>
+            Let Us Curate
+          </Text>
+          <Text variant="body" color="secondary" style={styles.flowDescription}>
             Choose your goal, then customize duration, difficulty, and constraints.
           </Text>
-          <View style={[styles.flowBadge, styles.secondaryBadge]}>
-            <Text style={styles.flowBadgeText}>RECOMMENDED</Text>
+          <View style={[styles.flowBadge, styles.successBadge]}>
+            <Text variant="caption" style={styles.flowBadgeText}>
+              RECOMMENDED
+            </Text>
           </View>
-        </TouchableOpacity>
+        </Card>
 
         {/* Take the Wheel */}
-        <TouchableOpacity
-          style={styles.flowCard}
+        <Card
+          variant="elevated"
+          padding="large"
           onPress={() => navigation.navigate('TakeTheWheel')}
+          style={styles.flowCard}
         >
           <Text style={styles.flowIcon}>🛠️</Text>
-          <Text style={styles.flowTitle}>Take the Wheel</Text>
-          <Text style={styles.flowDescription}>
+          <Text variant="h3" style={styles.flowTitle}>
+            Take the Wheel
+          </Text>
+          <Text variant="body" color="secondary" style={styles.flowDescription}>
             Build your own workout from scratch. Choose exercises, sets, and timing.
           </Text>
-          <View style={[styles.flowBadge, styles.tertiaryBadge]}>
-            <Text style={styles.flowBadgeText}>CUSTOM</Text>
+          <View style={[styles.flowBadge, styles.infoBadge]}>
+            <Text variant="caption" style={styles.flowBadgeText}>
+              CUSTOM
+            </Text>
           </View>
-        </TouchableOpacity>
+        </Card>
       </View>
     </ScrollView>
   );
@@ -69,70 +95,54 @@ const WorkoutFlowSelectionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[8],
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    marginBottom: spacing[2],
   },
   flowsContainer: {
-    padding: 20,
+    padding: spacing[5],
     paddingTop: 0,
   },
   flowCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
-    position: 'relative',
+    marginBottom: spacing[4],
   },
   primaryCard: {
-    backgroundColor: '#FFF5F2',
+    backgroundColor: colors.primary[50],
     borderWidth: 2,
-    borderColor: '#FF6B35',
+    borderColor: colors.primary[500],
   },
   flowIcon: {
     fontSize: 48,
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   flowTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   flowDescription: {
-    fontSize: 15,
-    color: '#666',
     lineHeight: 22,
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   flowBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FF6B35',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[1] + 2,
+    borderRadius: borderRadius.md,
   },
-  secondaryBadge: {
-    backgroundColor: '#4CAF50',
+  primaryBadge: {
+    backgroundColor: colors.primary[500],
   },
-  tertiaryBadge: {
-    backgroundColor: '#2196F3',
+  successBadge: {
+    backgroundColor: colors.success[500],
+  },
+  infoBadge: {
+    backgroundColor: colors.accent[500],
   },
   flowBadgeText: {
-    color: '#fff',
-    fontSize: 12,
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 });
