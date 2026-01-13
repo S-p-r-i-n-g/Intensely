@@ -10,11 +10,14 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/types';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Settings'>;
 
 const SettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -38,30 +41,30 @@ const SettingsScreen = () => {
   };
 
   const renderToggle = (value: boolean) => (
-    <View style={[styles.toggle, value && styles.toggleActive]}>
+    <View style={[styles.toggle, { backgroundColor: theme.border.medium }, value && styles.toggleActive]}>
       <View style={[styles.toggleCircle, value && styles.toggleCircleActive]} />
     </View>
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settings</Text>
-        <Text style={styles.headerSubtitle}>Manage your app preferences</Text>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Settings</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>Manage your app preferences</Text>
       </View>
 
       {/* Notifications Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Notifications</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Notifications</Text>
 
         <TouchableOpacity
-          style={styles.settingItem}
+          style={[styles.settingItem, { borderBottomColor: theme.border.light }]}
           onPress={() => setNotificationsEnabled(!notificationsEnabled)}
         >
           <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Push Notifications</Text>
-            <Text style={styles.settingDescription}>
+            <Text style={[styles.settingLabel, { color: theme.text.primary }]}>Push Notifications</Text>
+            <Text style={[styles.settingDescription, { color: theme.text.secondary }]}>
               Receive workout reminders and updates
             </Text>
           </View>
@@ -71,15 +74,15 @@ const SettingsScreen = () => {
 
       {/* App Experience Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>App Experience</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>App Experience</Text>
 
         <TouchableOpacity
-          style={styles.settingItem}
+          style={[styles.settingItem, { borderBottomColor: theme.border.light }]}
           onPress={() => setSoundEnabled(!soundEnabled)}
         >
           <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Sound Effects</Text>
-            <Text style={styles.settingDescription}>
+            <Text style={[styles.settingLabel, { color: theme.text.primary }]}>Sound Effects</Text>
+            <Text style={[styles.settingDescription, { color: theme.text.secondary }]}>
               Play sounds during workouts
             </Text>
           </View>
@@ -87,12 +90,12 @@ const SettingsScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.settingItem}
+          style={[styles.settingItem, { borderBottomColor: theme.border.light }]}
           onPress={() => setHapticEnabled(!hapticEnabled)}
         >
           <View style={styles.settingInfo}>
-            <Text style={styles.settingLabel}>Haptic Feedback</Text>
-            <Text style={styles.settingDescription}>
+            <Text style={[styles.settingLabel, { color: theme.text.primary }]}>Haptic Feedback</Text>
+            <Text style={[styles.settingDescription, { color: theme.text.secondary }]}>
               Vibrate on timer transitions
             </Text>
           </View>
@@ -102,111 +105,111 @@ const SettingsScreen = () => {
 
       {/* Data & Storage Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Data & Storage</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Data & Storage</Text>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={handleClearCache}
         >
           <Text style={styles.actionIcon}>🗑️</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Clear Cache</Text>
-            <Text style={styles.actionDescription}>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Clear Cache</Text>
+            <Text style={[styles.actionDescription, { color: theme.text.secondary }]}>
               Free up storage space
             </Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={() => {
             Alert.alert('Coming Soon', 'Export data feature coming soon!');
           }}
         >
           <Text style={styles.actionIcon}>📤</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Export Data</Text>
-            <Text style={styles.actionDescription}>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Export Data</Text>
+            <Text style={[styles.actionDescription, { color: theme.text.secondary }]}>
               Download your workout history
             </Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
       </View>
 
       {/* Support Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Support</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Support</Text>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={() => {
             Alert.alert('Coming Soon', 'Help & FAQ will be available soon!');
           }}
         >
           <Text style={styles.actionIcon}>❓</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Help & FAQ</Text>
-            <Text style={styles.actionDescription}>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Help & FAQ</Text>
+            <Text style={[styles.actionDescription, { color: theme.text.secondary }]}>
               Get answers to common questions
             </Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={() => {
             Alert.alert('Contact Support', 'Email: support@intensely-app.com\n\nWe typically respond within 24 hours.');
           }}
         >
           <Text style={styles.actionIcon}>💬</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Contact Support</Text>
-            <Text style={styles.actionDescription}>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Contact Support</Text>
+            <Text style={[styles.actionDescription, { color: theme.text.secondary }]}>
               Get help from our team
             </Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
       </View>
 
       {/* Legal Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Legal</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Legal</Text>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={() => {
             Alert.alert('Coming Soon', 'Privacy policy will be available soon!');
           }}
         >
           <Text style={styles.actionIcon}>🔒</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Privacy Policy</Text>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Privacy Policy</Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionItem}
+          style={[styles.actionItem, { borderBottomColor: theme.border.light }]}
           onPress={() => {
             Alert.alert('Coming Soon', 'Terms of service will be available soon!');
           }}
         >
           <Text style={styles.actionIcon}>📄</Text>
           <View style={styles.actionInfo}>
-            <Text style={styles.actionLabel}>Terms of Service</Text>
+            <Text style={[styles.actionLabel, { color: theme.text.primary }]}>Terms of Service</Text>
           </View>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
       </View>
 
       {/* Version Info */}
       <View style={styles.versionInfo}>
-        <Text style={styles.versionText}>Version 1.0.0</Text>
-        <Text style={styles.versionSubtext}>Build 2026.01.08</Text>
+        <Text style={[styles.versionText, { color: theme.text.secondary }]}>Version 1.0.0</Text>
+        <Text style={[styles.versionSubtext, { color: theme.text.tertiary }]}>Build 2026.01.08</Text>
       </View>
     </ScrollView>
   );
@@ -215,66 +218,58 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[7],
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#666',
   },
   section: {
-    marginBottom: 32,
+    marginBottom: spacing[8],
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#999',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    paddingHorizontal: 20,
-    marginBottom: 12,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[3],
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[5],
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   settingInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: spacing[4],
   },
   settingLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   settingDescription: {
     fontSize: 13,
-    color: '#666',
   },
   toggle: {
     width: 51,
     height: 31,
     borderRadius: 15.5,
-    backgroundColor: '#E5E5E5',
     padding: 2,
     justifyContent: 'center',
   },
   toggleActive: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
   },
   toggleCircle: {
     width: 27,
@@ -288,14 +283,13 @@ const styles = StyleSheet.create({
   actionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[5],
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   actionIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: spacing[3],
   },
   actionInfo: {
     flex: 1,
@@ -303,29 +297,24 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#333',
-    marginBottom: 2,
+    marginBottom: spacing[0],
   },
   actionDescription: {
     fontSize: 13,
-    color: '#666',
   },
   actionArrow: {
     fontSize: 18,
-    color: '#999',
   },
   versionInfo: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: spacing[8],
   },
   versionText: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   versionSubtext: {
     fontSize: 12,
-    color: '#999',
   },
 });
 

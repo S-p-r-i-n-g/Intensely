@@ -16,12 +16,15 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { usersApi } from '../../api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
 
 const EditProfileScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { profile, syncProfile } = useAuthStore();
+  const { theme } = useTheme();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -70,7 +73,7 @@ const EditProfileScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background.primary }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
@@ -81,45 +84,45 @@ const EditProfileScreen = () => {
               {firstName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
             </Text>
           </View>
-          <Text style={styles.avatarHint}>Tap to change avatar (coming soon)</Text>
+          <Text style={[styles.avatarHint, { color: theme.text.tertiary }]}>Tap to change avatar (coming soon)</Text>
         </View>
 
         {/* Form Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Personal Information</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Personal Information</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>First Name</Text>
+            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>First Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
               value={firstName}
               onChangeText={setFirstName}
               placeholder="Enter your first name"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.text.tertiary}
               autoCapitalize="words"
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Last Name</Text>
+            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Last Name</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
               value={lastName}
               onChangeText={setLastName}
               placeholder="Enter your last name"
-              placeholderTextColor="#999"
+              placeholderTextColor={theme.text.tertiary}
               autoCapitalize="words"
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Email</Text>
             <TextInput
-              style={[styles.input, styles.inputDisabled]}
+              style={[styles.input, styles.inputDisabled, { backgroundColor: theme.background.elevated, color: theme.text.tertiary }]}
               value={profile?.email || ''}
               editable={false}
             />
-            <Text style={styles.inputHelper}>Email cannot be changed</Text>
+            <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>Email cannot be changed</Text>
           </View>
         </View>
 
@@ -143,26 +146,25 @@ const EditProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingBottom: 40,
+    paddingBottom: spacing[10],
   },
   avatarSection: {
     alignItems: 'center',
-    paddingVertical: 32,
+    paddingVertical: spacing[8],
   },
   avatarContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   avatarText: {
     fontSize: 40,
@@ -172,49 +174,42 @@ const styles = StyleSheet.create({
   },
   avatarHint: {
     fontSize: 13,
-    color: '#999',
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[6],
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 20,
+    marginBottom: spacing[5],
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: spacing[5],
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     fontSize: 16,
-    color: '#333',
   },
   inputDisabled: {
-    backgroundColor: '#fafafa',
-    color: '#999',
+    opacity: 0.6,
   },
   inputHelper: {
     fontSize: 12,
-    color: '#999',
-    marginTop: 6,
+    marginTop: spacing[1],
   },
   saveButton: {
-    marginHorizontal: 20,
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 12,
+    marginHorizontal: spacing[5],
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[4],
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   saveButtonDisabled: {

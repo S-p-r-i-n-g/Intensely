@@ -14,6 +14,8 @@ import { RouteProp } from '@react-navigation/native';
 import { ProgressStackParamList } from '../../navigation/types';
 import { progressApi, exercisesApi } from '../../api';
 import type { ProgressEntry, Exercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProgressStackParamList, 'ExerciseProgress'>;
 type RoutePropType = RouteProp<ProgressStackParamList, 'ExerciseProgress'>;
@@ -21,6 +23,7 @@ type RoutePropType = RouteProp<ProgressStackParamList, 'ExerciseProgress'>;
 const ExerciseProgressScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [progressEntries, setProgressEntries] = useState<ProgressEntry[]>([]);
@@ -106,22 +109,22 @@ const ExerciseProgressScreen = () => {
 
   if (isLoading || !exercise) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Exercise Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{exercise.name}</Text>
+        <Text style={[styles.title, { color: theme.text.primary }]}>{exercise.name}</Text>
         {exercise.targetMuscleGroups && exercise.targetMuscleGroups.length > 0 && (
           <View style={styles.muscleGroupsContainer}>
             {exercise.targetMuscleGroups.map((muscle) => (
-              <View key={muscle} style={styles.muscleTag}>
-                <Text style={styles.muscleTagText}>{muscle}</Text>
+              <View key={muscle} style={[styles.muscleTag, { backgroundColor: theme.background.elevated }]}>
+                <Text style={[styles.muscleTagText, { color: colors.primary[500] }]}>{muscle}</Text>
               </View>
             ))}
           </View>
@@ -130,53 +133,53 @@ const ExerciseProgressScreen = () => {
 
       {/* Personal Record Card */}
       {personalRecord ? (
-        <View style={styles.prCard}>
+        <View style={[styles.prCard, { backgroundColor: theme.background.elevated, borderColor: colors.primary[500] }]}>
           <View style={styles.prHeader}>
-            <Text style={styles.prBadge}>🏆 Personal Record</Text>
+            <Text style={[styles.prBadge, { color: colors.primary[500] }]}>🏆 Personal Record</Text>
           </View>
-          <Text style={styles.prValue}>{formatProgressDetails(personalRecord)}</Text>
-          <Text style={styles.prDate}>Set on {formatDate(personalRecord.loggedAt)}</Text>
+          <Text style={[styles.prValue, { color: theme.text.primary }]}>{formatProgressDetails(personalRecord)}</Text>
+          <Text style={[styles.prDate, { color: theme.text.secondary }]}>Set on {formatDate(personalRecord.loggedAt)}</Text>
         </View>
       ) : (
-        <View style={styles.noPrCard}>
-          <Text style={styles.noPrText}>No personal record yet</Text>
-          <Text style={styles.noPrSubtext}>Log your first entry to set a PR!</Text>
+        <View style={[styles.noPrCard, { backgroundColor: theme.background.secondary }]}>
+          <Text style={[styles.noPrText, { color: theme.text.primary }]}>No personal record yet</Text>
+          <Text style={[styles.noPrSubtext, { color: theme.text.secondary }]}>Log your first entry to set a PR!</Text>
         </View>
       )}
 
       {/* Log Progress Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.logButton}
+          style={[styles.logButton, { backgroundColor: colors.primary[500] }]}
           onPress={() => navigation.navigate('LogProgress', { exerciseId: exercise.id })}
         >
-          <Text style={styles.logButtonText}>Log New Progress</Text>
+          <Text style={[styles.logButtonText, { color: '#fff' }]}>Log New Progress</Text>
         </TouchableOpacity>
       </View>
 
       {/* Progress History */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
+        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>
           Progress History ({progressEntries.length})
         </Text>
 
         {progressEntries.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No progress logged yet</Text>
-            <Text style={styles.emptySubtext}>
+          <View style={[styles.emptyCard, { backgroundColor: theme.background.secondary }]}>
+            <Text style={[styles.emptyText, { color: theme.text.primary }]}>No progress logged yet</Text>
+            <Text style={[styles.emptySubtext, { color: theme.text.secondary }]}>
               Start tracking your progress to see improvements over time!
             </Text>
           </View>
         ) : (
           progressEntries.map((entry) => (
-            <View key={entry.id} style={styles.entryCard}>
+            <View key={entry.id} style={[styles.entryCard, { backgroundColor: theme.background.secondary }]}>
               <View style={styles.entryHeader}>
                 <View style={styles.entryInfo}>
-                  <Text style={styles.entryValue}>
+                  <Text style={[styles.entryValue, { color: theme.text.primary }]}>
                     {formatProgressDetails(entry)}
                   </Text>
                   {entry.isPersonalRecord && (
-                    <Text style={styles.entryPRBadge}>🏆 PR</Text>
+                    <Text style={[styles.entryPRBadge, { color: colors.primary[500] }]}>🏆 PR</Text>
                   )}
                 </View>
                 <TouchableOpacity
@@ -186,9 +189,9 @@ const ExerciseProgressScreen = () => {
                   <Text style={styles.deleteIcon}>🗑️</Text>
                 </TouchableOpacity>
               </View>
-              <Text style={styles.entryDate}>{formatDate(entry.loggedAt)}</Text>
+              <Text style={[styles.entryDate, { color: theme.text.secondary }]}>{formatDate(entry.loggedAt)}</Text>
               {entry.notes && (
-                <Text style={styles.entryNotes}>Note: {entry.notes}</Text>
+                <Text style={[styles.entryNotes, { color: theme.text.secondary }]}>Note: {entry.notes}</Text>
               )}
             </View>
           ))
@@ -201,172 +204,148 @@ const ExerciseProgressScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
+    padding: spacing[5],
     paddingTop: 30,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   muscleGroupsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing[2],
   },
   muscleTag: {
-    backgroundColor: '#FFF5F2',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing[3],
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
   },
   muscleTagText: {
     fontSize: 12,
-    color: '#FF6B35',
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   prCard: {
-    backgroundColor: '#FFF5F2',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 24,
-    borderRadius: 16,
+    marginHorizontal: spacing[5],
+    marginBottom: spacing[5],
+    padding: spacing[6],
+    borderRadius: borderRadius.lg,
     borderWidth: 2,
-    borderColor: '#FF6B35',
   },
   prHeader: {
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   prBadge: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FF6B35',
   },
   prValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   prDate: {
     fontSize: 14,
-    color: '#666',
   },
   noPrCard: {
-    backgroundColor: '#f5f5f5',
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 24,
-    borderRadius: 16,
+    marginHorizontal: spacing[5],
+    marginBottom: spacing[5],
+    padding: spacing[6],
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
   },
   noPrText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   noPrSubtext: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   buttonContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[6],
   },
   logButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: spacing[4],
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   logButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[8],
   },
   sectionTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   emptyCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 32,
+    borderRadius: borderRadius.md,
+    padding: spacing[8],
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   entryCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[3],
   },
   entryHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   entryInfo: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing[2],
   },
   entryValue: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
   },
   entryPRBadge: {
     fontSize: 14,
-    color: '#FF6B35',
   },
   deleteButton: {
-    padding: 4,
+    padding: spacing[1],
   },
   deleteIcon: {
     fontSize: 18,
   },
   entryDate: {
     fontSize: 13,
-    color: '#666',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   entryNotes: {
     fontSize: 14,
-    color: '#666',
     fontStyle: 'italic',
-    marginTop: 8,
+    marginTop: spacing[2],
   },
 });
 

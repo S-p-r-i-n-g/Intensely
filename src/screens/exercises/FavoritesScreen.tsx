@@ -13,11 +13,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { favoritesApi } from '../../api';
 import type { FavoriteExercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'Favorites'>;
 
 const FavoritesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   const [favorites, setFavorites] = useState<FavoriteExercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,14 +72,14 @@ const FavoritesScreen = () => {
 
   const renderFavoriteCard = ({ item }: { item: FavoriteExercise }) => (
     <TouchableOpacity
-      style={styles.favoriteCard}
+      style={[styles.favoriteCard, { backgroundColor: theme.background.secondary }]}
       onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item.exerciseId })}
     >
       <View style={styles.cardContent}>
         <View style={styles.exerciseInfo}>
-          <Text style={styles.exerciseName}>{item.exercise.name}</Text>
+          <Text style={[styles.exerciseName, { color: theme.text.primary }]}>{item.exercise.name}</Text>
           {item.exercise.description && (
-            <Text style={styles.exerciseDescription} numberOfLines={2}>
+            <Text style={[styles.exerciseDescription, { color: theme.text.secondary }]} numberOfLines={2}>
               {item.exercise.description}
             </Text>
           )}
@@ -106,19 +109,19 @@ const FavoritesScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading favorites...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading favorites...</Text>
       </View>
     );
   }
 
   if (favorites.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={[styles.emptyContainer, { backgroundColor: theme.background.primary }]}>
         <Text style={styles.emptyIcon}>❤️</Text>
-        <Text style={styles.emptyTitle}>No Favorites Yet</Text>
-        <Text style={styles.emptyText}>
+        <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>No Favorites Yet</Text>
+        <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
           Tap the heart icon on any exercise to add it to your favorites.
         </Text>
         <TouchableOpacity
@@ -132,10 +135,10 @@ const FavoritesScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Favorites</Text>
-        <Text style={styles.headerSubtitle}>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>My Favorites</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>
           {favorites.length} exercise{favorites.length !== 1 ? 's' : ''}
         </Text>
       </View>
@@ -153,42 +156,36 @@ const FavoritesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: spacing.md,
     fontSize: 16,
-    color: '#666',
   },
   header: {
-    padding: 20,
+    padding: spacing.lg,
     paddingTop: 30,
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#666',
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   favoriteCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   cardContent: {
     flexDirection: 'row',
@@ -196,19 +193,17 @@ const styles = StyleSheet.create({
   },
   exerciseInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing.sm,
   },
   exerciseName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   exerciseDescription: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
   muscleGroupsContainer: {
     flexDirection: 'row',
@@ -216,19 +211,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   muscleTag: {
-    backgroundColor: '#FFF5F2',
+    backgroundColor: colors.primary[50],
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
   },
   muscleTagText: {
     fontSize: 11,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   removeButton: {
-    padding: 8,
+    padding: spacing.xs,
   },
   removeIcon: {
     fontSize: 24,
@@ -241,30 +236,28 @@ const styles = StyleSheet.create({
   },
   emptyIcon: {
     fontSize: 80,
-    marginBottom: 20,
+    marginBottom: spacing.lg,
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
     textAlign: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
   },
   browseButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: borderRadius.lg,
   },
   browseButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

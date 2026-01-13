@@ -13,6 +13,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { WorkoutsStackParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
 import { useAuthStore } from '../../stores';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>;
 
@@ -35,6 +37,7 @@ interface Workout {
 const WorkoutsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
+  const { theme } = useTheme();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -79,11 +82,11 @@ const WorkoutsScreen = () => {
 
     return (
       <TouchableOpacity
-        style={styles.workoutCard}
+        style={[styles.workoutCard, { backgroundColor: theme.background.secondary }]}
         onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
       >
         <View style={styles.workoutHeader}>
-          <Text style={styles.workoutName}>{item.name}</Text>
+          <Text style={[styles.workoutName, { color: theme.text.primary }]}>{item.name}</Text>
           {primaryObjective && (
             <View
               style={[
@@ -99,7 +102,7 @@ const WorkoutsScreen = () => {
         </View>
 
         {item.description && (
-          <Text style={styles.workoutDescription} numberOfLines={2}>
+          <Text style={[styles.workoutDescription, { color: theme.text.secondary }]} numberOfLines={2}>
             {item.description}
           </Text>
         )}
@@ -107,21 +110,21 @@ const WorkoutsScreen = () => {
         <View style={styles.workoutStats}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{item.totalCircuits}</Text>
-            <Text style={styles.statLabel}>Circuits</Text>
+            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Circuits</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{item.exercisesPerCircuit}</Text>
-            <Text style={styles.statLabel}>Exercises</Text>
+            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Exercises</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{item.estimatedDurationMinutes}</Text>
-            <Text style={styles.statLabel}>Minutes</Text>
+            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Minutes</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>
               {item.difficultyLevel?.charAt(0).toUpperCase()}
             </Text>
-            <Text style={styles.statLabel}>Level</Text>
+            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Level</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -130,18 +133,18 @@ const WorkoutsScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
   }
 
   if (workouts.length === 0) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
         <Text style={styles.emptyIcon}>💪</Text>
-        <Text style={styles.emptyTitle}>No Workouts Yet</Text>
-        <Text style={styles.emptySubtitle}>
+        <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>No Workouts Yet</Text>
+        <Text style={[styles.emptySubtitle, { color: theme.text.secondary }]}>
           Create your first workout from the Home tab
         </Text>
       </View>
@@ -149,7 +152,7 @@ const WorkoutsScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <FlatList
         data={workouts}
         renderItem={renderWorkoutCard}
@@ -159,7 +162,7 @@ const WorkoutsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#FF6B35"
+            tintColor={colors.primary[500]}
           />
         }
       />
@@ -170,56 +173,51 @@ const WorkoutsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: spacing[5],
   },
   listContent: {
-    padding: 16,
+    padding: spacing[4],
   },
   workoutCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[3],
   },
   workoutHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   workoutName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     flex: 1,
   },
   objectiveBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
+    borderRadius: borderRadius.md,
+    marginLeft: spacing[2],
   },
   objectiveBadgeText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 11,
     fontWeight: '600',
   },
   workoutDescription: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
+    marginBottom: spacing[3],
     lineHeight: 20,
   },
   workoutStats: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing[3],
   },
   statItem: {
     alignItems: 'center',
@@ -228,26 +226,23 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: colors.primary[500],
     marginBottom: 2,
   },
   statLabel: {
     fontSize: 11,
-    color: '#666',
   },
   emptyIcon: {
     fontSize: 64,
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   emptySubtitle: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
   },
 });

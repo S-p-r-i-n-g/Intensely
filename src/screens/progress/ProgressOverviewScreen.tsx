@@ -13,11 +13,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProgressStackParamList } from '../../navigation/types';
 import { sessionsApi, progressApi } from '../../api';
 import type { WorkoutSession, ProgressEntry } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProgressStackParamList, 'ProgressOverview'>;
 
 const ProgressOverviewScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   const [recentSessions, setRecentSessions] = useState<WorkoutSession[]>([]);
   const [recentPRs, setRecentPRs] = useState<ProgressEntry[]>([]);
@@ -94,69 +97,69 @@ const ProgressOverviewScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading progress...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading progress...</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Your Progress</Text>
-        <Text style={styles.headerSubtitle}>Keep up the great work!</Text>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Your Progress</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>Keep up the great work!</Text>
       </View>
 
       {/* Stats Cards */}
       <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.totalWorkouts}</Text>
-          <Text style={styles.statLabel}>Workouts</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.background.elevated }]}>
+          <Text style={[styles.statValue, { color: colors.primary[500] }]}>{stats.totalWorkouts}</Text>
+          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Workouts</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.totalMinutes}</Text>
-          <Text style={styles.statLabel}>Minutes</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.background.elevated }]}>
+          <Text style={[styles.statValue, { color: colors.primary[500] }]}>{stats.totalMinutes}</Text>
+          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Minutes</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>{stats.totalCalories}</Text>
-          <Text style={styles.statLabel}>Calories</Text>
+        <View style={[styles.statCard, { backgroundColor: theme.background.elevated }]}>
+          <Text style={[styles.statValue, { color: colors.primary[500] }]}>{stats.totalCalories}</Text>
+          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Calories</Text>
         </View>
       </View>
 
       {/* Recent Workouts */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Workouts</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Recent Workouts</Text>
           <TouchableOpacity
             onPress={() => {
               // TODO: Navigate to full workout history
               Alert.alert('Coming Soon', 'Full workout history will be available soon.');
             }}
           >
-            <Text style={styles.seeAllText}>See All</Text>
+            <Text style={[styles.seeAllText, { color: colors.primary[500] }]}>See All</Text>
           </TouchableOpacity>
         </View>
 
         {recentSessions.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No workouts yet</Text>
-            <Text style={styles.emptySubtext}>Complete your first workout to see it here!</Text>
+          <View style={[styles.emptyCard, { backgroundColor: theme.background.secondary }]}>
+            <Text style={[styles.emptyText, { color: theme.text.primary }]}>No workouts yet</Text>
+            <Text style={[styles.emptySubtext, { color: theme.text.secondary }]}>Complete your first workout to see it here!</Text>
           </View>
         ) : (
           recentSessions.map((session) => (
-            <TouchableOpacity key={session.id} style={styles.sessionCard}>
+            <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.background.secondary }]}>
               <View style={styles.sessionInfo}>
-                <Text style={styles.sessionName}>{session.workout.name}</Text>
-                <Text style={styles.sessionDate}>{formatDate(session.completedAt!)}</Text>
+                <Text style={[styles.sessionName, { color: theme.text.primary }]}>{session.workout.name}</Text>
+                <Text style={[styles.sessionDate, { color: theme.text.secondary }]}>{formatDate(session.completedAt!)}</Text>
               </View>
               <View style={styles.sessionStats}>
                 {session.durationSeconds && (
-                  <Text style={styles.sessionStat}>{formatDuration(session.durationSeconds)}</Text>
+                  <Text style={[styles.sessionStat, { color: theme.text.secondary }]}>{formatDuration(session.durationSeconds)}</Text>
                 )}
                 {session.caloriesBurned && (
-                  <Text style={styles.sessionStat}>{session.caloriesBurned} cal</Text>
+                  <Text style={[styles.sessionStat, { color: theme.text.secondary }]}>{session.caloriesBurned} cal</Text>
                 )}
               </View>
             </TouchableOpacity>
@@ -167,34 +170,34 @@ const ProgressOverviewScreen = () => {
       {/* Recent PRs */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent PRs 🏆</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Recent PRs 🏆</Text>
         </View>
 
         {recentPRs.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No personal records yet</Text>
-            <Text style={styles.emptySubtext}>Log your progress to track PRs!</Text>
+          <View style={[styles.emptyCard, { backgroundColor: theme.background.secondary }]}>
+            <Text style={[styles.emptyText, { color: theme.text.primary }]}>No personal records yet</Text>
+            <Text style={[styles.emptySubtext, { color: theme.text.secondary }]}>Log your progress to track PRs!</Text>
           </View>
         ) : (
           recentPRs.map((pr) => (
             <TouchableOpacity
               key={pr.id}
-              style={styles.prCard}
+              style={[styles.prCard, { backgroundColor: theme.background.elevated }]}
               onPress={() =>
                 navigation.navigate('ExerciseProgress', { exerciseId: pr.exerciseId })
               }
             >
-              <View style={styles.prIcon}>
+              <View style={[styles.prIcon, { backgroundColor: theme.background.secondary }]}>
                 <Text style={styles.prEmoji}>🏆</Text>
               </View>
               <View style={styles.prInfo}>
-                <Text style={styles.prExercise}>{pr.exercise.name}</Text>
-                <Text style={styles.prDetails}>
+                <Text style={[styles.prExercise, { color: theme.text.primary }]}>{pr.exercise.name}</Text>
+                <Text style={[styles.prDetails, { color: colors.primary[500] }]}>
                   {pr.reps && `${pr.reps} reps`}
                   {pr.weight && ` × ${pr.weight} lbs`}
                   {pr.durationSeconds && ` ${pr.durationSeconds}s`}
                 </Text>
-                <Text style={styles.prDate}>{formatDate(pr.loggedAt)}</Text>
+                <Text style={[styles.prDate, { color: theme.text.secondary }]}>{formatDate(pr.loggedAt)}</Text>
               </View>
             </TouchableOpacity>
           ))
@@ -203,29 +206,29 @@ const ProgressOverviewScreen = () => {
 
       {/* Quick Actions */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Quick Actions</Text>
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: theme.background.secondary }]}
           onPress={() => {
             // TODO: Navigate to exercise selection for logging
             Alert.alert('Coming Soon', 'Quick log functionality coming soon!');
           }}
         >
           <Text style={styles.actionIcon}>📝</Text>
-          <Text style={styles.actionText}>Log Progress</Text>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionText, { color: theme.text.primary }]}>Log Progress</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.actionButton}
+          style={[styles.actionButton, { backgroundColor: theme.background.secondary }]}
           onPress={() => {
             // TODO: Navigate to goals screen
             Alert.alert('Coming Soon', 'Goals tracking coming soon!');
           }}
         >
           <Text style={styles.actionIcon}>🎯</Text>
-          <Text style={styles.actionText}>Set Goals</Text>
-          <Text style={styles.actionArrow}>→</Text>
+          <Text style={[styles.actionText, { color: theme.text.primary }]}>Set Goals</Text>
+          <Text style={[styles.actionArrow, { color: theme.text.tertiary }]}>→</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -235,82 +238,71 @@ const ProgressOverviewScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: spacing[4],
     fontSize: 16,
-    color: '#666',
   },
   header: {
-    padding: 20,
+    padding: spacing[5],
     paddingTop: 30,
   },
   headerTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#666',
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    gap: 12,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[6],
+    gap: spacing[3],
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFF5F2',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: borderRadius.lg,
+    padding: spacing[5],
     alignItems: 'center',
   },
   statValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   statLabel: {
     fontSize: 12,
-    color: '#666',
     fontWeight: '500',
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[8],
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: '600',
-    color: '#333',
   },
   seeAllText: {
     fontSize: 14,
-    color: '#FF6B35',
     fontWeight: '600',
   },
   sessionCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[3],
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -321,37 +313,32 @@ const styles = StyleSheet.create({
   sessionName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   sessionDate: {
     fontSize: 13,
-    color: '#666',
   },
   sessionStats: {
     alignItems: 'flex-end',
   },
   sessionStat: {
     fontSize: 13,
-    color: '#666',
     marginTop: 2,
   },
   prCard: {
-    backgroundColor: '#FFF5F2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[3],
     flexDirection: 'row',
     alignItems: 'center',
   },
   prIcon: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFE5DC',
+    borderRadius: borderRadius.full,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
+    marginRight: spacing[4],
   },
   prEmoji: {
     fontSize: 24,
@@ -362,57 +349,48 @@ const styles = StyleSheet.create({
   prExercise: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   prDetails: {
     fontSize: 14,
-    color: '#FF6B35',
     fontWeight: '500',
     marginBottom: 2,
   },
   prDate: {
     fontSize: 12,
-    color: '#666',
   },
   emptyCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 32,
+    borderRadius: borderRadius.md,
+    padding: spacing[8],
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
     textAlign: 'center',
   },
   actionButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   actionIcon: {
     fontSize: 24,
-    marginRight: 12,
+    marginRight: spacing[3],
   },
   actionText: {
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
   },
   actionArrow: {
     fontSize: 18,
-    color: '#999',
   },
 });
 

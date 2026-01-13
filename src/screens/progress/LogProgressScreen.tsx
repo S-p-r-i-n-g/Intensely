@@ -17,6 +17,8 @@ import { RouteProp } from '@react-navigation/native';
 import { ProgressStackParamList } from '../../navigation/types';
 import { progressApi, exercisesApi } from '../../api';
 import type { Exercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProgressStackParamList, 'LogProgress'>;
 type RoutePropType = RouteProp<ProgressStackParamList, 'LogProgress'>;
@@ -24,6 +26,7 @@ type RoutePropType = RouteProp<ProgressStackParamList, 'LogProgress'>;
 const LogProgressScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,110 +95,110 @@ const LogProgressScreen = () => {
 
   if (isLoading || !exercise) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background.primary }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Log Progress</Text>
-          <Text style={styles.exerciseName}>{exercise.name}</Text>
+          <Text style={[styles.title, { color: theme.text.primary }]}>Log Progress</Text>
+          <Text style={[styles.exerciseName, { color: colors.primary[500] }]}>{exercise.name}</Text>
         </View>
 
         {/* Info Card */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoText}>
+        <View style={[styles.infoCard, { backgroundColor: theme.background.elevated }]}>
+          <Text style={[styles.infoText, { color: theme.text.secondary }]}>
             💡 Enter the details of your exercise performance. You can log reps, weight, time, or any combination.
           </Text>
         </View>
 
         {/* Reps Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Repetitions</Text>
+          <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Repetitions</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
             value={reps}
             onChangeText={setReps}
             placeholder="Enter number of reps"
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.text.tertiary}
             keyboardType="number-pad"
           />
-          <Text style={styles.inputHelper}>How many times you performed the exercise</Text>
+          <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>How many times you performed the exercise</Text>
         </View>
 
         {/* Weight Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Weight (lbs)</Text>
+          <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Weight (lbs)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
             value={weight}
             onChangeText={setWeight}
             placeholder="Enter weight in pounds"
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.text.tertiary}
             keyboardType="decimal-pad"
           />
-          <Text style={styles.inputHelper}>Weight used for the exercise</Text>
+          <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>Weight used for the exercise</Text>
         </View>
 
         {/* Duration Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Duration (seconds)</Text>
+          <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Duration (seconds)</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
             value={duration}
             onChangeText={setDuration}
             placeholder="Enter duration in seconds"
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.text.tertiary}
             keyboardType="number-pad"
           />
-          <Text style={styles.inputHelper}>How long you held or performed the exercise</Text>
+          <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>How long you held or performed the exercise</Text>
         </View>
 
         {/* Notes Input */}
         <View style={styles.inputSection}>
-          <Text style={styles.inputLabel}>Notes (optional)</Text>
+          <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Notes (optional)</Text>
           <TextInput
-            style={[styles.input, styles.notesInput]}
+            style={[styles.input, styles.notesInput, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
             value={notes}
             onChangeText={setNotes}
             placeholder="Add any notes about this set..."
-            placeholderTextColor="#999"
+            placeholderTextColor={theme.text.tertiary}
             multiline
             numberOfLines={4}
             textAlignVertical="top"
           />
-          <Text style={styles.inputHelper}>
+          <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>
             How did it feel? Any modifications? Equipment used?
           </Text>
         </View>
 
         {/* Examples Card */}
-        <View style={styles.examplesCard}>
-          <Text style={styles.examplesTitle}>Examples:</Text>
-          <Text style={styles.exampleItem}>• Push-ups: 20 reps</Text>
-          <Text style={styles.exampleItem}>• Bicep curls: 12 reps × 25 lbs</Text>
-          <Text style={styles.exampleItem}>• Plank: 60 seconds</Text>
-          <Text style={styles.exampleItem}>• Weighted squats: 10 reps × 135 lbs</Text>
+        <View style={[styles.examplesCard, { backgroundColor: theme.background.secondary }]}>
+          <Text style={[styles.examplesTitle, { color: theme.text.primary }]}>Examples:</Text>
+          <Text style={[styles.exampleItem, { color: theme.text.secondary }]}>• Push-ups: 20 reps</Text>
+          <Text style={[styles.exampleItem, { color: theme.text.secondary }]}>• Bicep curls: 12 reps × 25 lbs</Text>
+          <Text style={[styles.exampleItem, { color: theme.text.secondary }]}>• Plank: 60 seconds</Text>
+          <Text style={[styles.exampleItem, { color: theme.text.secondary }]}>• Weighted squats: 10 reps × 135 lbs</Text>
         </View>
 
         {/* Save Button */}
         <TouchableOpacity
-          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+          style={[styles.saveButton, { backgroundColor: colors.primary[500] }, isSaving && styles.saveButtonDisabled]}
           onPress={handleSave}
           disabled={isSaving}
         >
           {isSaving ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.saveButtonText}>Save Progress</Text>
+            <Text style={[styles.saveButtonText, { color: '#fff' }]}>Save Progress</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -206,101 +209,86 @@ const LogProgressScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[10],
   },
   header: {
     paddingTop: 30,
-    marginBottom: 20,
+    marginBottom: spacing[5],
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   exerciseName: {
     fontSize: 18,
-    color: '#FF6B35',
     fontWeight: '600',
   },
   infoCard: {
-    backgroundColor: '#FFF5F2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[6],
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
   },
   inputSection: {
-    marginBottom: 24,
+    marginBottom: spacing[6],
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     fontSize: 16,
-    color: '#333',
   },
   notesInput: {
     minHeight: 100,
-    paddingTop: 12,
+    paddingTop: spacing[3],
   },
   inputHelper: {
     fontSize: 12,
-    color: '#999',
     marginTop: 6,
   },
   examplesCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[6],
   },
   examplesTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   exampleItem: {
     fontSize: 13,
-    color: '#666',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   saveButton: {
-    backgroundColor: '#FF6B35',
     paddingVertical: 18,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   saveButtonDisabled: {
     opacity: 0.6,
   },
   saveButtonText: {
-    color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },

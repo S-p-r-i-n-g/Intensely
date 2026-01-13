@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
 import { useAuthStore, useWorkoutStore } from '../../stores';
-import { spacing, borderRadius } from '../../tokens';
+import { spacing, borderRadius, colors } from '../../tokens';
 import { useTheme } from '../../theme';
 import { Button, Text } from '../../components/ui';
 import { StatsCard, WorkoutFlowCard } from '../../components/home';
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
   },
   warningBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FEF3C7', // warning light
+    backgroundColor: colors.warning[100],
     borderBottomWidth: 1,
-    borderBottomColor: '#F59E0B', // warning
+    borderBottomColor: colors.warning[500],
     padding: spacing[4],
     alignItems: 'center',
   },
@@ -133,12 +133,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   warningTitle: {
-    color: '#F59E0B',
+    color: colors.warning[500],
     marginBottom: 2,
     fontWeight: '500',
   },
   warningText: {
-    color: '#F59E0B',
+    color: colors.warning[500],
   },
   header: {
     padding: spacing[4],
