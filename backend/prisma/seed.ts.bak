@@ -1,0 +1,285 @@
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  console.log('🌱 Starting database seed...\n');
+
+  // ============================================================================
+  // WORKOUT OBJECTIVES
+  // ============================================================================
+  console.log('📋 Seeding Workout Objectives...');
+
+  const objectives = [
+    {
+      name: 'Fat Burn & Weight Loss',
+      slug: 'fat-burn-weight-loss',
+      description: 'Maximize calorie expenditure through high-intensity, full-body movements with minimal rest.',
+      tagline: 'Torch calories with high-intensity movements designed to maximize fat burn in minimal time.',
+      preferredCategories: {
+        high: ['cardio', 'plyometric', 'full_body'],
+        medium: ['lower_body'],
+        low: ['upper_body_pull', 'upper_body_push', 'core']
+      },
+      intensityPercentage: 85,
+      recommendedCircuits: 4,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 20,
+      recommendedRestSeconds: 30,
+      recommendedSets: 4,
+      recommendedDurationMinutes: 20,
+      colorHex: '#FF5733',
+      displayOrder: 1,
+      isActive: true
+    },
+    {
+      name: 'Muscle Endurance',
+      slug: 'muscle-endurance',
+      description: 'Build stamina and muscular endurance through higher reps and longer work intervals with controlled rest.',
+      tagline: 'Build stamina and muscular endurance through challenging volume and extended work intervals.',
+      preferredCategories: {
+        high: ['upper_body_push', 'upper_body_pull', 'lower_body', 'core'],
+        medium: ['full_body'],
+        low: ['cardio', 'plyometric']
+      },
+      intensityPercentage: 70,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 40,
+      recommendedRestSeconds: 20,
+      recommendedSets: 4,
+      recommendedDurationMinutes: 25,
+      colorHex: '#3498DB',
+      displayOrder: 2,
+      isActive: true
+    },
+    {
+      name: 'Cardiovascular Conditioning',
+      slug: 'cardiovascular-conditioning',
+      description: 'Improve heart and lung capacity through sustained cardio-intensive intervals that elevate and maintain heart rate.',
+      tagline: 'Improve your heart and lung capacity with sustained cardio-intensive intervals.',
+      preferredCategories: {
+        high: ['cardio', 'plyometric', 'full_body'],
+        medium: ['lower_body'],
+        low: ['upper_body_push', 'upper_body_pull', 'core']
+      },
+      intensityPercentage: 75,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 30,
+      recommendedRestSeconds: 30,
+      recommendedSets: 5,
+      recommendedDurationMinutes: 30,
+      colorHex: '#E74C3C',
+      displayOrder: 3,
+      isActive: true
+    },
+    {
+      name: 'Strength Building',
+      slug: 'strength-building',
+      description: 'Build maximal strength and muscle through challenging resistance exercises with adequate rest for recovery.',
+      tagline: 'Get stronger with challenging exercises and adequate recovery for maximum gains.',
+      preferredCategories: {
+        high: ['upper_body_push', 'upper_body_pull', 'lower_body'],
+        medium: ['core'],
+        low: ['cardio', 'plyometric']
+      },
+      intensityPercentage: 75,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 3,
+      recommendedIntervalSeconds: 30,
+      recommendedRestSeconds: 60,
+      recommendedSets: 3,
+      recommendedDurationMinutes: 30,
+      colorHex: '#9B59B6',
+      displayOrder: 4,
+      isActive: true
+    },
+    {
+      name: 'Core Stability',
+      slug: 'core-stability',
+      description: 'Develop a strong, stable core for better posture, injury prevention, and functional fitness.',
+      tagline: 'Develop a rock-solid core for better posture, performance, and injury prevention.',
+      preferredCategories: {
+        high: ['core'],
+        medium: ['full_body'],
+        low: ['cardio', 'upper_body_push', 'upper_body_pull', 'lower_body']
+      },
+      intensityPercentage: 65,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 5,
+      recommendedIntervalSeconds: 30,
+      recommendedRestSeconds: 30,
+      recommendedSets: 3,
+      recommendedDurationMinutes: 20,
+      colorHex: '#F39C12',
+      displayOrder: 5,
+      isActive: true
+    },
+    {
+      name: 'Functional Fitness',
+      slug: 'functional-fitness',
+      description: 'Improve real-world movement patterns, mobility, and everyday strength through varied, compound exercises.',
+      tagline: 'Train movements that translate to real-world activities and everyday strength.',
+      preferredCategories: {
+        high: ['full_body', 'lower_body'],
+        medium: ['upper_body_push', 'upper_body_pull', 'core'],
+        low: ['cardio', 'plyometric']
+      },
+      intensityPercentage: 70,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 40,
+      recommendedRestSeconds: 30,
+      recommendedSets: 3,
+      recommendedDurationMinutes: 25,
+      colorHex: '#27AE60',
+      displayOrder: 6,
+      isActive: true
+    },
+    {
+      name: 'Athletic Performance',
+      slug: 'athletic-performance',
+      description: 'Enhance speed, power, agility, and explosiveness for sports and athletic pursuits.',
+      tagline: 'Explosive power, speed, and agility training for peak athletic performance.',
+      preferredCategories: {
+        high: ['plyometric'],
+        medium: ['upper_body_push', 'lower_body', 'full_body'],
+        low: ['core', 'upper_body_pull']
+      },
+      intensityPercentage: 90,
+      recommendedCircuits: 4,
+      recommendedExercisesPerCircuit: 3,
+      recommendedIntervalSeconds: 20,
+      recommendedRestSeconds: 60,
+      recommendedSets: 4,
+      recommendedDurationMinutes: 30,
+      colorHex: '#E67E22',
+      displayOrder: 7,
+      isActive: true
+    },
+    {
+      name: 'Flexibility & Mobility',
+      slug: 'flexibility-mobility',
+      description: 'Improve range of motion, flexibility, and joint mobility through dynamic movements and holds.',
+      tagline: 'Improve your range of motion and reduce stiffness with dynamic mobility work.',
+      preferredCategories: {
+        high: ['full_body'],
+        medium: ['lower_body', 'upper_body_pull'],
+        low: ['cardio', 'plyometric']
+      },
+      intensityPercentage: 50,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 30,
+      recommendedRestSeconds: 15,
+      recommendedSets: 2,
+      recommendedDurationMinutes: 15,
+      colorHex: '#1ABC9C',
+      displayOrder: 8,
+      isActive: true
+    },
+    {
+      name: 'Full Body Conditioning',
+      slug: 'full-body-conditioning',
+      description: 'Balanced, comprehensive workout targeting all major muscle groups equally for overall fitness.',
+      tagline: 'Balanced, total-body workouts for comprehensive fitness and overall health.',
+      preferredCategories: {
+        high: ['full_body', 'upper_body_push', 'upper_body_pull', 'lower_body', 'core'],
+        medium: ['cardio'],
+        low: []
+      },
+      intensityPercentage: 75,
+      recommendedCircuits: 3,
+      recommendedExercisesPerCircuit: 4,
+      recommendedIntervalSeconds: 30,
+      recommendedRestSeconds: 30,
+      recommendedSets: 3,
+      recommendedDurationMinutes: 25,
+      colorHex: '#34495E',
+      displayOrder: 9,
+      isActive: true
+    }
+  ];
+
+  for (const objective of objectives) {
+    await prisma.workoutObjective.upsert({
+      where: { slug: objective.slug },
+      update: objective,
+      create: objective
+    });
+    console.log(`  ✓ Created: ${objective.name}`);
+  }
+
+  console.log(`\n✅ Seeded ${objectives.length} workout objectives\n`);
+
+  // ============================================================================
+  // EXERCISE FAMILIES
+  // ============================================================================
+  console.log('👨‍👩‍👧‍👦 Seeding Exercise Families...');
+
+  const families = [
+    {
+      name: 'Squat',
+      slug: 'squat',
+      description: 'Lower body exercise family focusing on hip and knee flexion, targeting quads, glutes, and hamstrings.'
+    },
+    {
+      name: 'Push-up',
+      slug: 'push-up',
+      description: 'Upper body pushing exercise family targeting chest, shoulders, and triceps through horizontal pressing movements.'
+    },
+    {
+      name: 'Plank',
+      slug: 'plank',
+      description: 'Core stability exercise family focusing on isometric holds and anti-rotation movements.'
+    },
+    {
+      name: 'Lunge',
+      slug: 'lunge',
+      description: 'Single-leg lower body exercise family emphasizing balance, stability, and unilateral strength.'
+    },
+    {
+      name: 'Pull-up',
+      slug: 'pull-up',
+      description: 'Upper body pulling exercise family targeting back, lats, and biceps through vertical pulling movements.'
+    },
+    {
+      name: 'Burpee',
+      slug: 'burpee',
+      description: 'Full-body explosive exercise family combining squat, plank, and jump movements for cardio and strength.'
+    },
+    {
+      name: 'Leg Raise',
+      slug: 'leg-raise',
+      description: 'Core exercise family focusing on lower abdominal strength through hip flexion and leg lifting movements.'
+    }
+  ];
+
+  for (const family of families) {
+    await prisma.exerciseFamily.upsert({
+      where: { slug: family.slug },
+      update: family,
+      create: family
+    });
+    console.log(`  ✓ Created: ${family.name} Family`);
+  }
+
+  console.log(`\n✅ Seeded ${families.length} exercise families\n`);
+
+  console.log('🎉 Database seed completed successfully!\n');
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Error during seed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
