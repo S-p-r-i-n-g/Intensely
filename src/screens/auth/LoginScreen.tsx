@@ -1,25 +1,34 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   Alert,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useAuthStore } from '../../stores';
+import { Button, Text, Input } from '../../components/ui';
+import { useTheme } from '../../theme';
+import { spacing } from '../../tokens';
 
 const LoginScreen = () => {
+  const { theme } = useTheme();
   const { signIn, isLoading } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({ email: '', password: '' });
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password');
+    // Reset errors
+    setErrors({ email: '', password: '' });
+
+    // Validation
+    if (!email) {
+      setErrors(prev => ({ ...prev, email: 'Email is required' }));
+      return;
+    }
+    if (!password) {
+      setErrors(prev => ({ ...prev, password: 'Password is required' }));
       return;
     }
 
@@ -33,44 +42,55 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background.primary }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Log in to continue your fitness journey</Text>
+        <Text variant="h1" style={styles.title}>
+          Welcome Back
+        </Text>
+        <Text variant="body" color="secondary" style={styles.subtitle}>
+          Log in to continue your fitness journey
+        </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
+          <Input
+            label="Email"
+            placeholder="you@example.com"
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              setErrors(prev => ({ ...prev, email: '' }));
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
-            editable={!isLoading}
+            error={errors.email}
+            containerStyle={styles.inputContainer}
           />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
+          <Input
+            label="Password"
+            placeholder="Enter your password"
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              setErrors(prev => ({ ...prev, password: '' }));
+            }}
             secureTextEntry
-            editable={!isLoading}
+            error={errors.password}
+            containerStyle={styles.inputContainer}
           />
 
-          <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
+          <Button
+            variant="primary"
+            fullWidth
             onPress={handleLogin}
+            loading={isLoading}
             disabled={isLoading}
+            style={styles.button}
           >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Log In</Text>
-            )}
-          </TouchableOpacity>
+            Log In
+          </Button>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -80,48 +100,26 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   inner: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: spacing[5],
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
+    marginBottom: spacing[10],
   },
   form: {
     width: '100%',
   },
-  input: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
-    fontSize: 16,
-    marginBottom: 12,
+  inputContainer: {
+    marginBottom: spacing[4],
   },
   button: {
-    backgroundColor: '#FF6B35',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    marginTop: spacing[3],
   },
 });
 
