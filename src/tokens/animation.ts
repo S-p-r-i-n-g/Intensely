@@ -114,6 +114,66 @@ export const animations = {
       useNativeDriver: true,
     });
   },
+
+  /**
+   * Pulse animation (P3 Enhancement)
+   * For paused timer state or attention-grabbing elements
+   * Gentle continuous pulse effect
+   */
+  pulse: (animatedValue: Animated.Value, customDuration?: number) => {
+    return Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1.05,
+          duration: customDuration || 1000,
+          easing: easing.easeInOut,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: customDuration || 1000,
+          easing: easing.easeInOut,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+  },
+
+  /**
+   * Pulse opacity (for breathing effect on paused states)
+   */
+  pulseOpacity: (animatedValue: Animated.Value, customDuration?: number) => {
+    return Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 0.6,
+          duration: customDuration || 1500,
+          easing: easing.easeInOut,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: customDuration || 1500,
+          easing: easing.easeInOut,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+  },
+
+  /**
+   * Shimmer animation (for skeleton loading states)
+   */
+  shimmer: (animatedValue: Animated.Value) => {
+    return Animated.loop(
+      Animated.timing(animatedValue, {
+        toValue: 1,
+        duration: 1500,
+        easing: easing.linear,
+        useNativeDriver: true,
+      })
+    );
+  },
 } as const;
 
 // Type exports

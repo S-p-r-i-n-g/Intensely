@@ -151,8 +151,45 @@ export const timerColors = {
   background: '#000000',  // Pure black for timer screen
 } as const;
 
+// Gradient Definitions (P3 Enhancement)
+// Linear gradients for premium button styling
+export const gradients = {
+  // Primary gradient: Top-left to bottom-right (Gemini 3 recommendation)
+  primary: {
+    colors: [colors.primary[400], colors.primary[500]],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
+  },
+
+  // Success gradient for completion states
+  success: {
+    colors: [colors.success[500], colors.success[700]],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
+  },
+
+  // Accent gradient for focus states
+  accent: {
+    colors: [colors.accent[500], colors.accent[700]],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
+  },
+
+  // Slate gradient for subtle backgrounds
+  slate: {
+    colors: [colors.secondary[50], colors.secondary[100]],
+    locations: [0, 1],
+    start: { x: 0, y: 0 },
+    end: { x: 1, y: 1 },
+  },
+} as const;
+
 // Type exports for TypeScript
 export type ColorPalette = typeof colors;
 export type LightModeColors = typeof lightMode;
 export type DarkModeColors = typeof darkMode;
 export type TimerColors = typeof timerColors;
+export type Gradients = typeof gradients;
