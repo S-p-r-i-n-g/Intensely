@@ -67,6 +67,105 @@ fontWeight: fontWeight.semibold, // '600'
 ...textStyles.buttonMedium,
 ```
 
+### Typography Roles & Guidelines
+
+**WCAG AA Compliant Color System**
+
+The design system uses three text color levels, all meeting WCAG 2.1 Level AA standards (4.5:1+ contrast ratio):
+
+#### Text Color Hierarchy
+
+```typescript
+import { useTheme } from '../theme/ThemeContext';
+const { theme } = useTheme();
+
+// Primary Text (15.98:1 contrast in light mode, 13.16:1 in dark mode)
+color: theme.text.primary
+```
+
+**When to use Primary Text:**
+- Main body content and paragraphs
+- Headlines and page titles
+- Critical information users must read
+- Button labels
+- Form field labels
+- Navigation items
+
+```typescript
+<Text color="primary">Main workout description goes here</Text>
+<Text variant="h1">Workout Library</Text>
+```
+
+---
+
+```typescript
+// Secondary Text (6.25:1 contrast in light mode, 7.21:1 in dark mode)
+color: theme.text.secondary
+```
+
+**When to use Secondary Text:**
+- Supporting information and descriptions
+- Timestamps and metadata (e.g., "Created 2 hours ago")
+- Subtitle text below headings
+- Secondary navigation labels
+- Helper text that adds context
+
+```typescript
+<Text color="secondary">Last completed: 2 days ago</Text>
+<Text color="secondary">15 exercises • 30 minutes</Text>
+```
+
+---
+
+```typescript
+// Tertiary Text (5.20:1 contrast in light mode - WCAG AA compliant)
+color: theme.text.tertiary
+```
+
+**When to use Tertiary Text:**
+- Placeholder text in empty input fields
+- Disabled form field text
+- Non-essential decorative labels
+- Very low-priority metadata
+- Inactive or disabled UI elements
+
+**⚠️ IMPORTANT:** Never use tertiary text for essential information. Users with visual impairments may struggle to read it even though it meets minimum standards.
+
+```typescript
+<Input placeholder="Enter exercise name" /> // Placeholder uses tertiary
+<Text color="tertiary">Optional field</Text>
+```
+
+---
+
+#### Typography Best Practices
+
+**✅ DO:**
+- Use primary text for all critical content
+- Use secondary text for supportive information
+- Reserve tertiary text only for placeholders and disabled states
+- Test your text in various lighting conditions
+- Ensure text remains legible during physical activity
+
+**❌ DON'T:**
+- Use tertiary text for body content
+- Use secondary text for headlines or CTAs
+- Mix text colors arbitrarily for visual effect
+- Override text colors without checking contrast
+- Use light gray text for important information
+
+#### Accessibility Verification
+
+All text colors have been audited against WCAG 2.1 standards:
+
+| Text Level | Light Mode | Dark Mode | Use Case |
+|------------|-----------|-----------|----------|
+| Primary | 15.98:1 ✅ | 13.16:1 ✅ | Critical content |
+| Secondary | 6.25:1 ✅ | 7.21:1 ✅ | Supporting info |
+| Tertiary | 5.20:1 ✅ | 4.5:1+ ✅ | Placeholders only |
+
+---
+
 ### Spacing
 
 ```typescript

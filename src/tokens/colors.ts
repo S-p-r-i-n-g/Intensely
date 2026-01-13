@@ -76,10 +76,10 @@ export const colors = {
 export const lightMode = {
   // Backgrounds
   background: {
-    primary: '#FFFFFF',
+    primary: '#F8FAFC',    // Soft white to reduce eye strain
     secondary: '#F8FAFC',
     tertiary: '#F1F5F9',
-    elevated: '#FFFFFF', // Cards, modals
+    elevated: '#FFFFFF',   // Pure white for elevated elements (cards, modals)
   },
 
   // Text
@@ -119,7 +119,7 @@ export const darkMode = {
 
   // Text
   text: {
-    primary: '#F8FAFC',
+    primary: '#F1F5F9',    // Slightly softer white for reduced eye strain
     secondary: '#CBD5E1',
     tertiary: '#64748B',
     inverse: '#0F172A',
