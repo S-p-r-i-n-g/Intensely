@@ -24,10 +24,12 @@ const WelcomeScreen = () => {
 
       <View style={styles.buttonContainer}>
         <Button
-          variant="primary"
+          variant="primaryGradient"
           fullWidth
           onPress={() => navigation.navigate('Login')}
           style={styles.button}
+          accessibilityLabel="Log in to your account"
+          accessibilityHint="Navigate to login screen"
         >
           Log In
         </Button>
@@ -36,6 +38,8 @@ const WelcomeScreen = () => {
           variant="secondary"
           fullWidth
           onPress={() => navigation.navigate('SignUp')}
+          accessibilityLabel="Create new account"
+          accessibilityHint="Navigate to sign up screen"
         >
           Sign Up
         </Button>
