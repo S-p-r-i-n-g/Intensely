@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
 import { useAuthStore, useWorkoutStore } from '../../stores';
-import { designTokens } from '../../config/design-tokens';
-import { Button } from '../../components/ui';
+import { spacing, borderRadius } from '../../tokens';
+import { useTheme } from '../../theme';
+import { Button, Text } from '../../components/ui';
 import { StatsCard, WorkoutFlowCard } from '../../components/home';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
   const { profile } = useAuthStore();
   const { loadObjectives, objectives } = useWorkoutStore();
   const [showBackendWarning, setShowBackendWarning] = useState(false);
@@ -29,14 +31,14 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Backend Warning Banner */}
       {showBackendWarning && (
         <View style={styles.warningBanner}>
           <Text style={styles.warningIcon}>⚠️</Text>
           <View style={styles.warningContent}>
-            <Text style={styles.warningTitle}>Backend Offline</Text>
-            <Text style={styles.warningText}>
+            <Text variant="bodySmall" style={styles.warningTitle}>Backend Offline</Text>
+            <Text variant="bodySmall" style={styles.warningText}>
               Some features may be limited. Authentication still works!
             </Text>
           </View>
@@ -44,10 +46,10 @@ const HomeScreen = () => {
       )}
 
       <View style={styles.header}>
-        <Text style={styles.greeting}>
+        <Text variant="h1" style={styles.greeting}>
           Hello{profile?.firstName ? `, ${profile.firstName}` : ''}!
         </Text>
-        <Text style={styles.subtitle}>Ready to work out?</Text>
+        <Text variant="body" color="secondary">Ready to work out?</Text>
       </View>
 
       {/* Stats Section */}
@@ -58,7 +60,7 @@ const HomeScreen = () => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Start</Text>
+        <Text variant="h2" style={styles.sectionTitle}>Quick Start</Text>
 
         <WorkoutFlowCard
           title="Jump Right In"
@@ -90,11 +92,11 @@ const HomeScreen = () => {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <View style={styles.emptyState}>
+        <Text variant="h2" style={styles.sectionTitle}>Recent Activity</Text>
+        <View style={[styles.emptyState, { backgroundColor: theme.background.elevated }]}>
           <Text style={styles.emptyIcon}>📊</Text>
-          <Text style={styles.emptyTitle}>No workouts yet</Text>
-          <Text style={styles.emptyText}>
+          <Text variant="h3" style={styles.emptyTitle}>No workouts yet</Text>
+          <Text variant="body" color="secondary" style={styles.emptyText}>
             Start your first workout to see your activity here!
           </Text>
           <Button
@@ -114,81 +116,70 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: designTokens.colors.neutral.background,
   },
   warningBanner: {
     flexDirection: 'row',
-    backgroundColor: designTokens.colors.semantic.warningLight,
+    backgroundColor: '#FEF3C7', // warning light
     borderBottomWidth: 1,
-    borderBottomColor: designTokens.colors.semantic.warning,
-    padding: designTokens.spacing.md,
+    borderBottomColor: '#F59E0B', // warning
+    padding: spacing[4],
     alignItems: 'center',
   },
   warningIcon: {
     fontSize: 20,
-    marginRight: designTokens.spacing.md,
+    marginRight: spacing[4],
   },
   warningContent: {
     flex: 1,
   },
   warningTitle: {
-    ...designTokens.typography.label,
-    color: designTokens.colors.semantic.warning,
+    color: '#F59E0B',
     marginBottom: 2,
+    fontWeight: '500',
   },
   warningText: {
-    ...designTokens.typography.caption,
-    color: designTokens.colors.semantic.warning,
+    color: '#F59E0B',
   },
   header: {
-    padding: designTokens.spacing.md,
-    paddingTop: designTokens.spacing.xl,
+    padding: spacing[4],
+    paddingTop: spacing[8],
   },
   greeting: {
-    ...designTokens.typography.h1,
-    color: designTokens.colors.text.primary,
-    marginBottom: designTokens.spacing.sm,
-  },
-  subtitle: {
-    ...designTokens.typography.bodyMedium,
-    color: designTokens.colors.text.secondary,
+    marginBottom: spacing[2],
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: designTokens.spacing.md,
-    paddingBottom: designTokens.spacing.md,
-    gap: designTokens.spacing.sm,
+    paddingHorizontal: spacing[4],
+    paddingBottom: spacing[4],
+    gap: spacing[2],
   },
   section: {
-    padding: designTokens.spacing.md,
+    padding: spacing[4],
     paddingTop: 0,
   },
   sectionTitle: {
-    ...designTokens.typography.h2,
-    color: designTokens.colors.text.primary,
-    marginBottom: designTokens.spacing.md,
+    marginBottom: spacing[4],
   },
   emptyState: {
     alignItems: 'center',
-    padding: designTokens.spacing.xl,
-    backgroundColor: designTokens.colors.neutral.surface,
-    borderRadius: designTokens.borderRadius.md,
-    ...designTokens.shadows.sm,
+    padding: spacing[8],
+    borderRadius: borderRadius.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   emptyIcon: {
     fontSize: 48,
-    marginBottom: designTokens.spacing.md,
+    marginBottom: spacing[4],
   },
   emptyTitle: {
-    ...designTokens.typography.h3,
-    color: designTokens.colors.text.primary,
-    marginBottom: designTokens.spacing.sm,
+    marginBottom: spacing[2],
   },
   emptyText: {
-    ...designTokens.typography.bodyMedium,
-    color: designTokens.colors.text.secondary,
     textAlign: 'center',
-    marginBottom: designTokens.spacing.lg,
+    marginBottom: spacing[6],
   },
   emptyButton: {
     minWidth: 200,
