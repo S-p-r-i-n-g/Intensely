@@ -1,10 +1,17 @@
 /**
- * UI Components Export
- * Centralized export for all reusable UI components
+ * UI Component Library
+ * Export all reusable UI components
  */
 
-export { Button, type ButtonVariant, type ButtonSize } from './Button';
-export { Card, CardHeader, CardTitle, CardContent, CardActions, type CardVariant } from './Card';
-export { Badge, type BadgeVariant } from './Badge';
-export { ProgressBar, type ProgressBarVariant, type ProgressBarColor } from './ProgressBar';
-export { SkeletonLoader, SkeletonCard, SkeletonText } from './SkeletonLoader';
+export { Button } from './Button';
+export { Card, CardHeader, CardTitle, CardContent, CardActions } from './Card';
+export { Text } from './Text';
+export { Input } from './Input';
+export { Badge } from './Badge';
+export { ProgressBar } from './ProgressBar';
+export { SkeletonLoader } from './SkeletonLoader';
+
+// Type exports
+export type { ButtonVariant, ButtonSize } from './Button';
+export type { CardVariant } from './Card';
+export type { TextVariant, TextColor } from './Text';

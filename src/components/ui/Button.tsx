@@ -7,9 +7,10 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { designTokens } from '../../config/design-tokens';
+import { colors, spacing, borderRadius, textStyles, touchTarget } from '../../tokens';
+import { useTheme } from '../../theme/ThemeContext';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'text' | 'icon';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'large';
 export type ButtonSize = 'small' | 'medium' | 'large';
 
 interface ButtonProps {
@@ -37,18 +38,26 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
   testID,
 }) => {
+  const { theme } = useTheme();
+
   const buttonStyle = [
     styles.base,
-    styles[variant],
+    variant === 'primary' && styles.primary,
+    variant === 'secondary' && styles.secondary,
+    variant === 'ghost' && styles.ghost,
+    variant === 'large' && styles.large,
     styles[`${size}Size`],
     fullWidth && styles.fullWidth,
     (disabled || loading) && styles.disabled,
     style,
   ];
 
-  const textStyles = [
+  const textStyleList = [
     styles.baseText,
-    styles[`${variant}Text`],
+    variant === 'primary' && { color: theme.text.inverse },
+    variant === 'secondary' && { color: theme.text.primary },
+    variant === 'ghost' && { color: colors.primary[500] },
+    variant === 'large' && { color: theme.text.inverse },
     styles[`${size}Text`],
     (disabled || loading) && styles.disabledText,
     textStyle,
@@ -64,11 +73,11 @@ export const Button: React.FC<ButtonProps> = ({
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? designTokens.colors.text.onPrimary : designTokens.colors.primary.main}
+          color={variant === 'primary' || variant === 'large' ? '#FFFFFF' : colors.primary[500]}
           size="small"
         />
       ) : (
-        <Text style={textStyles}>{children}</Text>
+        <Text style={textStyleList}>{children}</Text>
       )}
     </TouchableOpacity>
   );
@@ -76,7 +85,7 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: designTokens.borderRadius.md,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -86,63 +95,71 @@ const styles = StyleSheet.create({
   },
   // Variants
   primary: {
-    backgroundColor: designTokens.colors.primary.main,
-    ...designTokens.shadows.sm,
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[6],
+    minHeight: touchTarget.min,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   secondary: {
-    backgroundColor: designTokens.colors.neutral.surfaceVariant,
-    borderWidth: 1,
-    borderColor: designTokens.colors.neutral.outline,
-  },
-  text: {
     backgroundColor: 'transparent',
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[6],
+    borderWidth: 2,
+    borderColor: colors.secondary[300],
+    minHeight: touchTarget.min,
   },
-  icon: {
+  ghost: {
     backgroundColor: 'transparent',
-    minWidth: designTokens.touchTargets.recommended,
-    minHeight: designTokens.touchTargets.recommended,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[6],
+    minHeight: touchTarget.min,
+  },
+  large: {
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[8],
+    borderRadius: borderRadius.lg,
+    minHeight: 56,
+    shadowColor: colors.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   // Sizes
   smallSize: {
-    paddingVertical: designTokens.spacing.sm,
-    paddingHorizontal: designTokens.spacing.md,
-    minHeight: designTokens.touchTargets.min,
+    paddingVertical: spacing[2],
+    paddingHorizontal: spacing[4],
+    minHeight: touchTarget.min,
   },
   mediumSize: {
-    paddingVertical: designTokens.spacing.md,
-    paddingHorizontal: designTokens.spacing.lg,
-    minHeight: designTokens.touchTargets.recommended,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[6],
+    minHeight: touchTarget.recommended,
   },
   largeSize: {
-    paddingVertical: designTokens.spacing.lg,
-    paddingHorizontal: designTokens.spacing.xl,
-    minHeight: designTokens.touchTargets.comfortable,
+    paddingVertical: spacing[4],
+    paddingHorizontal: spacing[8],
+    minHeight: 56,
   },
   // Text styles
   baseText: {
-    ...designTokens.typography.button,
+    ...textStyles.buttonMedium,
     textAlign: 'center',
   },
-  primaryText: {
-    color: designTokens.colors.text.onPrimary,
-  },
-  secondaryText: {
-    color: designTokens.colors.text.primary,
-  },
-  textText: {
-    color: designTokens.colors.primary.main,
-  },
-  iconText: {
-    color: designTokens.colors.text.primary,
-  },
   smallText: {
-    fontSize: 14,
+    ...textStyles.buttonSmall,
   },
   mediumText: {
-    fontSize: 16,
+    ...textStyles.buttonMedium,
   },
   largeText: {
-    fontSize: 18,
+    ...textStyles.buttonLarge,
   },
   // Disabled state
   disabled: {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
-import { designTokens } from '../../config/design-tokens';
+import { spacing, borderRadius } from '../../tokens';
+import { useTheme } from '../../theme/ThemeContext';
 
 export type CardVariant = 'elevated' | 'outlined' | 'filled';
 
@@ -21,9 +22,13 @@ export const Card: React.FC<CardProps> = ({
   style,
   testID,
 }) => {
+  const { theme } = useTheme();
+
   const cardStyle = [
     styles.base,
-    styles[variant],
+    variant === 'elevated' && { ...styles.elevated, backgroundColor: theme.background.elevated },
+    variant === 'outlined' && { ...styles.outlined, backgroundColor: theme.background.primary, borderColor: theme.border.medium },
+    variant === 'filled' && { ...styles.filled, backgroundColor: theme.background.secondary },
     styles[`${padding}Padding`],
     style,
   ];
@@ -50,28 +55,29 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: designTokens.borderRadius.md,
+    borderRadius: borderRadius.lg,
   },
   elevated: {
-    backgroundColor: designTokens.colors.neutral.surface,
-    ...designTokens.shadows.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   outlined: {
-    backgroundColor: designTokens.colors.neutral.surface,
     borderWidth: 1,
-    borderColor: designTokens.colors.neutral.outline,
   },
   filled: {
-    backgroundColor: designTokens.colors.neutral.surfaceVariant,
+    // Background color set dynamically via theme
   },
   smallPadding: {
-    padding: designTokens.spacing.sm,
+    padding: spacing[3],
   },
   mediumPadding: {
-    padding: designTokens.spacing.md,
+    padding: spacing[4],
   },
   largePadding: {
-    padding: designTokens.spacing.lg,
+    padding: spacing[6],
   },
 });
 
@@ -106,10 +112,10 @@ export const CardActions: React.FC<{ children: React.ReactNode; style?: ViewStyl
 
 const subComponentStyles = StyleSheet.create({
   header: {
-    marginBottom: designTokens.spacing.md,
+    marginBottom: spacing[4],
   },
   title: {
-    marginBottom: designTokens.spacing.sm,
+    marginBottom: spacing[2],
   },
   content: {
     flex: 1,
@@ -117,8 +123,8 @@ const subComponentStyles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: designTokens.spacing.md,
-    gap: designTokens.spacing.sm,
+    marginTop: spacing[4],
+    gap: spacing[3],
   },
 });
 
