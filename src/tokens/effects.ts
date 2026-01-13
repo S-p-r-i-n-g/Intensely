@@ -2,21 +2,32 @@
  * Effects System (P3 Enhancement)
  * Haptic feedback and interaction effects
  * Based on Gemini 3 Flash Preview recommendations
+ *
+ * Note: Haptics only work on iOS/Android (not web)
  */
 
-import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
+
+// Conditional import for expo-haptics (not available on web)
+let Haptics: any = null;
+if (Platform.OS !== 'web') {
+  try {
+    Haptics = require('expo-haptics');
+  } catch (e) {
+    console.warn('expo-haptics not available:', e);
+  }
+}
 
 /**
  * Haptic feedback patterns for different interactions
- * Uses Expo Haptics for cross-platform support
+ * Uses Expo Haptics for cross-platform support (iOS/Android only)
  */
 export const haptics = {
   /**
    * Light tap feedback for button presses
    */
   light: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
   },
@@ -25,7 +36,7 @@ export const haptics = {
    * Medium impact for confirmations
    */
   medium: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
   },
@@ -35,7 +46,7 @@ export const haptics = {
    * Trigger when timer turns to Primary Red in last 5 seconds
    */
   heavy: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
   },
@@ -44,7 +55,7 @@ export const haptics = {
    * Success notification feedback
    */
   success: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
   },
@@ -53,7 +64,7 @@ export const haptics = {
    * Warning notification feedback
    */
   warning: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     }
   },
@@ -62,7 +73,7 @@ export const haptics = {
    * Error notification feedback
    */
   error: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   },
@@ -71,7 +82,7 @@ export const haptics = {
    * Selection change feedback (for scrolling or swiping)
    */
   selection: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.selectionAsync();
     }
   },
@@ -82,7 +93,7 @@ export const haptics = {
    * Syncs with Primary Red color change
    */
   timerThump: () => {
-    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+    if (Haptics && (Platform.OS === 'ios' || Platform.OS === 'android')) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
   },
