@@ -259,17 +259,19 @@ const WorkoutExecutionScreen = () => {
     console.log('Confirm quit pressed');
     setShowQuitModal(false);
     stopTimer();
+
+    // Try to cancel session, but don't block navigation on failure
     if (sessionId) {
-      try {
-        console.log('Canceling session:', sessionId);
-        await sessionsApi.cancel(sessionId);
-        console.log('Session canceled successfully');
-      } catch (error) {
-        console.error('Failed to cancel session:', error);
-      }
+      sessionsApi.cancel(sessionId).catch((error) => {
+        console.warn('Failed to cancel session (session may not exist):', error.message);
+      });
     }
+
     console.log('Navigating to HomeMain');
-    navigation.navigate('HomeMain');
+    // Use setTimeout to ensure navigation happens even if there are state update issues
+    setTimeout(() => {
+      navigation.navigate('HomeMain');
+    }, 100);
   };
 
   const cancelQuit = () => {
