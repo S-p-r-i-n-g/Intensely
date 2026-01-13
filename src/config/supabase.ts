@@ -47,5 +47,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     detectSessionInUrl: false,
     flowType: 'pkce', // Use PKCE flow for better web compatibility
+    storageKey: `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`,
+    // Disable lock on web to prevent AbortError warnings
+    lock: Platform.OS === 'web' ? false : undefined,
   },
 });

@@ -65,4 +65,11 @@ export const sessionsApi = {
   getActive: async (): Promise<ApiResponse<ActiveSession[]>> => {
     return apiClient.get('/sessions/active');
   },
+
+  /**
+   * Get workout history
+   */
+  getHistory: async (params?: { limit?: number; offset?: number }): Promise<ApiResponse<{ sessions: WorkoutHistory[]; total: number }>> => {
+    return apiClient.get('/history', { params });
+  },
 };
