@@ -267,16 +267,32 @@ All components are located in `/src/components/ui/` and use the design system to
 ```typescript
 import { Button } from '../components/ui';
 
-// Primary button (default)
+// Primary button (default - solid color)
 <Button onPress={handlePress}>
   Start Workout
 </Button>
 
-// Variants
+// Premium Gradient Buttons (P3 Enhancement)
+<Button variant="primaryGradient" onPress={handlePress}>
+  Start Workout
+</Button>
+<Button variant="largeGradient" onPress={handlePress}>
+  Begin HICT Session
+</Button>
+<Button variant="successGradient" onPress={handlePress}>
+  Complete Workout
+</Button>
+<Button variant="accentGradient" onPress={handlePress}>
+  Edit Workout
+</Button>
+
+// Solid Color Variants
 <Button variant="primary" onPress={handlePress}>Primary</Button>
 <Button variant="secondary" onPress={handlePress}>Secondary</Button>
 <Button variant="ghost" onPress={handlePress}>Ghost</Button>
 <Button variant="large" onPress={handlePress}>Large CTA</Button>
+<Button variant="success" onPress={handlePress}>Success</Button>
+<Button variant="accent" onPress={handlePress}>Accent</Button>
 
 // Sizes
 <Button size="small" onPress={handlePress}>Small</Button>
@@ -289,15 +305,39 @@ import { Button } from '../components/ui';
 
 // Full width
 <Button fullWidth onPress={handlePress}>Full Width</Button>
+
+// Accessibility (P3 Enhancement)
+<Button
+  variant="primaryGradient"
+  onPress={handlePress}
+  accessibilityLabel="Start workout session"
+  accessibilityHint="Begins your high-intensity circuit training"
+>
+  Start Workout
+</Button>
 ```
 
 **Props:**
-- `variant`: 'primary' | 'secondary' | 'ghost' | 'large'
+- `variant`: 'primary' | 'primaryGradient' | 'secondary' | 'ghost' | 'large' | 'largeGradient' | 'success' | 'successGradient' | 'accent' | 'accentGradient'
 - `size`: 'small' | 'medium' | 'large'
 - `disabled`: boolean
 - `loading`: boolean
 - `fullWidth`: boolean
 - `onPress`: () => void
+- `accessibilityLabel`: string (optional)
+- `accessibilityHint`: string (optional)
+
+**Gradient Buttons (P3 Enhancement):**
+Gradient buttons use `expo-linear-gradient` with the premium gradient system:
+- `primaryGradient`: #F97066 → #D92D20 (top-left to bottom-right)
+- `largeGradient`: Same as primary, but larger size and shadow
+- `successGradient`: #15803D → #15803D (green gradient)
+- `accentGradient`: #1D4ED8 → #1D4ED8 (blue gradient)
+
+**When to Use:**
+- **Gradient buttons**: Primary CTAs, "Start Workout", hero actions
+- **Solid buttons**: Secondary actions, navigation, standard interactions
+- **Ghost buttons**: Tertiary actions, cancel, back
 
 ### Card
 
