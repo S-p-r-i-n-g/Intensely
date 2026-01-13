@@ -206,7 +206,7 @@ const LetUsCurateScreen = () => {
               <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.estimatedDurationMinutes} min
               </Text>
-              <Text variant="caption" color="secondary">
+              <Text variant="caption" style={styles.metricLabel}>
                 Duration
               </Text>
             </Card>
@@ -214,7 +214,7 @@ const LetUsCurateScreen = () => {
               <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.estimatedCalories} cal
               </Text>
-              <Text variant="caption" color="secondary">
+              <Text variant="caption" style={styles.metricLabel}>
                 Est. Calories
               </Text>
             </Card>
@@ -222,7 +222,7 @@ const LetUsCurateScreen = () => {
               <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.difficultyLevel}
               </Text>
-              <Text variant="caption" color="secondary">
+              <Text variant="caption" style={styles.metricLabel}>
                 Difficulty
               </Text>
             </Card>
@@ -617,12 +617,19 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    backgroundColor: colors.primary[50],
+    backgroundColor: colors.secondary[100],
     alignItems: 'center',
   },
   metricValue: {
     fontWeight: '600',
     marginBottom: spacing[1],
+    color: colors.secondary[900],
+  },
+  metricLabel: {
+    color: colors.secondary[600],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontSize: 11,
   },
   circuitsSection: {
     padding: spacing[5],
