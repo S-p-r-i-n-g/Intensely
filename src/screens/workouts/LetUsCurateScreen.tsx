@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -16,6 +15,9 @@ import { HomeStackParamList } from '../../navigation/types';
 import { workoutsApi, sessionsApi } from '../../api';
 import { useWorkoutStore } from '../../stores';
 import type { WorkoutObjective, WorkoutConstraints } from '../../types/api';
+import { Button, Text, Card } from '../../components/ui';
+import { useTheme } from '../../theme';
+import { spacing, borderRadius, colors } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'LetUsCurate'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'LetUsCurate'>;
@@ -23,6 +25,7 @@ type RoutePropType = RouteProp<HomeStackParamList, 'LetUsCurate'>;
 const LetUsCurateScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
   const { objectives, loadObjectives, setCurrentWorkout } = useWorkoutStore();
 
   const [selectedObjective, setSelectedObjective] = useState<WorkoutObjective | null>(null);
@@ -130,8 +133,8 @@ const LetUsCurateScreen = () => {
 
   if (isLoading && objectives.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
       </View>
     );
   }
@@ -139,107 +142,148 @@ const LetUsCurateScreen = () => {
   if (workout) {
     return (
       <>
-        <ScrollView style={styles.container}>
+        <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
           <View style={styles.workoutHeader}>
-            <Text style={styles.workoutTitle}>{workout.name}</Text>
+            <Text variant="h2" style={styles.workoutTitle}>
+              {workout.name}
+            </Text>
             {workout.description && (
-              <Text style={styles.workoutDescription}>{workout.description}</Text>
+              <Text variant="body" color="secondary" style={styles.workoutDescription}>
+                {workout.description}
+              </Text>
             )}
           </View>
 
           {/* Action Buttons */}
           <View style={styles.actionsContainer}>
-            <TouchableOpacity
-              style={[styles.actionButton, styles.deleteButton]}
+            <Button
+              variant="ghost"
+              size="small"
               onPress={handleDeletePress}
+              style={styles.deleteButton}
             >
-              <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
-            </TouchableOpacity>
+              Delete
+            </Button>
           </View>
 
           <View style={styles.statsContainer}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{workout.totalCircuits}</Text>
-              <Text style={styles.statLabel}>Circuits</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{workout.setsPerCircuit}</Text>
-              <Text style={styles.statLabel}>Sets</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{workout.intervalSeconds}s</Text>
-              <Text style={styles.statLabel}>Work</Text>
-            </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{workout.restSeconds}s</Text>
-              <Text style={styles.statLabel}>Rest</Text>
-            </View>
+            <Card variant="flat" padding="medium" style={styles.statBox}>
+              <Text variant="h3" style={styles.statValue}>
+                {workout.totalCircuits}
+              </Text>
+              <Text variant="caption" color="secondary">
+                Circuits
+              </Text>
+            </Card>
+            <Card variant="flat" padding="medium" style={styles.statBox}>
+              <Text variant="h3" style={styles.statValue}>
+                {workout.setsPerCircuit}
+              </Text>
+              <Text variant="caption" color="secondary">
+                Sets
+              </Text>
+            </Card>
+            <Card variant="flat" padding="medium" style={styles.statBox}>
+              <Text variant="h3" style={styles.statValue}>
+                {workout.intervalSeconds}s
+              </Text>
+              <Text variant="caption" color="secondary">
+                Work
+              </Text>
+            </Card>
+            <Card variant="flat" padding="medium" style={styles.statBox}>
+              <Text variant="h3" style={styles.statValue}>
+                {workout.restSeconds}s
+              </Text>
+              <Text variant="caption" color="secondary">
+                Rest
+              </Text>
+            </Card>
           </View>
 
           <View style={styles.metricsRow}>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>
+            <Card variant="flat" padding="medium" style={styles.metricCard}>
+              <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.estimatedDurationMinutes} min
               </Text>
-              <Text style={styles.metricLabel}>Duration</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>
+              <Text variant="caption" color="secondary">
+                Duration
+              </Text>
+            </Card>
+            <Card variant="flat" padding="medium" style={styles.metricCard}>
+              <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.estimatedCalories} cal
               </Text>
-              <Text style={styles.metricLabel}>Est. Calories</Text>
-            </View>
-            <View style={styles.metricCard}>
-              <Text style={styles.metricValue}>
+              <Text variant="caption" color="secondary">
+                Est. Calories
+              </Text>
+            </Card>
+            <Card variant="flat" padding="medium" style={styles.metricCard}>
+              <Text variant="bodyLarge" style={styles.metricValue}>
                 {workout.difficultyLevel}
               </Text>
-              <Text style={styles.metricLabel}>Difficulty</Text>
-            </View>
+              <Text variant="caption" color="secondary">
+                Difficulty
+              </Text>
+            </Card>
           </View>
 
           <View style={styles.circuitsSection}>
-            <Text style={styles.sectionTitle}>Workout Breakdown</Text>
+            <Text variant="h2" style={styles.sectionTitle}>
+              Workout Breakdown
+            </Text>
             {workout.circuits?.map((circuit: any, index: number) => (
-              <View key={circuit.id} style={styles.circuitCard}>
-                <Text style={styles.circuitTitle}>Circuit {index + 1}</Text>
-                <Text style={styles.circuitInfo}>
+              <Card key={circuit.id} variant="flat" padding="medium" style={styles.circuitCard}>
+                <Text variant="h3" style={styles.circuitTitle}>
+                  Circuit {index + 1}
+                </Text>
+                <Text variant="bodySmall" color="secondary" style={styles.circuitInfo}>
                   {workout.setsPerCircuit} sets × {circuit.exercises.length} exercises
                 </Text>
                 <View style={styles.exercisesList}>
                   {circuit.exercises.map((ex: any, exIndex: number) => (
                     <View key={ex.id} style={styles.exerciseItem}>
-                      <Text style={styles.exerciseNumber}>{exIndex + 1}</Text>
-                      <Text style={styles.exerciseName}>{ex.exercise.name}</Text>
+                      <View style={styles.exerciseNumber}>
+                        <Text variant="bodySmall" style={styles.exerciseNumberText}>
+                          {exIndex + 1}
+                        </Text>
+                      </View>
+                      <Text variant="body" style={styles.exerciseName}>
+                        {ex.exercise.name}
+                      </Text>
                     </View>
                   ))}
                 </View>
-              </View>
+              </Card>
             ))}
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.backButton}
+            <Button
+              variant="secondary"
+              fullWidth
               onPress={() => {
                 setWorkout(null);
                 setShowCustomization(true);
               }}
+              style={styles.backButton}
             >
-              <Text style={styles.backButtonText}>Customize Again</Text>
-            </TouchableOpacity>
+              Customize Again
+            </Button>
 
-            <Text style={styles.readyText}>Ready to start?</Text>
-            <TouchableOpacity
-              style={styles.startButton}
+            <Text variant="bodyLarge" style={styles.readyText}>
+              Ready to start?
+            </Text>
+            <Button
+              variant="primary"
+              size="large"
+              fullWidth
               onPress={startWorkout}
+              loading={isLoading}
               disabled={isLoading}
             >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.startButtonText}>Start Workout</Text>
-              )}
-            </TouchableOpacity>
+              Start Workout
+            </Button>
           </View>
         </ScrollView>
 
@@ -251,32 +295,33 @@ const LetUsCurateScreen = () => {
           onRequestClose={handleDeleteCancel}
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Delete Workout?</Text>
-              <Text style={styles.modalMessage}>
-                Are you sure you want to delete "{workout.name}"? This action cannot be undone.
+            <Card variant="elevated" padding="large" style={styles.modalContent}>
+              <Text variant="h3" style={styles.modalTitle}>
+                Delete Workout?
+              </Text>
+              <Text variant="body" color="secondary" style={styles.modalMessage}>
+                Are you sure you want to delete "{workout?.name}"? This action cannot be undone.
               </Text>
               <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalCancelButton]}
+                <Button
+                  variant="secondary"
                   onPress={handleDeleteCancel}
                   disabled={isDeleting}
+                  style={styles.modalButton}
                 >
-                  <Text style={styles.modalCancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalDeleteButton]}
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
                   onPress={handleDeleteConfirm}
+                  loading={isDeleting}
                   disabled={isDeleting}
+                  style={[styles.modalButton, styles.modalDeleteButton]}
                 >
-                  {isDeleting ? (
-                    <ActivityIndicator color="#fff" size="small" />
-                  ) : (
-                    <Text style={styles.modalDeleteButtonText}>Delete</Text>
-                  )}
-                </TouchableOpacity>
+                  Delete
+                </Button>
               </View>
-            </View>
+            </Card>
           </View>
         </Modal>
       </>
@@ -285,27 +330,34 @@ const LetUsCurateScreen = () => {
 
   if (showCustomization && selectedObjective) {
     return (
-      <ScrollView style={styles.container}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
         <View style={styles.header}>
-          <Text style={styles.title}>Customize Your Workout</Text>
-          <Text style={styles.subtitle}>{selectedObjective.name}</Text>
+          <Text variant="h2" style={styles.title}>
+            Customize Your Workout
+          </Text>
+          <Text variant="body" color="secondary">
+            {selectedObjective.name}
+          </Text>
         </View>
 
         <View style={styles.customizationSection}>
-          <Text style={styles.optionLabel}>Difficulty</Text>
+          <Text variant="bodyLarge" style={styles.optionLabel}>
+            Difficulty
+          </Text>
           <View style={styles.optionsRow}>
             {['beginner', 'intermediate', 'advanced'].map((level) => (
               <TouchableOpacity
                 key={level}
                 style={[
                   styles.optionButton,
+                  { backgroundColor: theme.background.elevated, borderColor: theme.border.medium },
                   difficulty === level && styles.optionButtonActive,
                 ]}
                 onPress={() => setDifficulty(level)}
               >
                 <Text
+                  variant="body"
                   style={[
-                    styles.optionButtonText,
                     difficulty === level && styles.optionButtonTextActive,
                   ]}
                 >
@@ -315,20 +367,23 @@ const LetUsCurateScreen = () => {
             ))}
           </View>
 
-          <Text style={styles.optionLabel}>Duration (minutes)</Text>
+          <Text variant="bodyLarge" style={styles.optionLabel}>
+            Duration (minutes)
+          </Text>
           <View style={styles.optionsRow}>
             {[15, 20, 30, 45].map((min) => (
               <TouchableOpacity
                 key={min}
                 style={[
                   styles.optionButton,
+                  { backgroundColor: theme.background.elevated, borderColor: theme.border.medium },
                   duration === min && styles.optionButtonActive,
                 ]}
                 onPress={() => setDuration(min)}
               >
                 <Text
+                  variant="body"
                   style={[
-                    styles.optionButtonText,
                     duration === min && styles.optionButtonTextActive,
                   ]}
                 >
@@ -338,70 +393,91 @@ const LetUsCurateScreen = () => {
             ))}
           </View>
 
-          <Text style={styles.optionLabel}>Constraints</Text>
-          <TouchableOpacity
-            style={styles.constraintOption}
-            onPress={() => setSmallSpace(!smallSpace)}
-          >
-            <Text style={styles.constraintText}>Small Space</Text>
-            <View style={[styles.checkbox, smallSpace && styles.checkboxActive]}>
-              {smallSpace && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-          </TouchableOpacity>
+          <Text variant="bodyLarge" style={styles.optionLabel}>
+            Constraints
+          </Text>
+          <Card variant="flat" padding="none" style={styles.constraintsCard}>
+            <TouchableOpacity
+              style={[styles.constraintOption, { borderBottomColor: theme.border.light }]}
+              onPress={() => setSmallSpace(!smallSpace)}
+            >
+              <Text variant="body">Small Space</Text>
+              <View style={[
+                styles.checkbox,
+                { borderColor: smallSpace ? colors.primary[500] : theme.border.medium },
+                smallSpace && styles.checkboxActive
+              ]}>
+                {smallSpace && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.constraintOption}
-            onPress={() => setQuiet(!quiet)}
-          >
-            <Text style={styles.constraintText}>Quiet (No jumping)</Text>
-            <View style={[styles.checkbox, quiet && styles.checkboxActive]}>
-              {quiet && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.constraintOption}
+              onPress={() => setQuiet(!quiet)}
+            >
+              <Text variant="body">Quiet (No jumping)</Text>
+              <View style={[
+                styles.checkbox,
+                { borderColor: quiet ? colors.primary[500] : theme.border.medium },
+                quiet && styles.checkboxActive
+              ]}>
+                {quiet && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+          </Card>
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.generateButton}
+          <Button
+            variant="primary"
+            size="large"
+            fullWidth
             onPress={generateWorkout}
+            loading={isLoading}
             disabled={isLoading}
           >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.generateButtonText}>Generate Workout</Text>
-            )}
-          </TouchableOpacity>
+            Generate Workout
+          </Button>
         </View>
       </ScrollView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Choose Your Goal</Text>
-        <Text style={styles.subtitle}>Select a workout objective</Text>
+        <Text variant="h2" style={styles.title}>
+          Choose Your Goal
+        </Text>
+        <Text variant="body" color="secondary">
+          Select a workout objective
+        </Text>
       </View>
 
       <View style={styles.objectivesContainer}>
         {objectives.map((objective) => (
-          <TouchableOpacity
+          <Card
             key={objective.id}
-            style={styles.objectiveCard}
+            variant="flat"
+            padding="medium"
             onPress={() => {
               setSelectedObjective(objective);
               setShowCustomization(true);
             }}
+            style={styles.objectiveCard}
           >
-            <Text style={styles.objectiveTitle}>{objective.name}</Text>
-            <Text style={styles.objectiveDescription}>
+            <Text variant="h3" style={styles.objectiveTitle}>
+              {objective.name}
+            </Text>
+            <Text variant="bodySmall" color="secondary" style={styles.objectiveDescription}>
               {objective.description}
             </Text>
             {objective.tagline && (
-              <Text style={styles.objectiveTagline}>{objective.tagline}</Text>
+              <Text variant="bodySmall" style={styles.objectiveTagline}>
+                {objective.tagline}
+              </Text>
             )}
-          </TouchableOpacity>
+          </Card>
         ))}
       </View>
     </ScrollView>
@@ -411,354 +487,218 @@ const LetUsCurateScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[8],
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    marginBottom: spacing[2],
   },
   objectivesContainer: {
-    padding: 20,
+    padding: spacing[5],
     paddingTop: 0,
   },
   objectiveCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   objectiveTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   objectiveDescription: {
-    fontSize: 14,
-    color: '#666',
     lineHeight: 20,
-    marginBottom: 6,
+    marginBottom: spacing[2],
   },
   objectiveTagline: {
-    fontSize: 13,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '500',
   },
   customizationSection: {
-    padding: 20,
+    padding: spacing[5],
   },
   optionLabel: {
-    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-    marginTop: 16,
+    marginBottom: spacing[3],
+    marginTop: spacing[4],
   },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 8,
+    marginBottom: spacing[2],
+    gap: spacing[2],
   },
   optionButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginRight: 8,
-    marginBottom: 8,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[5],
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
   },
   optionButtonActive: {
-    backgroundColor: '#FF6B35',
-  },
-  optionButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   optionButtonTextActive: {
-    color: '#fff',
+    color: '#FFFFFF',
+  },
+  constraintsCard: {
+    overflow: 'hidden',
   },
   constraintOption: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  constraintText: {
-    fontSize: 16,
-    color: '#333',
+    padding: spacing[4],
+    borderBottomWidth: 1,
   },
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 4,
+    borderRadius: borderRadius.sm,
     borderWidth: 2,
-    borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkboxActive: {
-    backgroundColor: '#FF6B35',
-    borderColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   checkmark: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
   buttonContainer: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  generateButton: {
-    backgroundColor: '#FF6B35',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  generateButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    padding: spacing[5],
+    paddingBottom: spacing[10],
   },
   workoutHeader: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[8],
   },
   workoutTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   workoutDescription: {
-    fontSize: 15,
-    color: '#666',
     lineHeight: 22,
   },
   actionsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-    gap: 12,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[5],
     justifyContent: 'flex-end',
   },
-  actionButton: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
   deleteButton: {
-    backgroundColor: '#FEE',
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  deleteButtonText: {
-    color: '#DC2626',
+    backgroundColor: colors.error[50],
   },
   statsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 16,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[4],
+    gap: spacing[2],
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginHorizontal: 4,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: '#666',
+    color: colors.primary[500],
+    marginBottom: spacing[1],
   },
   metricsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[6],
+    gap: spacing[2],
   },
   metricCard: {
     flex: 1,
-    backgroundColor: '#FFF5F2',
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
+    backgroundColor: colors.primary[50],
     alignItems: 'center',
   },
   metricValue: {
-    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  metricLabel: {
-    fontSize: 12,
-    color: '#666',
+    marginBottom: spacing[1],
   },
   circuitsSection: {
-    padding: 20,
+    padding: spacing[5],
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   circuitCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   circuitTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   circuitInfo: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   exercisesList: {
-    marginTop: 8,
+    marginTop: spacing[2],
   },
   exerciseItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   exerciseNumber: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#FF6B35',
-    color: '#fff',
-    fontSize: 14,
+    backgroundColor: colors.primary[500],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing[3],
+  },
+  exerciseNumberText: {
+    color: '#FFFFFF',
     fontWeight: '600',
-    textAlign: 'center',
-    lineHeight: 28,
-    marginRight: 12,
   },
   exerciseName: {
-    fontSize: 16,
-    color: '#333',
     flex: 1,
   },
   backButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  backButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
+    marginBottom: spacing[3],
   },
   readyText: {
-    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
     textAlign: 'center',
-    marginBottom: 16,
-  },
-  startButton: {
-    backgroundColor: '#FF6B35',
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '700',
+    marginBottom: spacing[4],
+    marginTop: spacing[3],
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: spacing[5],
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    width: '85%',
+    width: '100%',
     maxWidth: 400,
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   modalMessage: {
-    fontSize: 16,
-    color: '#666',
     lineHeight: 24,
-    marginBottom: 24,
+    marginBottom: spacing[6],
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing[3],
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  modalCancelButton: {
-    backgroundColor: '#F5F5F5',
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
   },
   modalDeleteButton: {
-    backgroundColor: '#DC2626',
-  },
-  modalDeleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    backgroundColor: colors.error[500],
   },
 });
 
