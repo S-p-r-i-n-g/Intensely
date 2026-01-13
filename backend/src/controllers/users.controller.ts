@@ -58,21 +58,24 @@ export class UsersController {
         return;
       }
 
-      const { email, displayName, avatarUrl } = req.body;
+      const { email, displayName, avatarUrl } = req.body || {};
 
       // Upsert user
       const user = await prisma.user.upsert({
         where: { id: req.user.id },
         update: {
           email: email || req.user.email,
-          displayName,
-          avatarUrl
+          displayName: displayName || undefined,
+          avatarUrl: avatarUrl || undefined
         },
         create: {
           id: req.user.id,
           email: email || req.user.email || '',
-          displayName,
-          avatarUrl
+          authProvider: 'supabase',
+          displayName: displayName || null,
+          avatarUrl: avatarUrl || null,
+          firstName: null,
+          lastName: null
         },
         include: {
           preferences: true
