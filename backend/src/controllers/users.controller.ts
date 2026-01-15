@@ -58,21 +58,26 @@ export class UsersController {
         return;
       }
 
-      const { email, displayName, avatarUrl } = req.body;
+      // Get optional data from body if provided, otherwise use data from JWT
+      const { email, firstName, lastName, avatarUrl } = req.body || {};
 
-      // Upsert user
+      // Upsert user - create if doesn't exist, update if exists
       const user = await prisma.user.upsert({
         where: { id: req.user.id },
         update: {
           email: email || req.user.email,
-          displayName,
-          avatarUrl
+          ...(firstName !== undefined && { firstName }),
+          ...(lastName !== undefined && { lastName }),
+          ...(avatarUrl !== undefined && { avatarUrl }),
+          lastLoginAt: new Date()
         },
         create: {
           id: req.user.id,
           email: email || req.user.email || '',
-          displayName,
-          avatarUrl
+          firstName: firstName || null,
+          lastName: lastName || null,
+          avatarUrl: avatarUrl || null,
+          lastLoginAt: new Date()
         },
         include: {
           preferences: true
@@ -146,45 +151,53 @@ export class UsersController {
       }
 
       const {
+        defaultObjectiveId,
         defaultDifficulty,
+        defaultCircuits,
+        defaultExercisesPerCircuit,
+        defaultIntervalSeconds,
+        defaultRestSeconds,
+        defaultSets,
         availableEquipment,
-        workoutDuration,
-        workoutFrequency,
-        preferredTimeOfDay,
-        fitnessGoals,
-        hasSmallSpace,
-        needsQuietWorkouts,
-        experienceLevel,
-        injuriesOrLimitations
+        smallSpace,
+        quietMode,
+        soundEnabled,
+        vibrationEnabled,
+        voiceCoaching
       } = req.body;
 
       // Upsert preferences
       const preferences = await prisma.userPreference.upsert({
         where: { userId: req.user.id },
         update: {
+          defaultObjectiveId,
           defaultDifficulty,
+          defaultCircuits,
+          defaultExercisesPerCircuit,
+          defaultIntervalSeconds,
+          defaultRestSeconds,
+          defaultSets,
           availableEquipment,
-          workoutDuration,
-          workoutFrequency,
-          preferredTimeOfDay,
-          fitnessGoals,
-          hasSmallSpace,
-          needsQuietWorkouts,
-          experienceLevel,
-          injuriesOrLimitations
+          smallSpace,
+          quietMode,
+          soundEnabled,
+          vibrationEnabled,
+          voiceCoaching
         },
         create: {
           userId: req.user.id,
           defaultDifficulty: defaultDifficulty || 'intermediate',
+          defaultCircuits: defaultCircuits || 3,
+          defaultExercisesPerCircuit: defaultExercisesPerCircuit || 3,
+          defaultIntervalSeconds: defaultIntervalSeconds || 20,
+          defaultRestSeconds: defaultRestSeconds || 60,
+          defaultSets: defaultSets || 3,
           availableEquipment: availableEquipment || ['bodyweight'],
-          workoutDuration,
-          workoutFrequency,
-          preferredTimeOfDay,
-          fitnessGoals,
-          hasSmallSpace,
-          needsQuietWorkouts,
-          experienceLevel,
-          injuriesOrLimitations
+          smallSpace: smallSpace || false,
+          quietMode: quietMode || false,
+          soundEnabled: soundEnabled ?? true,
+          vibrationEnabled: vibrationEnabled ?? true,
+          voiceCoaching: voiceCoaching || false
         }
       });
 
