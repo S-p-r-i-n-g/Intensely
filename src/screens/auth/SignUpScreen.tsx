@@ -2,17 +2,23 @@ import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { Button, Text, Input } from '../../components/ui';
 import { useTheme } from '../../theme';
-import { spacing } from '../../tokens';
+import { spacing, colors } from '../../tokens';
+
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SignUp'>;
 
 const SignUpScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { signUp, isLoading } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -20,6 +26,8 @@ const SignUpScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [userExists, setUserExists] = useState(false);
   const [errors, setErrors] = useState({
     firstName: '',
     lastName: '',
@@ -61,14 +69,24 @@ const SignUpScreen = () => {
       return;
     }
 
+    // Reset error states
+    setAuthError('');
+    setUserExists(false);
+
     try {
       await signUp(email, password, { firstName, lastName });
-      Alert.alert(
-        'Success',
-        'Account created! Please check your email to verify your account.'
-      );
+      // Navigation handled automatically by RootNavigator
     } catch (error: any) {
-      Alert.alert('Sign Up Failed', error.message || 'Could not create account');
+      console.error('Sign up error:', error);
+
+      // Check if user already exists
+      const errorMessage = error.message || '';
+      if (errorMessage.includes('already') || errorMessage.includes('exists') || error.code === '23505') {
+        setUserExists(true);
+        setAuthError('This email is already registered.');
+      } else {
+        setAuthError(error.message || 'Could not create account. Please try again.');
+      }
     }
   };
 
@@ -78,12 +96,36 @@ const SignUpScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Login')}
+          style={styles.backLink}
+        >
+          <Text style={{ color: theme.text.secondary }}>← Back to Login</Text>
+        </TouchableOpacity>
+
         <Text variant="h1" style={styles.title}>
           Create Account
         </Text>
         <Text variant="body" color="secondary" style={styles.subtitle}>
           Start your fitness journey today
         </Text>
+
+        {/* Auth Error Message */}
+        {authError ? (
+          <View style={[styles.errorBanner, { backgroundColor: colors.error[50], borderColor: colors.error[200] }]}>
+            <Text style={{ color: colors.error[700] }}>{authError}</Text>
+            {userExists && (
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Login')}
+                style={styles.backToLoginLink}
+              >
+                <Text style={[styles.linkText, { color: colors.primary[600] }]}>
+                  Back to Sign In →
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
 
         <View style={styles.form}>
           <Input
@@ -176,11 +218,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing[5],
   },
+  backLink: {
+    marginBottom: spacing[6],
+  },
   title: {
     marginBottom: spacing[2],
   },
   subtitle: {
     marginBottom: spacing[8],
+  },
+  errorBanner: {
+    padding: spacing[3],
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: spacing[4],
+  },
+  backToLoginLink: {
+    marginTop: spacing[2],
+  },
+  linkText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   form: {
     width: '100%',

@@ -64,26 +64,6 @@ const ProfileMainScreen = () => {
         <Text style={[styles.email, { color: theme.text.secondary }]}>{profile?.email}</Text>
       </View>
 
-      {/* Stats Summary */}
-      {profile && (
-        <View style={[styles.statsCard, { backgroundColor: theme.background.secondary }]}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: theme.text.primary }]}>-</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Workouts</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: theme.border.light }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: theme.text.primary }]}>-</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Day Streak</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: theme.border.light }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: theme.text.primary }]}>-</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>PRs</Text>
-          </View>
-        </View>
-      )}
-
       {/* Menu Section - Profile */}
       <View style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Profile</Text>
@@ -106,30 +86,6 @@ const ProfileMainScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Menu Section - App */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>App</Text>
-        <TouchableOpacity
-          style={[styles.menuItem, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.light }]}
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <Text style={styles.menuIcon}>🔧</Text>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Settings</Text>
-          <Text style={[styles.menuArrow, { color: theme.text.tertiary }]}>→</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.menuItem, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.light }]}
-          onPress={() => {
-            Alert.alert('About', 'Intensely HICT Workout App\nVersion 1.0.0\n\nBuilt with React Native & Expo');
-          }}
-        >
-          <Text style={styles.menuIcon}>ℹ️</Text>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>About</Text>
-          <Text style={[styles.menuArrow, { color: theme.text.tertiary }]}>→</Text>
-        </TouchableOpacity>
-      </View>
-
       {/* Sign Out Button */}
       <TouchableOpacity
         style={styles.signOutButton}
@@ -138,10 +94,6 @@ const ProfileMainScreen = () => {
       >
         <Text style={styles.signOutButtonText}>Sign Out</Text>
       </TouchableOpacity>
-
-      <View style={styles.footer}>
-        <Text style={[styles.footerText, { color: theme.text.tertiary }]}>Made with ❤️ for fitness enthusiasts</Text>
-      </View>
 
       {/* Sign Out Confirmation Modal */}
       <Modal
@@ -209,29 +161,6 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 14,
   },
-  statsCard: {
-    flexDirection: 'row',
-    marginHorizontal: spacing[5],
-    marginBottom: spacing[6],
-    padding: spacing[5],
-    borderRadius: borderRadius.lg,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing[1],
-  },
-  statLabel: {
-    fontSize: 12,
-  },
-  statDivider: {
-    width: 1,
-    marginHorizontal: spacing[3],
-  },
   section: {
     marginBottom: spacing[6],
   },
@@ -273,13 +202,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  footer: {
-    paddingVertical: spacing[8],
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 13,
   },
   // Modal styles
   modalOverlay: {

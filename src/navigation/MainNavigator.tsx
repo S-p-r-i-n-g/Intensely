@@ -8,7 +8,6 @@ import { colors } from '../tokens/colors';
 import { HomeStackNavigator } from './HomeStackNavigator';
 import { WorkoutsStackNavigator } from './WorkoutsStackNavigator';
 import { ExercisesStackNavigator } from './ExercisesStackNavigator';
-import { ProgressStackNavigator } from './ProgressStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -58,13 +57,6 @@ export const MainNavigator = () => {
         component={ExercisesStackNavigator}
         options={{
           title: 'Exercises',
-        }}
-      />
-      <Tab.Screen
-        name="Progress"
-        component={ProgressStackNavigator}
-        options={{
-          title: 'Progress',
         }}
       />
       <Tab.Screen

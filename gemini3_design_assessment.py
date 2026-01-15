@@ -10,7 +10,9 @@ from google.genai import types
 
 
 def run_assessment():
-    api_key = "AIzaSyDjB1rIuyc3JUnqruwvYKKH9EjW2FqFF8Q"
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY environment variable is not set")
     client = genai.Client(api_key=api_key)
 
     model = "gemini-3-flash-preview"
