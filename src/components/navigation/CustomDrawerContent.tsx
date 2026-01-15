@@ -18,7 +18,6 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
     { key: 'Home', label: 'Home', route: 'Home' },
     { key: 'Workouts', label: 'My Workouts', route: 'Workouts' },
     { key: 'Exercises', label: 'Exercise Library', route: 'Exercises' },
-    { key: 'Profile', label: 'Profile', route: 'Profile' },
   ];
 
   const activeRoute = state.routeNames[state.index];

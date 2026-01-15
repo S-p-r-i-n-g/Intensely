@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Modal,
+  TouchableOpacity,
   Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,6 +13,9 @@ import { ProfileStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { Text } from '../../components/ui';
+import { ActionButton } from '../../components/home';
+import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
@@ -26,74 +28,60 @@ const ProfileMainScreen = () => {
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
   const handleSignOut = () => {
-    console.log('[ProfileMainScreen] Sign out button pressed');
     setShowSignOutModal(true);
   };
 
   const cancelSignOut = () => {
-    console.log('[ProfileMainScreen] Sign out cancelled');
     setShowSignOutModal(false);
   };
 
   const confirmSignOut = async () => {
     setShowSignOutModal(false);
     try {
-      console.log('[ProfileMainScreen] Calling signOut...');
       await signOut();
-      console.log('[ProfileMainScreen] Sign out completed');
     } catch (error) {
       console.error('[ProfileMainScreen] Sign out error:', error);
-      // Could show an error modal here if needed
     }
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      {/* Profile Header */}
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background.primary }]}
+      contentContainerStyle={styles.scrollContent}
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
-            {profile?.firstName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
-          </Text>
-        </View>
-        <Text style={[styles.name, { color: theme.text.primary }]}>
-          {profile?.firstName || profile?.lastName
-            ? `${profile.firstName} ${profile.lastName}`.trim()
-            : 'User'}
+        <Text variant="h1" style={styles.greeting}>
+          Profile
         </Text>
-        <Text style={[styles.email, { color: theme.text.secondary }]}>{profile?.email}</Text>
+        <Text variant="body" color="secondary" style={styles.subtitle}>
+          {profile?.email || 'Manage your account'}
+        </Text>
       </View>
 
-      {/* Menu Section - Profile */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text.tertiary }]}>Profile</Text>
-        <TouchableOpacity
-          style={[styles.menuItem, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.light }]}
+      {/* Action Buttons */}
+      <View style={styles.actionsContainer}>
+        <ActionButton
+          title="Edit Profile"
+          variant="secondary"
+          icon={<UserIcon size={24} color="#000000" />}
           onPress={() => navigation.navigate('EditProfile')}
-        >
-          <Text style={styles.menuIcon}>👤</Text>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Edit Profile</Text>
-          <Text style={[styles.menuArrow, { color: theme.text.tertiary }]}>→</Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={[styles.menuItem, { backgroundColor: theme.background.primary, borderBottomColor: theme.border.light }]}
+        <ActionButton
+          title="Workout Preferences"
+          variant="secondary"
+          icon={<Cog6ToothIcon size={24} color="#000000" />}
           onPress={() => navigation.navigate('Preferences')}
-        >
-          <Text style={styles.menuIcon}>⚙️</Text>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Workout Preferences</Text>
-          <Text style={[styles.menuArrow, { color: theme.text.tertiary }]}>→</Text>
-        </TouchableOpacity>
-      </View>
+        />
 
-      {/* Sign Out Button */}
-      <TouchableOpacity
-        style={styles.signOutButton}
-        onPress={handleSignOut}
-        disabled={isLoading}
-      >
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
-      </TouchableOpacity>
+        <ActionButton
+          title="Sign Out"
+          variant="secondary"
+          icon={<ArrowRightOnRectangleIcon size={24} color="#000000" />}
+          onPress={handleSignOut}
+        />
+      </View>
 
       {/* Sign Out Confirmation Modal */}
       <Modal
@@ -104,8 +92,10 @@ const ProfileMainScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
-            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Sign Out?</Text>
-            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
+            <Text variant="h3" style={[styles.modalTitle, { color: theme.text.primary }]}>
+              Sign Out?
+            </Text>
+            <Text variant="body" style={[styles.modalMessage, { color: theme.text.secondary }]}>
               Are you sure you want to sign out?
             </Text>
             <View style={styles.modalButtons}>
@@ -133,75 +123,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollContent: {
+    paddingHorizontal: 20,
+  },
   header: {
-    alignItems: 'center',
-    paddingVertical: spacing[8],
-    paddingHorizontal: spacing[5],
+    paddingTop: 24,
+    marginBottom: 32,
   },
-  avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing[4],
-  },
-  avatarText: {
+  greeting: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    textTransform: 'uppercase',
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing[1],
-  },
-  email: {
-    fontSize: 14,
-  },
-  section: {
-    marginBottom: spacing[6],
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    paddingHorizontal: spacing[5],
+    fontWeight: '700',
     marginBottom: spacing[2],
   },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[5],
-    borderBottomWidth: 1,
-  },
-  menuIcon: {
-    fontSize: 20,
-    marginRight: spacing[3],
-  },
-  menuItemText: {
-    flex: 1,
+  subtitle: {
     fontSize: 16,
   },
-  menuArrow: {
-    fontSize: 18,
-  },
-  signOutButton: {
-    margin: spacing[5],
-    marginTop: spacing[2],
-    padding: spacing[4],
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primary[500],
-    alignItems: 'center',
-  },
-  signOutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  actionsContainer: {
+    marginBottom: spacing[6],
   },
   // Modal styles
   modalOverlay: {
@@ -218,13 +156,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: '700',
     marginBottom: spacing[3],
     textAlign: 'center',
   },
   modalMessage: {
-    fontSize: 16,
     marginBottom: spacing[6],
     textAlign: 'center',
     lineHeight: 22,
@@ -237,7 +172,7 @@ const styles = StyleSheet.create({
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: borderRadius.md,
+    borderRadius: 100, // Pill shape
     alignItems: 'center',
     justifyContent: 'center',
   },

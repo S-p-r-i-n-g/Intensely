@@ -3,6 +3,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { Dimensions, TouchableOpacity } from 'react-native';
 import { DrawerParamList } from './types';
 import { CustomDrawerContent } from '../components/navigation/CustomDrawerContent';
+import { ProfileIcon } from '../components/navigation/ProfileIcon';
 import { Bars3Icon } from 'react-native-heroicons/outline';
 
 // Stack navigators
@@ -28,6 +29,7 @@ export const DrawerNavigator = () => {
             <Bars3Icon size={28} color="#000000" />
           </TouchableOpacity>
         ),
+        headerRight: () => <ProfileIcon />,
         headerTitle: '',
         headerStyle: {
           elevation: 0,
