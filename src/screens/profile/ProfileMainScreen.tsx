@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
-  Platform,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,55 +17,34 @@ import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
+const { width } = Dimensions.get('window');
+
 const ProfileMainScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { profile, signOut, isLoading } = useAuthStore();
   const { theme } = useTheme();
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
 
-  const handleSignOut = async () => {
+  const handleSignOut = () => {
     console.log('[ProfileMainScreen] Sign out button pressed');
+    setShowSignOutModal(true);
+  };
 
-    // For web, Alert.alert doesn't work well, so use window.confirm
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm('Are you sure you want to sign out?');
-      if (!confirmed) {
-        console.log('[ProfileMainScreen] Sign out cancelled');
-        return;
-      }
+  const cancelSignOut = () => {
+    console.log('[ProfileMainScreen] Sign out cancelled');
+    setShowSignOutModal(false);
+  };
 
-      try {
-        console.log('[ProfileMainScreen] Calling signOut...');
-        await signOut();
-        console.log('[ProfileMainScreen] Sign out completed');
-      } catch (error) {
-        console.error('[ProfileMainScreen] Sign out error:', error);
-        window.alert('Failed to sign out');
-      }
-      return;
+  const confirmSignOut = async () => {
+    setShowSignOutModal(false);
+    try {
+      console.log('[ProfileMainScreen] Calling signOut...');
+      await signOut();
+      console.log('[ProfileMainScreen] Sign out completed');
+    } catch (error) {
+      console.error('[ProfileMainScreen] Sign out error:', error);
+      // Could show an error modal here if needed
     }
-
-    // For native, use Alert.alert
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('[ProfileMainScreen] Calling signOut...');
-              await signOut();
-              console.log('[ProfileMainScreen] Sign out completed');
-            } catch (error) {
-              console.error('[ProfileMainScreen] Sign out error:', error);
-              Alert.alert('Error', 'Failed to sign out');
-            }
-          },
-        },
-      ]
-    );
   };
 
   return (
@@ -163,6 +142,37 @@ const ProfileMainScreen = () => {
       <View style={styles.footer}>
         <Text style={[styles.footerText, { color: theme.text.tertiary }]}>Made with ❤️ for fitness enthusiasts</Text>
       </View>
+
+      {/* Sign Out Confirmation Modal */}
+      <Modal
+        visible={showSignOutModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelSignOut}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
+            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Sign Out?</Text>
+            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
+              Are you sure you want to sign out?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.background.secondary }]}
+                onPress={cancelSignOut}
+              >
+                <Text style={[styles.modalCancelButtonText, { color: theme.text.primary }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalSignOutButton]}
+                onPress={confirmSignOut}
+              >
+                <Text style={styles.modalSignOutButtonText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -270,6 +280,59 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    borderRadius: borderRadius.lg,
+    padding: spacing[6],
+    width: width * 0.85,
+    maxWidth: 400,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: spacing[3],
+    textAlign: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: spacing[6],
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing[3],
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelButton: {
+    // backgroundColor applied dynamically via theme
+  },
+  modalCancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalSignOutButton: {
+    backgroundColor: colors.error[500],
+  },
+  modalSignOutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 
