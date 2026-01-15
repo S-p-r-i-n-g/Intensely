@@ -45,6 +45,47 @@ export class UsersController {
   }
 
   /**
+   * PUT /api/users/me
+   * Update current user profile
+   */
+  static async updateProfile(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'User not authenticated'
+        });
+        return;
+      }
+
+      const { firstName, lastName } = req.body;
+
+      // Update user profile
+      const user = await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          ...(firstName !== undefined && { firstName }),
+          ...(lastName !== undefined && { lastName })
+        },
+        include: {
+          preferences: true
+        }
+      });
+
+      res.json({
+        success: true,
+        data: user
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      res.status(500).json({
+        error: 'Failed to update profile',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
    * POST /api/users/sync
    * Create or sync user profile from Supabase Auth
    */

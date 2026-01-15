@@ -10,6 +10,9 @@ router.use(authenticateUser);
 // GET /api/users/me - Get current user profile
 router.get('/me', UsersController.getCurrentUser);
 
+// PUT /api/users/me - Update current user profile
+router.put('/me', UsersController.updateProfile);
+
 // POST /api/users/sync - Sync user from Supabase Auth
 router.post('/sync', UsersController.syncUser);
 
