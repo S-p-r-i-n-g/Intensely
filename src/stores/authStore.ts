@@ -53,15 +53,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // Listen for auth changes
-      supabase.auth.onAuthStateChange(async (_event, session) => {
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('[AuthStore] Auth state change event:', event, 'hasSession:', !!session);
         set({
           user: session?.user ?? null,
           session,
         });
 
         if (session) {
+          console.log('[AuthStore] Session exists, syncing profile');
           await get().syncProfile();
         } else {
+          console.log('[AuthStore] No session, clearing profile');
           set({ profile: null });
         }
       });
@@ -142,22 +145,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    */
   signOut: async () => {
     try {
+      console.log('[AuthStore] Sign out started');
       set({ isLoading: true });
 
       const { error } = await supabase.auth.signOut();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[AuthStore] Supabase sign out error:', error);
+        throw error;
+      }
 
+      console.log('[AuthStore] Supabase sign out successful, clearing state');
       set({
         user: null,
         profile: null,
         session: null,
       });
+      console.log('[AuthStore] State cleared, user should be null now');
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error('[AuthStore] Sign out failed:', error);
       throw error;
     } finally {
       set({ isLoading: false });
+      console.log('[AuthStore] Sign out completed, isLoading set to false');
     }
   },
 

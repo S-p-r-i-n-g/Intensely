@@ -17,8 +17,18 @@ export const RootNavigator = () => {
     initialize();
   }, []);
 
-  // Show loading while initializing auth
-  if (!isInitialized || isLoading) {
+  useEffect(() => {
+    console.log('[RootNavigator] Auth state changed:', {
+      hasUser: !!user,
+      userId: user?.id,
+      isLoading,
+      isInitialized,
+    });
+  }, [user, isLoading, isInitialized]);
+
+  // Show loading only while initializing auth (not during operations like sign out)
+  if (!isInitialized) {
+    console.log('[RootNavigator] Showing loading screen - initializing');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />
@@ -26,6 +36,7 @@ export const RootNavigator = () => {
     );
   }
 
+  console.log('[RootNavigator] Rendering navigator, user exists:', !!user);
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>

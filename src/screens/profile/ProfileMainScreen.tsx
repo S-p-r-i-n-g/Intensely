@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,6 +23,28 @@ const ProfileMainScreen = () => {
   const { theme } = useTheme();
 
   const handleSignOut = async () => {
+    console.log('[ProfileMainScreen] Sign out button pressed');
+
+    // For web, Alert.alert doesn't work well, so use window.confirm
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Are you sure you want to sign out?');
+      if (!confirmed) {
+        console.log('[ProfileMainScreen] Sign out cancelled');
+        return;
+      }
+
+      try {
+        console.log('[ProfileMainScreen] Calling signOut...');
+        await signOut();
+        console.log('[ProfileMainScreen] Sign out completed');
+      } catch (error) {
+        console.error('[ProfileMainScreen] Sign out error:', error);
+        window.alert('Failed to sign out');
+      }
+      return;
+    }
+
+    // For native, use Alert.alert
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
@@ -32,8 +55,11 @@ const ProfileMainScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('[ProfileMainScreen] Calling signOut...');
               await signOut();
+              console.log('[ProfileMainScreen] Sign out completed');
             } catch (error) {
+              console.error('[ProfileMainScreen] Sign out error:', error);
               Alert.alert('Error', 'Failed to sign out');
             }
           },
