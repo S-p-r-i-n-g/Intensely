@@ -7,15 +7,17 @@
 import { Platform, TextStyle } from 'react-native';
 
 // Font Families
+// Note: SF Pro Rounded requires custom font installation
+// Fallback to SF Pro Display/Text which are system fonts on iOS
 export const fontFamilies = {
-  // Cross-platform system fonts
+  // Cross-platform system fonts with SF Pro Rounded preference
   primary: Platform.select({
-    ios: 'SF Pro Display',
+    ios: 'SF Pro Rounded', // Falls back to SF Pro Display if not installed
     android: 'Roboto',
     default: 'System',
   }),
   secondary: Platform.select({
-    ios: 'SF Pro Text',
+    ios: 'SF Pro Rounded', // Falls back to SF Pro Text if not installed
     android: 'Roboto',
     default: 'System',
   }),

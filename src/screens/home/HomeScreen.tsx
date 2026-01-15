@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { HomeStackParamList } from '../../navigation/types';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
+import { DrawerParamList } from '../../navigation/types';
 import { useAuthStore, useWorkoutStore } from '../../stores';
 import { spacing, colors } from '../../tokens';
 import { useTheme } from '../../theme';
 import { Text } from '../../components/ui';
-import { WorkoutFlowCard } from '../../components/home';
+import { ActionButton } from '../../components/home';
+// Import Heroicons
+import { PlusIcon, MagnifyingGlassIcon, PlayIcon } from 'react-native-heroicons/outline';
 
-type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
+type NavigationProp = DrawerNavigationProp<DrawerParamList, 'Home'>;
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -26,57 +28,60 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      {/* Backend Warning Banner */}
-      {showBackendWarning && (
-        <View style={styles.warningBanner}>
-          <Text style={styles.warningIcon}>⚠️</Text>
-          <View style={styles.warningContent}>
-            <Text variant="bodySmall" style={styles.warningTitle}>Backend Offline</Text>
-            <Text variant="bodySmall" style={styles.warningText}>
-              Some features may be limited. Authentication still works!
-            </Text>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]} contentContainerStyle={styles.scrollContent}>
+        {/* Backend Warning Banner */}
+        {showBackendWarning && (
+          <View style={styles.warningBanner}>
+            <Text style={styles.warningIcon}>⚠️</Text>
+            <View style={styles.warningContent}>
+              <Text variant="bodySmall" style={styles.warningTitle}>Backend Offline</Text>
+              <Text variant="bodySmall" style={styles.warningText}>
+                Some features may be limited. Authentication still works!
+              </Text>
+            </View>
           </View>
+        )}
+
+        {/* Greeting */}
+        <View style={styles.header}>
+          <Text variant="h1" style={styles.greeting}>
+            Hi{profile?.firstName ? `, ${profile.firstName}` : ' Daniel'}!
+          </Text>
         </View>
-      )}
 
-      <View style={styles.header}>
-        <Text variant="h1" style={styles.greeting}>
-          Hello{profile?.firstName ? `, ${profile.firstName}` : ''}!
-        </Text>
-      </View>
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          {/* Primary CTA - Start Workout */}
+          <ActionButton
+            title="Start Workout"
+            variant="primary"
+            icon={<PlayIcon size={24} color="#FFFFFF" />}
+            onPress={() => navigation.navigate('Home', {
+              screen: 'JumpRightIn',
+            })}
+          />
 
-      <View style={styles.section}>
-        <Text variant="h2" style={styles.sectionTitle}>Get Started</Text>
+          {/* Secondary CTA - New Workout */}
+          <ActionButton
+            title="New Workout"
+            variant="secondary"
+            icon={<PlusIcon size={24} color="#000000" />}
+            onPress={() => navigation.navigate('Home', {
+              screen: 'TakeTheWheel',
+            })}
+          />
 
-        <WorkoutFlowCard
-          title="Jump Right In"
-          description="Get an instant workout based on your preferences. No thinking required."
-          badge="FASTEST"
-          badgeVariant="primary"
-          estimatedTime="~20 min"
-          difficulty="Any level"
-          onPress={() => navigation.navigate('JumpRightIn')}
-        />
+          {/* Secondary CTA - Exercise Library */}
+          <ActionButton
+            title="Exercise Library"
+            variant="secondary"
+            icon={<MagnifyingGlassIcon size={24} color="#000000" />}
+            onPress={() => navigation.navigate('Exercises')}
+          />
+        </View>
 
-        <WorkoutFlowCard
-          title="Let Us Curate"
-          description="Choose your goal, then customize duration, difficulty, and constraints."
-          badge="RECOMMENDED"
-          badgeVariant="success"
-          estimatedTime="~20-45 min"
-          difficulty="Any level"
-          onPress={() => navigation.navigate('LetUsCurate', {})}
-        />
-
-        <WorkoutFlowCard
-          title="Take the Wheel"
-          description="Build your own workout from scratch. Choose exercises, sets, and timing."
-          badge="CUSTOM"
-          badgeVariant="info"
-          onPress={() => navigation.navigate('TakeTheWheel')}
-        />
-      </View>
+        {/* Empty Space for Future Content */}
+        <View style={styles.emptySpace} />
     </ScrollView>
   );
 };
@@ -85,6 +90,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollContent: {
+    paddingHorizontal: 20, // Match Gemini spec
+  },
   warningBanner: {
     flexDirection: 'row',
     backgroundColor: colors.warning[100],
@@ -92,6 +100,8 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.warning[500],
     padding: spacing[4],
     alignItems: 'center',
+    marginBottom: spacing[4],
+    borderRadius: 8,
   },
   warningIcon: {
     fontSize: 20,
@@ -109,18 +119,18 @@ const styles = StyleSheet.create({
     color: colors.warning[500],
   },
   header: {
-    padding: spacing[4],
-    paddingTop: spacing[8],
+    paddingTop: 24,
+    marginBottom: 32,
   },
   greeting: {
-    marginBottom: spacing[2],
+    fontSize: 32,
+    fontWeight: '700',
   },
-  section: {
-    padding: spacing[4],
-    paddingTop: 0,
+  actionsContainer: {
+    marginBottom: spacing[6],
   },
-  sectionTitle: {
-    marginBottom: spacing[4],
+  emptySpace: {
+    height: 200, // Reserved for future Stats and History
   },
 });
 

@@ -6,7 +6,6 @@ import { HomeStackParamList } from './types';
 import HomeScreen from '../screens/home/HomeScreen';
 import WorkoutFlowSelectionScreen from '../screens/workouts/WorkoutFlowSelectionScreen';
 import JumpRightInScreen from '../screens/workouts/JumpRightInScreen';
-import LetUsCurateScreen from '../screens/workouts/LetUsCurateScreen';
 import TakeTheWheelScreen from '../screens/workouts/TakeTheWheelScreen';
 import ExerciseSelectionScreen from '../screens/workouts/ExerciseSelectionScreen';
 import WorkoutPreviewScreen from '../screens/workouts/WorkoutPreviewScreen';
@@ -45,13 +44,6 @@ export const HomeStackNavigator = () => {
         component={JumpRightInScreen}
         options={{
           title: 'Jump Right In',
-        }}
-      />
-      <Stack.Screen
-        name="LetUsCurate"
-        component={LetUsCurateScreen}
-        options={{
-          title: 'Let Us Curate',
         }}
       />
       <Stack.Screen

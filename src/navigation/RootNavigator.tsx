@@ -5,7 +5,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 import { RootStackParamList } from './types';
 import { AuthNavigator } from './AuthNavigator';
-import { MainNavigator } from './MainNavigator';
+import { DrawerNavigator } from './DrawerNavigator';
 import { useAuthStore } from '../stores';
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -41,7 +41,7 @@ export const RootNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="Main" component={MainNavigator} />
+          <Stack.Screen name="Main" component={DrawerNavigator} />
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
         )}

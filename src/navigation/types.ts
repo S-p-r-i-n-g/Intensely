@@ -12,7 +12,15 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
 };
 
-// Main Tab Navigator
+// Drawer Navigator (replaces tabs)
+export type DrawerParamList = {
+  Home: NavigatorScreenParams<HomeStackParamList>;
+  Workouts: NavigatorScreenParams<WorkoutsStackParamList>;
+  Exercises: NavigatorScreenParams<ExercisesStackParamList>;
+  Profile: NavigatorScreenParams<ProfileStackParamList>;
+};
+
+// Main Tab Navigator (deprecated - keeping for reference)
 export type MainTabParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;
   Workouts: undefined;
@@ -25,7 +33,6 @@ export type HomeStackParamList = {
   HomeMain: undefined;
   WorkoutFlowSelection: undefined;
   JumpRightIn: undefined;
-  LetUsCurate: { objectiveSlug?: string };
   TakeTheWheel: {
     workoutId?: string; // If provided, we're editing an existing workout
     selectedExerciseIds?: string[];
@@ -73,7 +80,7 @@ export type ProfileStackParamList = {
 // Root Navigator
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
-  Main: NavigatorScreenParams<MainTabParamList>;
+  Main: NavigatorScreenParams<DrawerParamList>;
 };
 
 // Helper types for navigation
