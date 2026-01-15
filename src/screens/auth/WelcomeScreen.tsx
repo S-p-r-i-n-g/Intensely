@@ -1,35 +1,48 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/types';
+import { Button, Text } from '../../components/ui';
+import { useTheme } from '../../theme';
+import { spacing, colors } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Welcome'>;
 
 const WelcomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Intensely</Text>
-      <Text style={styles.subtitle}>High-Intensity Circuit Training</Text>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      <Text variant="h1" style={styles.title}>
+        Intensely
+      </Text>
+      <Text variant="bodyLarge" color="secondary" style={styles.subtitle}>
+        High-Intensity Circuit Training
+      </Text>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.button}
+        <Button
+          variant="primaryGradient"
+          fullWidth
           onPress={() => navigation.navigate('Login')}
+          style={styles.button}
+          accessibilityLabel="Log in to your account"
+          accessibilityHint="Navigate to login screen"
         >
-          <Text style={styles.buttonText}>Log In</Text>
-        </TouchableOpacity>
+          Log In
+        </Button>
 
-        <TouchableOpacity
-          style={[styles.button, styles.buttonSecondary]}
+        <Button
+          variant="secondary"
+          fullWidth
           onPress={() => navigation.navigate('SignUp')}
+          accessibilityLabel="Create new account"
+          accessibilityHint="Navigate to sign up screen"
         >
-          <Text style={[styles.buttonText, styles.buttonTextSecondary]}>
-            Sign Up
-          </Text>
-        </TouchableOpacity>
+          Sign Up
+        </Button>
       </View>
     </View>
   );
@@ -40,43 +53,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: spacing[5],
   },
   title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 10,
+    color: colors.primary[500],
+    marginBottom: spacing[2],
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 60,
+    marginBottom: spacing[16],
   },
   buttonContainer: {
     width: '100%',
     maxWidth: 300,
   },
   button: {
-    backgroundColor: '#FF6B35',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  buttonSecondary: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#FF6B35',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  buttonTextSecondary: {
-    color: '#FF6B35',
+    marginBottom: spacing[3],
   },
 });
 

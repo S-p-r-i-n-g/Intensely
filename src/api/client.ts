@@ -10,6 +10,7 @@ import { API_URL } from '../config/env';
 
 class ApiClient {
   private client: AxiosInstance;
+  private cachedSession: any = null;
 
   constructor() {
     this.client = axios.create({
@@ -20,13 +21,41 @@ class ApiClient {
       },
     });
 
+    // Initialize cached session from localStorage (web) or auth state change listener
+    this.initializeSession();
+
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       async (config) => {
-        const { data: { session } } = await supabase.auth.getSession();
+        try {
+          // Try to get fresh session, but don't block on errors
+          if (!this.cachedSession) {
+            const { data: { session } } = await supabase.auth.getSession();
+            this.cachedSession = session;
+          }
 
-        if (session?.access_token) {
-          config.headers.Authorization = `Bearer ${session.access_token}`;
+          if (this.cachedSession?.access_token) {
+            config.headers.Authorization = `Bearer ${this.cachedSession.access_token}`;
+          }
+        } catch (error) {
+          // If session retrieval fails, try to get from localStorage directly (web only)
+          console.warn('Failed to get session for API request, trying localStorage:', error);
+
+          if (typeof window !== 'undefined') {
+            try {
+              const storageKey = `sb-${new URL(supabase.auth.supabaseUrl).hostname.split('.')[0]}-auth-token`;
+              const storedSession = localStorage.getItem(storageKey);
+              if (storedSession) {
+                const parsed = JSON.parse(storedSession);
+                if (parsed?.access_token) {
+                  config.headers.Authorization = `Bearer ${parsed.access_token}`;
+                  console.log('Using token from localStorage');
+                }
+              }
+            } catch (storageError) {
+              console.warn('Failed to get token from localStorage:', storageError);
+            }
+          }
         }
 
         return config;
@@ -42,21 +71,38 @@ class ApiClient {
       async (error) => {
         if (error.response?.status === 401) {
           // Token expired or invalid, try to refresh
-          const { data: { session } } = await supabase.auth.refreshSession();
+          try {
+            const { data: { session } } = await supabase.auth.refreshSession();
 
-          if (session) {
-            // Retry original request with new token
-            error.config.headers.Authorization = `Bearer ${session.access_token}`;
-            return this.client.request(error.config);
-          } else {
-            // Refresh failed, user needs to log in again
-            await supabase.auth.signOut();
+            if (session) {
+              // Update cached session
+              this.cachedSession = session;
+              // Retry original request with new token
+              error.config.headers.Authorization = `Bearer ${session.access_token}`;
+              return this.client.request(error.config);
+            } else {
+              // Refresh failed, user needs to log in again
+              await supabase.auth.signOut();
+              this.cachedSession = null;
+            }
+          } catch (refreshError) {
+            console.warn('Failed to refresh session:', refreshError);
+            // Can't refresh, clear cached session
+            this.cachedSession = null;
           }
         }
 
         return Promise.reject(error);
       }
     );
+  }
+
+  private initializeSession() {
+    // Listen for auth state changes to update cached session
+    supabase.auth.onAuthStateChange((_event, session) => {
+      this.cachedSession = session;
+      console.log('Session updated in API client:', session ? 'authenticated' : 'not authenticated');
+    });
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig) {

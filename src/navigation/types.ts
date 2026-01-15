@@ -7,9 +7,9 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 
 // Auth Stack
 export type AuthStackParamList = {
-  Welcome: undefined;
   Login: undefined;
   SignUp: undefined;
+  ForgotPassword: undefined;
 };
 
 // Main Tab Navigator
@@ -17,7 +17,6 @@ export type MainTabParamList = {
   Home: NavigatorScreenParams<HomeStackParamList>;
   Workouts: undefined;
   Exercises: NavigatorScreenParams<ExercisesStackParamList>;
-  Progress: NavigatorScreenParams<ProgressStackParamList>;
   Profile: NavigatorScreenParams<ProfileStackParamList>;
 };
 
@@ -64,17 +63,9 @@ export type ExercisesStackParamList = {
   Favorites: undefined;
 };
 
-// Progress Stack
-export type ProgressStackParamList = {
-  ProgressOverview: undefined;
-  ExerciseProgress: { exerciseId: string };
-  LogProgress: { exerciseId: string };
-};
-
 // Profile Stack
 export type ProfileStackParamList = {
   ProfileMain: undefined;
-  Settings: undefined;
   Preferences: undefined;
   EditProfile: undefined;
 };

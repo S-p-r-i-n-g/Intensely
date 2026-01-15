@@ -15,6 +15,8 @@ import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { exercisesApi } from '../../api';
 import type { Exercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'ExerciseSelection'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'ExerciseSelection'>;
@@ -24,6 +26,7 @@ interface ExerciseSelectionScreenProps {}
 const ExerciseSelectionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
@@ -99,16 +102,20 @@ const ExerciseSelectionScreen = () => {
 
     return (
       <TouchableOpacity
-        style={[styles.exerciseCard, isSelected && styles.exerciseCardSelected]}
+        style={[
+          styles.exerciseCard,
+          { backgroundColor: theme.background.secondary },
+          isSelected && styles.exerciseCardSelected,
+        ]}
         onPress={() => toggleExercise(item.id)}
       >
         <View style={styles.cardContent}>
           <View style={styles.exerciseInfo}>
-            <Text style={styles.exerciseName}>{item.name}</Text>
+            <Text style={[styles.exerciseName, { color: theme.text.primary }]}>{item.name}</Text>
             {item.targetMuscleGroups && item.targetMuscleGroups.length > 0 && (
               <View style={styles.muscleGroupsContainer}>
                 {item.targetMuscleGroups.slice(0, 3).map((muscle) => (
-                  <View key={muscle} style={styles.muscleTag}>
+                  <View key={muscle} style={[styles.muscleTag, { backgroundColor: theme.background.tertiary }]}>
                     <Text style={styles.muscleTagText}>{muscle}</Text>
                   </View>
                 ))}
@@ -116,7 +123,7 @@ const ExerciseSelectionScreen = () => {
             )}
           </View>
 
-          <View style={styles.checkbox}>
+          <View style={[styles.checkbox, { borderColor: theme.border.light, backgroundColor: theme.background.primary }]}>
             {isSelected && <Text style={styles.checkmark}>✓</Text>}
           </View>
         </View>
@@ -126,21 +133,21 @@ const ExerciseSelectionScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading exercises...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading exercises...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
           placeholder="Search exercises..."
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.text.tertiary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -148,7 +155,7 @@ const ExerciseSelectionScreen = () => {
 
       {/* Selection Count */}
       <View style={styles.selectionHeader}>
-        <Text style={styles.selectionText}>
+        <Text style={[styles.selectionText, { color: theme.text.secondary }]}>
           {selectedIds.length} exercise{selectedIds.length !== 1 ? 's' : ''} selected
         </Text>
         {selectedIds.length > 0 && (
@@ -166,13 +173,13 @@ const ExerciseSelectionScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No exercises found</Text>
+            <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No exercises found</Text>
           </View>
         }
       />
 
       {/* Confirm Button */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: theme.background.primary, borderTopColor: theme.border.medium }]}>
         <TouchableOpacity style={styles.confirmButton} onPress={confirmSelection}>
           <Text style={styles.confirmButtonText}>
             Confirm Selection ({selectedIds.length})
@@ -186,63 +193,56 @@ const ExerciseSelectionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: spacing[4],
     fontSize: 16,
-    color: '#666',
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[4],
   },
   searchInput: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: borderRadius.sm,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
     fontSize: 16,
-    color: '#333',
   },
   selectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 12,
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[3],
   },
   selectionText: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   clearText: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
   },
   listContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing[5],
     paddingBottom: 100,
   },
   exerciseCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.md,
+    padding: spacing[4],
+    marginBottom: spacing[3],
     borderWidth: 2,
     borderColor: 'transparent',
   },
   exerciseCardSelected: {
-    backgroundColor: '#FFF5F2',
-    borderColor: '#FF6B35',
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[500],
   },
   cardContent: {
     flexDirection: 'row',
@@ -250,28 +250,26 @@ const styles = StyleSheet.create({
   },
   exerciseInfo: {
     flex: 1,
-    marginRight: 12,
+    marginRight: spacing[3],
   },
   exerciseName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   muscleGroupsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing[1] + 2,
   },
   muscleTag: {
-    backgroundColor: '#FFF5F2',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: spacing[2],
+    paddingVertical: spacing[1],
+    borderRadius: borderRadius.sm,
   },
   muscleTagText: {
     fontSize: 10,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
     textTransform: 'capitalize',
   },
@@ -280,42 +278,37 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: '#ccc',
-    backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
   },
   checkmark: {
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontSize: 18,
     fontWeight: 'bold',
   },
   emptyContainer: {
-    paddingVertical: 60,
+    paddingVertical: spacing[15],
     alignItems: 'center',
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
   },
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
-    padding: 20,
+    padding: spacing[5],
   },
   confirmButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[4],
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   confirmButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
   },

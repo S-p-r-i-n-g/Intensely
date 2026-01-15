@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuthStore } from '../../stores';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 const ProfileScreen = () => {
   const { profile, signOut, isLoading } = useAuthStore();
+  const { theme } = useTheme();
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -27,27 +30,27 @@ const ProfileScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.name}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+      <View style={[styles.header, { borderBottomColor: theme.border.light }]}>
+        <Text style={[styles.name, { color: theme.text.primary }]}>
           {profile?.firstName || profile?.lastName
             ? `${profile.firstName} ${profile.lastName}`.trim()
             : 'User'}
         </Text>
-        <Text style={styles.email}>{profile?.email}</Text>
+        <Text style={[styles.email, { color: theme.text.secondary }]}>{profile?.email}</Text>
       </View>
 
       <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>Edit Profile</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
+          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Edit Profile</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>Workout Preferences</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
+          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Workout Preferences</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>Settings</Text>
+        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
+          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Settings</Text>
         </TouchableOpacity>
       </View>
 
@@ -65,42 +68,36 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 10,
+    padding: spacing[5],
+    paddingTop: spacing[2],
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   email: {
     fontSize: 16,
-    color: '#666',
   },
   section: {
-    marginTop: 20,
+    marginTop: spacing[5],
   },
   menuItem: {
-    padding: 16,
-    paddingHorizontal: 20,
+    padding: spacing[4],
+    paddingHorizontal: spacing[5],
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
   menuItemText: {
     fontSize: 16,
-    color: '#333',
   },
   signOutButton: {
-    margin: 20,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: '#FF6B35',
+    margin: spacing[5],
+    padding: spacing[4],
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.primary[500],
     alignItems: 'center',
   },
   signOutButtonText: {

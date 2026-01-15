@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/types';
 import { useAuthStore, useWorkoutStore } from '../../stores';
+import { spacing, colors } from '../../tokens';
+import { useTheme } from '../../theme';
+import { Text } from '../../components/ui';
+import { WorkoutFlowCard } from '../../components/home';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'HomeMain'>;
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
   const { profile } = useAuthStore();
-  const { loadObjectives, objectives } = useWorkoutStore();
+  const { loadObjectives } = useWorkoutStore();
   const [showBackendWarning, setShowBackendWarning] = useState(false);
 
   useEffect(() => {
@@ -21,14 +26,14 @@ const HomeScreen = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Backend Warning Banner */}
       {showBackendWarning && (
         <View style={styles.warningBanner}>
           <Text style={styles.warningIcon}>⚠️</Text>
           <View style={styles.warningContent}>
-            <Text style={styles.warningTitle}>Backend Offline</Text>
-            <Text style={styles.warningText}>
+            <Text variant="bodySmall" style={styles.warningTitle}>Backend Offline</Text>
+            <Text variant="bodySmall" style={styles.warningText}>
               Some features may be limited. Authentication still works!
             </Text>
           </View>
@@ -36,49 +41,41 @@ const HomeScreen = () => {
       )}
 
       <View style={styles.header}>
-        <Text style={styles.greeting}>
+        <Text variant="h1" style={styles.greeting}>
           Hello{profile?.firstName ? `, ${profile.firstName}` : ''}!
         </Text>
-        <Text style={styles.subtitle}>Ready to work out?</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Start</Text>
+        <Text variant="h2" style={styles.sectionTitle}>Get Started</Text>
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          title="Jump Right In"
+          description="Get an instant workout based on your preferences. No thinking required."
+          badge="FASTEST"
+          badgeVariant="primary"
+          estimatedTime="~20 min"
+          difficulty="Any level"
           onPress={() => navigation.navigate('JumpRightIn')}
-        >
-          <Text style={styles.cardTitle}>Jump Right In</Text>
-          <Text style={styles.cardDescription}>
-            Get an instant workout based on your preferences
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          title="Let Us Curate"
+          description="Choose your goal, then customize duration, difficulty, and constraints."
+          badge="RECOMMENDED"
+          badgeVariant="success"
+          estimatedTime="~20-45 min"
+          difficulty="Any level"
           onPress={() => navigation.navigate('LetUsCurate', {})}
-        >
-          <Text style={styles.cardTitle}>Let Us Curate</Text>
-          <Text style={styles.cardDescription}>
-            Choose your goal and customize your workout
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.card}
+        <WorkoutFlowCard
+          title="Take the Wheel"
+          description="Build your own workout from scratch. Choose exercises, sets, and timing."
+          badge="CUSTOM"
+          badgeVariant="info"
           onPress={() => navigation.navigate('TakeTheWheel')}
-        >
-          <Text style={styles.cardTitle}>Take the Wheel</Text>
-          <Text style={styles.cardDescription}>
-            Build your own custom workout
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-        <Text style={styles.emptyText}>No recent workouts</Text>
+        />
       </View>
     </ScrollView>
   );
@@ -87,78 +84,43 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   warningBanner: {
     flexDirection: 'row',
-    backgroundColor: '#FFF3CD',
+    backgroundColor: colors.warning[100],
     borderBottomWidth: 1,
-    borderBottomColor: '#FFE69C',
-    padding: 12,
+    borderBottomColor: colors.warning[500],
+    padding: spacing[4],
     alignItems: 'center',
   },
   warningIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: spacing[4],
   },
   warningContent: {
     flex: 1,
   },
   warningTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#856404',
+    color: colors.warning[500],
     marginBottom: 2,
+    fontWeight: '500',
   },
   warningText: {
-    fontSize: 12,
-    color: '#856404',
+    color: colors.warning[500],
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[4],
+    paddingTop: spacing[8],
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    marginBottom: spacing[2],
   },
   section: {
-    padding: 20,
+    padding: spacing[4],
     paddingTop: 0,
   },
   sectionTitle: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
-  card: {
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  cardDescription: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 22,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: '#999',
-    fontStyle: 'italic',
+    marginBottom: spacing[4],
   },
 });
 

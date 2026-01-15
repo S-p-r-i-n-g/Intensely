@@ -6,7 +6,6 @@ import { ProfileStackParamList } from './types';
 import ProfileMainScreen from '../screens/profile/ProfileMainScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import PreferencesScreen from '../screens/profile/PreferencesScreen';
-import SettingsScreen from '../screens/profile/SettingsScreen';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
@@ -17,7 +16,7 @@ export const ProfileStackNavigator = () => {
         headerShown: true,
         headerTintColor: '#FF6B35',
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: 600,
         },
       }}
     >
@@ -40,13 +39,6 @@ export const ProfileStackNavigator = () => {
         component={PreferencesScreen}
         options={{
           title: 'Preferences',
-        }}
-      />
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: 'Settings',
         }}
       />
     </Stack.Navigator>

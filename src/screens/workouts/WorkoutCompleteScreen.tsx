@@ -11,6 +11,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'WorkoutComplete'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'WorkoutComplete'>;
@@ -18,6 +20,7 @@ type RoutePropType = RouteProp<HomeStackParamList, 'WorkoutComplete'>;
 const WorkoutCompleteScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
 
   const { durationSeconds, caloriesBurned } = route.params;
 
@@ -28,7 +31,7 @@ const WorkoutCompleteScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <ScrollView contentContainerStyle={styles.content}>
         {/* Success Icon */}
         <View style={styles.iconContainer}>
@@ -36,29 +39,29 @@ const WorkoutCompleteScreen = () => {
         </View>
 
         {/* Congratulations Message */}
-        <Text style={styles.title}>Workout Complete!</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: theme.text.primary }]}>Workout Complete!</Text>
+        <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
           Great job! You crushed it.
         </Text>
 
         {/* Stats Cards */}
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <View style={[styles.statCard, { backgroundColor: theme.background.tertiary }]}>
             <Text style={styles.statValue}>{formatDuration(durationSeconds)}</Text>
-            <Text style={styles.statLabel}>Duration</Text>
+            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Duration</Text>
           </View>
 
           {caloriesBurned && (
-            <View style={styles.statCard}>
+            <View style={[styles.statCard, { backgroundColor: theme.background.tertiary }]}>
               <Text style={styles.statValue}>{caloriesBurned}</Text>
-              <Text style={styles.statLabel}>Calories Burned</Text>
+              <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Calories Burned</Text>
             </View>
           )}
         </View>
 
         {/* Motivational Message */}
-        <View style={styles.messageCard}>
-          <Text style={styles.messageText}>
+        <View style={[styles.messageCard, { backgroundColor: theme.background.secondary }]}>
+          <Text style={[styles.messageText, { color: theme.text.primary }]}>
             Every workout counts. You're one step closer to your goals!
           </Text>
         </View>
@@ -66,10 +69,10 @@ const WorkoutCompleteScreen = () => {
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.secondaryButton}
+            style={[styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
             onPress={() => navigation.navigate('HomeMain')}
           >
-            <Text style={styles.secondaryButtonText}>Done</Text>
+            <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>Done</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -101,16 +104,15 @@ const WorkoutCompleteScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingVertical: 40,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[10],
     alignItems: 'center',
   },
   iconContainer: {
-    marginBottom: 24,
+    marginBottom: spacing[6],
   },
   successIcon: {
     fontSize: 100,
@@ -118,89 +120,81 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing[3],
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
-    marginBottom: 40,
+    marginBottom: spacing[10],
     textAlign: 'center',
   },
   statsContainer: {
     flexDirection: 'row',
     width: '100%',
-    marginBottom: 32,
-    gap: 16,
+    marginBottom: spacing[8],
+    gap: spacing[4],
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FFF5F2',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: borderRadius.lg,
+    padding: spacing[6],
     alignItems: 'center',
   },
   statValue: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 8,
+    color: colors.primary[500],
+    marginBottom: spacing[2],
   },
   statLabel: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   messageCard: {
     width: '100%',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 32,
+    borderRadius: borderRadius.lg,
+    padding: spacing[6],
+    marginBottom: spacing[8],
   },
   messageText: {
     fontSize: 16,
-    color: '#333',
     lineHeight: 24,
     textAlign: 'center',
   },
   buttonContainer: {
     flexDirection: 'row',
     width: '100%',
-    gap: 12,
-    marginBottom: 16,
+    gap: spacing[3],
+    marginBottom: spacing[4],
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: '#FF6B35',
-    paddingVertical: 18,
-    borderRadius: 12,
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[4] + 2,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 18,
-    borderRadius: 12,
+    paddingVertical: spacing[4] + 2,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: '#333',
     fontSize: 18,
     fontWeight: '600',
   },
   linkButton: {
-    paddingVertical: 12,
+    paddingVertical: spacing[3],
   },
   linkText: {
     fontSize: 16,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
   },
 });

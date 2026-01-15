@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  TextInput,
   ActivityIndicator,
   Alert,
 } from 'react-native';
@@ -15,6 +13,9 @@ import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
 import { useWorkoutStore, useAuthStore } from '../../stores';
+import { Button, Text, Card, Input } from '../../components/ui';
+import { useTheme } from '../../theme';
+import { spacing, borderRadius, colors } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'TakeTheWheel'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'TakeTheWheel'>;
@@ -22,6 +23,7 @@ type RoutePropType = RouteProp<HomeStackParamList, 'TakeTheWheel'>;
 const TakeTheWheelScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
   const { setCurrentWorkout } = useWorkoutStore();
   const { user } = useAuthStore();
 
@@ -189,98 +191,118 @@ const TakeTheWheelScreen = () => {
 
   if (workout) {
     return (
-      <ScrollView style={styles.container}>
+      <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
         <View style={styles.workoutHeader}>
-          <Text style={styles.workoutTitle}>{workout.name}</Text>
+          <Text variant="h2" style={styles.workoutTitle}>
+            {workout.name}
+          </Text>
         </View>
 
         <View style={styles.statsContainer}>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{workout.totalCircuits}</Text>
-            <Text style={styles.statLabel}>Circuits</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{workout.estimatedDurationMinutes}</Text>
-            <Text style={styles.statLabel}>Minutes</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>{workout.estimatedCalories}</Text>
-            <Text style={styles.statLabel}>Calories</Text>
-          </View>
+          <Card variant="flat" padding="medium" style={styles.statBox}>
+            <Text variant="h3" style={styles.statValue}>
+              {workout.totalCircuits}
+            </Text>
+            <Text variant="caption" color="secondary">
+              Circuits
+            </Text>
+          </Card>
+          <Card variant="flat" padding="medium" style={styles.statBox}>
+            <Text variant="h3" style={styles.statValue}>
+              {workout.estimatedDurationMinutes}
+            </Text>
+            <Text variant="caption" color="secondary">
+              Minutes
+            </Text>
+          </Card>
+          <Card variant="flat" padding="medium" style={styles.statBox}>
+            <Text variant="h3" style={styles.statValue}>
+              {workout.estimatedCalories}
+            </Text>
+            <Text variant="caption" color="secondary">
+              Calories
+            </Text>
+          </Card>
         </View>
 
         <View style={styles.circuitsSection}>
-          <Text style={styles.sectionTitle}>Circuits</Text>
+          <Text variant="h2" style={styles.sectionTitle}>
+            Circuits
+          </Text>
           {workout.circuits?.map((circuit: any, index: number) => (
-            <View key={circuit.id} style={styles.circuitCard}>
-              <Text style={styles.circuitTitle}>Circuit {index + 1}</Text>
-              <Text style={styles.circuitInfo}>
+            <Card key={circuit.id} variant="flat" padding="medium" style={styles.circuitCard}>
+              <Text variant="h3" style={styles.circuitTitle}>
+                Circuit {index + 1}
+              </Text>
+              <Text variant="bodySmall" color="secondary" style={styles.circuitInfo}>
                 {circuit.exercises.length} exercises • {workout.setsPerCircuit} sets
               </Text>
               <View style={styles.exercisesList}>
                 {circuit.exercises.map((ex: any) => (
-                  <Text key={ex.id} style={styles.exerciseItem}>
+                  <Text key={ex.id} variant="body" style={styles.exerciseItem}>
                     • {ex.exercise.name}
                   </Text>
                 ))}
               </View>
-            </View>
+            </Card>
           ))}
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.backButton}
+          <Button
+            variant="secondary"
+            fullWidth
             onPress={() => {
               setWorkout(null);
             }}
+            style={styles.backButton}
           >
-            <Text style={styles.backButtonText}>Customize Again</Text>
-          </TouchableOpacity>
+            Customize Again
+          </Button>
 
-          <TouchableOpacity
-            style={styles.startButton}
+          <Button
+            variant="primary"
+            size="large"
+            fullWidth
             onPress={startWorkout}
           >
-            <Text style={styles.startButtonText}>Start Workout</Text>
-          </TouchableOpacity>
+            Start Workout
+          </Button>
         </View>
       </ScrollView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>Build Your Workout</Text>
-        <Text style={styles.subtitle}>
+        <Text variant="h2" style={styles.title}>
+          Build Your Workout
+        </Text>
+        <Text variant="body" color="secondary">
           Customize every aspect of your workout
         </Text>
       </View>
 
       {/* Workout Name */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Workout Name</Text>
-        <TextInput
-          style={[
-            styles.textInput,
-            nameError && styles.textInputError
-          ]}
+        <Input
+          label="Workout Name"
+          placeholder="Enter workout name"
           value={workoutName}
           onChangeText={setWorkoutName}
-          placeholder="Enter workout name"
-          placeholderTextColor="#999"
+          error={nameError || undefined}
         />
-        {nameError && (
-          <Text style={styles.errorText}>{nameError}</Text>
-        )}
       </View>
 
       {/* Exercise Selection */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Exercises</Text>
-        <TouchableOpacity
-          style={styles.selectButton}
+        <Text variant="bodyLarge" style={styles.sectionLabel}>
+          Exercises
+        </Text>
+        <Card
+          variant="flat"
+          padding="medium"
           onPress={() => {
             navigation.navigate('ExerciseSelection', {
               selectedIds: selectedExerciseIds,
@@ -291,72 +313,84 @@ const TakeTheWheelScreen = () => {
               restInterval,
             });
           }}
+          style={styles.selectButton}
         >
-          <Text style={styles.selectButtonText}>
+          <Text variant="body" style={styles.selectButtonText}>
             {selectedExerciseIds.length > 0
               ? `${selectedExerciseIds.length} exercises selected`
               : 'Select Exercises'}
           </Text>
           <Text style={styles.selectButtonArrow}>→</Text>
-        </TouchableOpacity>
+        </Card>
       </View>
 
       {/* Circuits */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Number of Circuits</Text>
+        <Text variant="bodyLarge" style={styles.sectionLabel}>
+          Number of Circuits
+        </Text>
         <View style={styles.counterContainer}>
           <TouchableOpacity
-            style={styles.counterButton}
+            style={[styles.counterButton, { backgroundColor: theme.background.elevated }]}
             onPress={() => setCircuits(Math.max(1, circuits - 1))}
           >
-            <Text style={styles.counterButtonText}>−</Text>
+            <Text variant="h3">−</Text>
           </TouchableOpacity>
-          <Text style={styles.counterValue}>{circuits}</Text>
+          <Text variant="display" style={styles.counterValue}>
+            {circuits}
+          </Text>
           <TouchableOpacity
-            style={styles.counterButton}
+            style={[styles.counterButton, { backgroundColor: theme.background.elevated }]}
             onPress={() => setCircuits(Math.min(10, circuits + 1))}
           >
-            <Text style={styles.counterButtonText}>+</Text>
+            <Text variant="h3">+</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Sets per Circuit */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Sets per Circuit</Text>
+        <Text variant="bodyLarge" style={styles.sectionLabel}>
+          Sets per Circuit
+        </Text>
         <View style={styles.counterContainer}>
           <TouchableOpacity
-            style={styles.counterButton}
+            style={[styles.counterButton, { backgroundColor: theme.background.elevated }]}
             onPress={() => setSetsPerCircuit(Math.max(1, setsPerCircuit - 1))}
           >
-            <Text style={styles.counterButtonText}>−</Text>
+            <Text variant="h3">−</Text>
           </TouchableOpacity>
-          <Text style={styles.counterValue}>{setsPerCircuit}</Text>
+          <Text variant="display" style={styles.counterValue}>
+            {setsPerCircuit}
+          </Text>
           <TouchableOpacity
-            style={styles.counterButton}
+            style={[styles.counterButton, { backgroundColor: theme.background.elevated }]}
             onPress={() => setSetsPerCircuit(Math.min(5, setsPerCircuit + 1))}
           >
-            <Text style={styles.counterButtonText}>+</Text>
+            <Text variant="h3">+</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Work Interval */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Work Interval (seconds)</Text>
+        <Text variant="bodyLarge" style={styles.sectionLabel}>
+          Work Interval (seconds)
+        </Text>
         <View style={styles.intervalButtons}>
           {[10, 15, 20, 30, 45, 60].map((seconds) => (
             <TouchableOpacity
               key={seconds}
               style={[
                 styles.intervalButton,
+                { backgroundColor: theme.background.elevated, borderColor: theme.border.medium },
                 workInterval === seconds && styles.intervalButtonActive,
               ]}
               onPress={() => setWorkInterval(seconds)}
             >
               <Text
+                variant="body"
                 style={[
-                  styles.intervalButtonText,
                   workInterval === seconds && styles.intervalButtonTextActive,
                 ]}
               >
@@ -369,20 +403,23 @@ const TakeTheWheelScreen = () => {
 
       {/* Rest Interval */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Rest Interval (seconds)</Text>
+        <Text variant="bodyLarge" style={styles.sectionLabel}>
+          Rest Interval (seconds)
+        </Text>
         <View style={styles.intervalButtons}>
           {[15, 30, 60, 90, 120].map((seconds) => (
             <TouchableOpacity
               key={seconds}
               style={[
                 styles.intervalButton,
+                { backgroundColor: theme.background.elevated, borderColor: theme.border.medium },
                 restInterval === seconds && styles.intervalButtonActive,
               ]}
               onPress={() => setRestInterval(seconds)}
             >
               <Text
+                variant="body"
                 style={[
-                  styles.intervalButtonText,
                   restInterval === seconds && styles.intervalButtonTextActive,
                 ]}
               >
@@ -395,8 +432,9 @@ const TakeTheWheelScreen = () => {
 
       <View style={styles.buttonContainer}>
         {isEditMode && (
-          <TouchableOpacity
-            style={styles.cancelButton}
+          <Button
+            variant="secondary"
+            fullWidth
             onPress={() => {
               // @ts-ignore - navigating across stacks
               navigation.navigate('Workouts', {
@@ -405,26 +443,21 @@ const TakeTheWheelScreen = () => {
               });
             }}
             disabled={isLoading}
+            style={styles.cancelButton}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+            Cancel
+          </Button>
         )}
-        <TouchableOpacity
-          style={[
-            styles.generateButton,
-            (isLoading || nameError) && styles.generateButtonDisabled
-          ]}
+        <Button
+          variant="primary"
+          size="large"
+          fullWidth
           onPress={generateWorkout}
+          loading={isLoading}
           disabled={isLoading || !!nameError}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.generateButtonText}>
-              {isEditMode ? 'Update Workout' : 'Create Workout'}
-            </Text>
-          )}
-        </TouchableOpacity>
+          {isEditMode ? 'Update Workout' : 'Create Workout'}
+        </Button>
       </View>
     </ScrollView>
   );
@@ -433,236 +466,121 @@ const TakeTheWheelScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[8],
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
+    marginBottom: spacing[2],
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[6],
   },
   sectionLabel: {
-    fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
-  },
-  textInput: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    color: '#333',
-  },
-  textInputError: {
-    borderWidth: 2,
-    borderColor: '#DC2626',
-    backgroundColor: '#FEF2F2',
-  },
-  errorText: {
-    color: '#DC2626',
-    fontSize: 14,
-    marginTop: 8,
+    marginBottom: spacing[3],
   },
   selectButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   selectButtonText: {
-    fontSize: 16,
-    color: '#333',
     fontWeight: '500',
   },
   selectButtonArrow: {
     fontSize: 18,
-    color: '#999',
+    color: colors.secondary[400],
   },
   counterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
+    gap: spacing[6],
   },
   counterButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#f5f5f5',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  counterButtonText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#333',
-  },
   counterValue: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#333',
     minWidth: 60,
     textAlign: 'center',
   },
   intervalButtons: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing[2],
   },
   intervalButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[5],
+    borderRadius: borderRadius.md,
     minWidth: 70,
     alignItems: 'center',
+    borderWidth: 1,
   },
   intervalButtonActive: {
-    backgroundColor: '#FF6B35',
-  },
-  intervalButtonText: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
   },
   intervalButtonTextActive: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   buttonContainer: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: spacing[5],
+    paddingBottom: spacing[10],
   },
   cancelButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  cancelButtonText: {
-    color: '#333',
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  generateButton: {
-    backgroundColor: '#FF6B35',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  generateButtonDisabled: {
-    backgroundColor: '#CCC',
-    opacity: 0.6,
-  },
-  generateButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    marginBottom: spacing[3],
   },
   workoutHeader: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[8],
   },
   workoutTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   statsContainer: {
     flexDirection: 'row',
-    padding: 20,
-    paddingTop: 0,
+    paddingHorizontal: spacing[5],
+    gap: spacing[2],
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
-    padding: 12,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    marginHorizontal: 4,
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF6B35',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#666',
+    color: colors.primary[500],
+    marginBottom: spacing[1],
   },
   circuitsSection: {
-    padding: 20,
+    padding: spacing[5],
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   circuitCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   circuitTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   circuitInfo: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 12,
+    marginBottom: spacing[3],
   },
   exercisesList: {
-    marginTop: 8,
+    marginTop: spacing[2],
   },
   exerciseItem: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   backButton: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  backButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  startButton: {
-    backgroundColor: '#FF6B35',
-    padding: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    marginBottom: spacing[3],
   },
 });
 

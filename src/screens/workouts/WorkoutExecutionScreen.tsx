@@ -16,6 +16,8 @@ import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { workoutsApi, sessionsApi } from '../../api';
 import type { Workout, Circuit, CircuitExercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'WorkoutExecution'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'WorkoutExecution'>;
@@ -27,6 +29,7 @@ type IntervalType = 'work' | 'rest' | 'circuitRest';
 const WorkoutExecutionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
+  const { theme } = useTheme();
 
   // Workout data
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -96,7 +99,9 @@ const WorkoutExecutionScreen = () => {
       setWorkout(workoutData);
 
       // Start session
+      console.log('Starting workout session for workout:', workoutData.id);
       const sessionResponse = await sessionsApi.start(workoutData.id);
+      console.log('Session started:', sessionResponse.data);
       setSessionId(sessionResponse.data.sessionId);
 
       // Initialize first interval
@@ -107,8 +112,14 @@ const WorkoutExecutionScreen = () => {
       shouldAutoProgressRef.current = true;
       startElapsedTimer();
     } catch (error: any) {
-      console.error('Failed to load workout:', error);
-      Alert.alert('Error', 'Could not load workout. Please try again.');
+      console.error('Failed to load workout or start session:', error);
+      console.error('Error details:', error.response?.data || error.message);
+
+      const errorMessage = error.response?.status === 401
+        ? 'You must be signed in to start a workout session.'
+        : error.response?.data?.message || 'Could not load workout. Please try again.';
+
+      Alert.alert('Error', errorMessage);
       navigation.goBack();
     }
   };
@@ -243,30 +254,38 @@ const WorkoutExecutionScreen = () => {
   };
 
   const handleQuit = () => {
+    console.log('Quit button pressed, showing modal');
     setShowQuitModal(true);
   };
 
   const confirmQuit = async () => {
+    console.log('Confirm quit pressed');
     setShowQuitModal(false);
     stopTimer();
+
+    // Try to cancel session, but don't block navigation on failure
     if (sessionId) {
-      try {
-        await sessionsApi.cancel(sessionId);
-      } catch (error) {
-        console.error('Failed to cancel session:', error);
-      }
+      sessionsApi.cancel(sessionId).catch((error) => {
+        console.warn('Failed to cancel session (session may not exist):', error.message);
+      });
     }
-    navigation.navigate('HomeMain');
+
+    console.log('Navigating back to home');
+    // Use popToTop to go back to the root of the stack (HomeMain)
+    setTimeout(() => {
+      navigation.popToTop();
+    }, 100);
   };
 
   const cancelQuit = () => {
+    console.log('Cancel quit pressed');
     setShowQuitModal(false);
   };
 
   if (!workout || !workout.circuits) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.loadingText}>Loading workout...</Text>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
+        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading workout...</Text>
       </SafeAreaView>
     );
   }
@@ -288,33 +307,33 @@ const WorkoutExecutionScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleQuit} style={styles.quitButton}>
           <Text style={styles.quitButtonText}>✕ Quit</Text>
         </TouchableOpacity>
-        <Text style={styles.elapsedTime}>{formatTime(totalElapsedTime)}</Text>
+        <Text style={[styles.elapsedTime, { color: theme.text.primary }]}>{formatTime(totalElapsedTime)}</Text>
       </View>
 
       {/* Progress Bar */}
-      <View style={styles.progressBarContainer}>
+      <View style={[styles.progressBarContainer, { backgroundColor: theme.border.medium }]}>
         <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
       </View>
 
       {/* Circuit/Set/Exercise Info */}
       <View style={styles.infoContainer}>
-        <Text style={styles.circuitInfo}>
+        <Text style={[styles.circuitInfo, { color: theme.text.secondary }]}>
           Circuit {currentCircuitIndex + 1} of {workout.totalCircuits} • Set {currentSetIndex + 1} of {workout.setsPerCircuit}
         </Text>
-        <Text style={styles.exerciseCounter}>
+        <Text style={[styles.exerciseCounter, { color: theme.text.tertiary }]}>
           Exercise {currentExerciseIndex + 1} of {totalExercisesInCircuit}
         </Text>
       </View>
 
       {/* Main Timer Display */}
       <View style={styles.timerContainer}>
-        <Text style={styles.intervalLabel}>
+        <Text style={[styles.intervalLabel, { color: theme.text.tertiary }]}>
           {intervalType === 'work' ? 'WORK' : intervalType === 'rest' ? 'REST' : 'CIRCUIT REST'}
         </Text>
         <Text style={[
@@ -327,9 +346,9 @@ const WorkoutExecutionScreen = () => {
 
       {/* Exercise Display */}
       <View style={styles.exerciseContainer}>
-        <Text style={styles.exerciseTitle}>{currentExercise.exercise.name}</Text>
+        <Text style={[styles.exerciseTitle, { color: theme.text.primary }]}>{currentExercise.exercise.name}</Text>
         {currentExercise.exercise.instructions && (
-          <Text style={styles.exerciseInstructions}>
+          <Text style={[styles.exerciseInstructions, { color: theme.text.secondary }]}>
             {currentExercise.exercise.instructions}
           </Text>
         )}
@@ -347,11 +366,11 @@ const WorkoutExecutionScreen = () => {
       {/* Controls */}
       <View style={styles.controlsContainer}>
         <TouchableOpacity
-          style={[styles.controlButton, styles.secondaryButton]}
+          style={[styles.controlButton, styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
           onPress={moveToPreviousExercise}
           disabled={currentCircuitIndex === 0 && currentSetIndex === 0 && currentExerciseIndex === 0}
         >
-          <Text style={styles.secondaryButtonText}>← Previous</Text>
+          <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>← Previous</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -362,10 +381,10 @@ const WorkoutExecutionScreen = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.controlButton, styles.secondaryButton]}
+          style={[styles.controlButton, styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
           onPress={moveToNextInterval}
         >
-          <Text style={styles.secondaryButtonText}>Skip →</Text>
+          <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>Skip →</Text>
         </TouchableOpacity>
       </View>
 
@@ -377,17 +396,17 @@ const WorkoutExecutionScreen = () => {
         onRequestClose={cancelQuit}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Quit Workout?</Text>
-            <Text style={styles.modalMessage}>
+          <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
+            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Quit Workout?</Text>
+            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
               Are you sure you want to quit? Your progress will not be saved.
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton]}
+                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.background.secondary }]}
                 onPress={cancelQuit}
               >
-                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                <Text style={[styles.modalCancelButtonText, { color: theme.text.primary }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalQuitButton]}
@@ -406,11 +425,9 @@ const WorkoutExecutionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginTop: 40,
   },
@@ -418,48 +435,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[4],
   },
   quitButton: {
-    padding: 8,
+    padding: spacing[2],
   },
   quitButtonText: {
     fontSize: 16,
-    color: '#FF3B30',
+    color: colors.error[500],
     fontWeight: '600',
   },
   elapsedTime: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
   },
   progressBarContainer: {
     height: 6,
-    backgroundColor: '#E5E5E5',
-    marginHorizontal: 20,
+    marginHorizontal: spacing[5],
     borderRadius: 3,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
     borderRadius: 3,
   },
   infoContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 12,
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[6],
+    paddingBottom: spacing[3],
   },
   circuitInfo: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     marginBottom: 4,
   },
   exerciseCounter: {
     fontSize: 14,
-    color: '#999',
     textAlign: 'center',
   },
   timerContainer: {
@@ -470,8 +483,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 2,
-    marginBottom: 16,
-    color: '#999',
+    marginBottom: spacing[4],
   },
   timerText: {
     fontSize: 96,
@@ -479,77 +491,74 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   timerWork: {
-    color: '#FF6B35',
+    color: colors.primary[500],
   },
   timerRest: {
-    color: '#4CAF50',
+    color: colors.success[500],
   },
   exerciseContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: spacing[5],
+    paddingVertical: spacing[6],
     flex: 1,
   },
   exerciseTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   exerciseInstructions: {
     fontSize: 16,
-    color: '#666',
     lineHeight: 24,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: spacing[4],
   },
   muscleGroupsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: spacing[2],
   },
   muscleTag: {
-    backgroundColor: '#FFF5F2',
-    paddingHorizontal: 12,
+    backgroundColor: colors.primary[50],
+    paddingHorizontal: spacing[3],
     paddingVertical: 6,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     marginHorizontal: 4,
     marginVertical: 4,
   },
   muscleTagText: {
     fontSize: 12,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   controlsContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    gap: 12,
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[5],
+    gap: spacing[3],
   },
   controlButton: {
     flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: spacing[4],
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
     flex: 1.5,
   },
   secondaryButton: {
-    backgroundColor: '#f5f5f5',
+    // backgroundColor applied dynamically via theme
   },
   primaryButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
   },
   secondaryButtonText: {
-    color: '#333',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -560,9 +569,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
+    borderRadius: borderRadius.lg,
+    padding: spacing[6],
     width: width * 0.85,
     maxWidth: 400,
     shadowColor: '#000',
@@ -574,41 +582,38 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#333',
-    marginBottom: 12,
+    marginBottom: spacing[3],
     textAlign: 'center',
   },
   modalMessage: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 24,
+    marginBottom: spacing[6],
     textAlign: 'center',
     lineHeight: 22,
   },
   modalButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing[3],
   },
   modalButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   modalCancelButton: {
-    backgroundColor: '#f5f5f5',
+    // backgroundColor applied dynamically via theme
   },
   modalCancelButtonText: {
-    color: '#333',
     fontSize: 16,
     fontWeight: '600',
   },
   modalQuitButton: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: colors.error[500],
   },
   modalQuitButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
   },

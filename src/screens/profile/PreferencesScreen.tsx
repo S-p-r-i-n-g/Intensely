@@ -13,12 +13,15 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProfileStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { usersApi } from '../../api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Preferences'>;
 
 const PreferencesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { profile, syncProfile } = useAuthStore();
+  const { theme } = useTheme();
 
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('intermediate');
   const [smallSpace, setSmallSpace] = useState(false);
@@ -66,19 +69,19 @@ const PreferencesScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Workout Preferences</Text>
-        <Text style={styles.headerSubtitle}>
+        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Workout Preferences</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>
           Customize your default workout settings
         </Text>
       </View>
 
       {/* Default Difficulty */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Default Difficulty Level</Text>
-        <Text style={styles.sectionDescription}>
+        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Default Difficulty Level</Text>
+        <Text style={[styles.sectionDescription, { color: theme.text.secondary }]}>
           This will be used as your default when generating workouts
         </Text>
 
@@ -88,6 +91,7 @@ const PreferencesScreen = () => {
               key={diff}
               style={[
                 styles.optionButton,
+                { backgroundColor: theme.background.secondary },
                 selectedDifficulty === diff && styles.optionButtonActive,
               ]}
               onPress={() => setSelectedDifficulty(diff)}
@@ -95,6 +99,7 @@ const PreferencesScreen = () => {
               <Text
                 style={[
                   styles.optionButtonText,
+                  { color: theme.text.primary },
                   selectedDifficulty === diff && styles.optionButtonTextActive,
                 ]}
               >
@@ -107,46 +112,46 @@ const PreferencesScreen = () => {
 
       {/* Space Constraints */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Space & Environment</Text>
-        <Text style={styles.sectionDescription}>
+        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Space & Environment</Text>
+        <Text style={[styles.sectionDescription, { color: theme.text.secondary }]}>
           Set default constraints for your workout space
         </Text>
 
         <TouchableOpacity
-          style={styles.toggleOption}
+          style={[styles.toggleOption, { borderBottomColor: theme.border.light }]}
           onPress={() => setSmallSpace(!smallSpace)}
         >
           <View style={styles.toggleInfo}>
-            <Text style={styles.toggleTitle}>Small Space</Text>
-            <Text style={styles.toggleDescription}>
+            <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>Small Space</Text>
+            <Text style={[styles.toggleDescription, { color: theme.text.secondary }]}>
               Prefer exercises that don't require much room
             </Text>
           </View>
-          <View style={[styles.toggle, smallSpace && styles.toggleActive]}>
+          <View style={[styles.toggle, { backgroundColor: theme.border.medium }, smallSpace && styles.toggleActive]}>
             <View style={[styles.toggleCircle, smallSpace && styles.toggleCircleActive]} />
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.toggleOption}
+          style={[styles.toggleOption, { borderBottomColor: theme.border.light }]}
           onPress={() => setQuiet(!quiet)}
         >
           <View style={styles.toggleInfo}>
-            <Text style={styles.toggleTitle}>Quiet Mode</Text>
-            <Text style={styles.toggleDescription}>
+            <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>Quiet Mode</Text>
+            <Text style={[styles.toggleDescription, { color: theme.text.secondary }]}>
               Avoid jumping exercises and loud movements
             </Text>
           </View>
-          <View style={[styles.toggle, quiet && styles.toggleActive]}>
+          <View style={[styles.toggle, { backgroundColor: theme.border.medium }, quiet && styles.toggleActive]}>
             <View style={[styles.toggleCircle, quiet && styles.toggleCircleActive]} />
           </View>
         </TouchableOpacity>
       </View>
 
       {/* Info Card */}
-      <View style={styles.infoCard}>
+      <View style={[styles.infoCard, { backgroundColor: theme.background.elevated }]}>
         <Text style={styles.infoIcon}>💡</Text>
-        <Text style={styles.infoText}>
+        <Text style={[styles.infoText, { color: theme.text.secondary }]}>
           You can always override these settings when creating a specific workout
         </Text>
       </View>
@@ -170,55 +175,48 @@ const PreferencesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
-    padding: 20,
-    paddingTop: 30,
+    padding: spacing[5],
+    paddingTop: spacing[7],
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#666',
   },
   section: {
-    paddingHorizontal: 20,
-    marginBottom: 32,
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[8],
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing[2],
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
+    marginBottom: spacing[4],
     lineHeight: 20,
   },
   optionsContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing[3],
   },
   optionButton: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: spacing[3],
+    borderRadius: borderRadius.sm,
     alignItems: 'center',
   },
   optionButtonActive: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
   },
   optionButtonText: {
     fontSize: 15,
-    color: '#333',
     fontWeight: '500',
   },
   optionButtonTextActive: {
@@ -228,35 +226,31 @@ const styles = StyleSheet.create({
   toggleOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: spacing[4],
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   toggleInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: spacing[4],
   },
   toggleTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    marginBottom: spacing[1],
   },
   toggleDescription: {
     fontSize: 13,
-    color: '#666',
     lineHeight: 18,
   },
   toggle: {
     width: 51,
     height: 31,
     borderRadius: 15.5,
-    backgroundColor: '#E5E5E5',
     padding: 2,
     justifyContent: 'center',
   },
   toggleActive: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: colors.primary[500],
   },
   toggleCircle: {
     width: 27,
@@ -269,28 +263,26 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF5F2',
-    marginHorizontal: 20,
-    marginBottom: 24,
-    padding: 16,
-    borderRadius: 12,
+    marginHorizontal: spacing[5],
+    marginBottom: spacing[6],
+    padding: spacing[4],
+    borderRadius: borderRadius.md,
   },
   infoIcon: {
     fontSize: 20,
-    marginRight: 12,
+    marginRight: spacing[3],
   },
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
   },
   saveButton: {
-    marginHorizontal: 20,
-    marginBottom: 40,
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 12,
+    marginHorizontal: spacing[5],
+    marginBottom: spacing[10],
+    backgroundColor: colors.primary[500],
+    paddingVertical: spacing[4],
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   saveButtonDisabled: {

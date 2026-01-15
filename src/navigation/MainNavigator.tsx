@@ -1,34 +1,37 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MainTabParamList } from './types';
+import { useTheme } from '../theme';
+import { colors } from '../tokens/colors';
 
 // Stack navigators
 import { HomeStackNavigator } from './HomeStackNavigator';
 import { WorkoutsStackNavigator } from './WorkoutsStackNavigator';
 import { ExercisesStackNavigator } from './ExercisesStackNavigator';
-import { ProgressStackNavigator } from './ProgressStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainNavigator = () => {
+  const { theme } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false, // Let nested navigators handle their own headers
-        tabBarActiveTintColor: '#FF6B35',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: colors.primary[500],
+        tabBarInactiveTintColor: theme.text.tertiary,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: theme.background.elevated,
           borderTopWidth: 1,
-          borderTopColor: '#f0f0f0',
+          borderTopColor: theme.border.light,
           paddingTop: 8,
           paddingBottom: 8,
           height: 60,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: '600' as const,
           marginTop: 4,
         },
       }}
@@ -54,13 +57,6 @@ export const MainNavigator = () => {
         component={ExercisesStackNavigator}
         options={{
           title: 'Exercises',
-        }}
-      />
-      <Tab.Screen
-        name="Progress"
-        component={ProgressStackNavigator}
-        options={{
-          title: 'Progress',
         }}
       />
       <Tab.Screen

@@ -14,11 +14,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { exercisesApi } from '../../api';
 import type { Exercise } from '../../types/api';
+import { useTheme } from '../../theme';
+import { colors, spacing, borderRadius } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExercisesList'>;
 
 const ExercisesListScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
@@ -105,11 +108,11 @@ const ExercisesListScreen = () => {
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => (
     <TouchableOpacity
-      style={styles.exerciseCard}
+      style={[styles.exerciseCard, { backgroundColor: theme.background.secondary }]}
       onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item.id })}
     >
       <View style={styles.exerciseHeader}>
-        <Text style={styles.exerciseName}>{item.name}</Text>
+        <Text style={[styles.exerciseName, { color: theme.text.primary }]}>{item.name}</Text>
         {item.difficulty && (
           <View
             style={[
@@ -127,7 +130,7 @@ const ExercisesListScreen = () => {
       </View>
 
       {item.description && (
-        <Text style={styles.exerciseDescription} numberOfLines={2}>
+        <Text style={[styles.exerciseDescription, { color: theme.text.secondary }]} numberOfLines={2}>
           {item.description}
         </Text>
       )}
@@ -142,7 +145,7 @@ const ExercisesListScreen = () => {
               </View>
             ))}
           {[...(item.primaryMuscles || []), ...(item.secondaryMuscles || [])].length > 3 && (
-            <Text style={styles.moreText}>
+            <Text style={[styles.moreText, { color: theme.text.tertiary }]}>
               +{[...(item.primaryMuscles || []), ...(item.secondaryMuscles || [])].length - 3}
             </Text>
           )}
@@ -150,7 +153,7 @@ const ExercisesListScreen = () => {
       )}
 
       <View style={styles.exerciseFooter}>
-        <Text style={styles.equipmentText}>
+        <Text style={[styles.equipmentText, { color: theme.text.secondary }]}>
           {item.equipment && item.equipment.length > 0
             ? item.equipment.join(', ')
             : 'No equipment'}
@@ -162,29 +165,29 @@ const ExercisesListScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading exercises...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading exercises...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
           placeholder="Search exercises..."
-          placeholderTextColor="#999"
+          placeholderTextColor={theme.text.tertiary}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
         <TouchableOpacity
-          style={styles.filterButton}
+          style={[styles.filterButton, { backgroundColor: theme.background.secondary }]}
           onPress={() => setShowFilters(!showFilters)}
         >
-          <Text style={styles.filterButtonText}>
+          <Text style={[styles.filterButtonText, { color: theme.text.primary }]}>
             {showFilters ? '✕' : '⚙️'} Filters
           </Text>
         </TouchableOpacity>
@@ -192,17 +195,17 @@ const ExercisesListScreen = () => {
 
       {/* Filters Section */}
       {showFilters && (
-        <View style={styles.filtersSection}>
+        <View style={[styles.filtersSection, { borderBottomColor: theme.border.medium }]}>
           {/* Difficulty Filter */}
           <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Difficulty</Text>
+            <Text style={[styles.filterLabel, { color: theme.text.primary }]}>Difficulty</Text>
             <View style={styles.filterOptions}>
               {difficulties.map((diff) => (
                 <TouchableOpacity
                   key={diff}
                   style={[
                     styles.filterChip,
-                    selectedDifficulty === diff && styles.filterChipActive,
+                    { backgroundColor: selectedDifficulty === diff ? colors.primary[500] : colors.primary[50] },
                   ]}
                   onPress={() =>
                     setSelectedDifficulty(selectedDifficulty === diff ? null : diff)
@@ -211,7 +214,7 @@ const ExercisesListScreen = () => {
                   <Text
                     style={[
                       styles.filterChipText,
-                      selectedDifficulty === diff && styles.filterChipTextActive,
+                      { color: selectedDifficulty === diff ? '#FFFFFF' : colors.primary[500] },
                     ]}
                   >
                     {diff.charAt(0).toUpperCase() + diff.slice(1)}
@@ -223,14 +226,14 @@ const ExercisesListScreen = () => {
 
           {/* Muscle Group Filter */}
           <View style={styles.filterGroup}>
-            <Text style={styles.filterLabel}>Muscle Group</Text>
+            <Text style={[styles.filterLabel, { color: theme.text.primary }]}>Muscle Group</Text>
             <View style={styles.filterOptions}>
               {muscleGroups.map((muscle) => (
                 <TouchableOpacity
                   key={muscle}
                   style={[
                     styles.filterChip,
-                    selectedMuscleGroup === muscle && styles.filterChipActive,
+                    { backgroundColor: selectedMuscleGroup === muscle ? colors.primary[500] : colors.primary[50] },
                   ]}
                   onPress={() =>
                     setSelectedMuscleGroup(selectedMuscleGroup === muscle ? null : muscle)
@@ -239,7 +242,7 @@ const ExercisesListScreen = () => {
                   <Text
                     style={[
                       styles.filterChipText,
-                      selectedMuscleGroup === muscle && styles.filterChipTextActive,
+                      { color: selectedMuscleGroup === muscle ? '#FFFFFF' : colors.primary[500] },
                     ]}
                   >
                     {muscle.charAt(0).toUpperCase() + muscle.slice(1)}
@@ -251,8 +254,8 @@ const ExercisesListScreen = () => {
 
           {/* Clear Filters Button */}
           {(selectedDifficulty || selectedMuscleGroup || searchQuery) && (
-            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-              <Text style={styles.clearButtonText}>Clear All Filters</Text>
+            <TouchableOpacity style={[styles.clearButton, { backgroundColor: theme.background.secondary }]} onPress={clearFilters}>
+              <Text style={[styles.clearButtonText, { color: theme.text.secondary }]}>Clear All Filters</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -260,7 +263,7 @@ const ExercisesListScreen = () => {
 
       {/* Results Count */}
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsText}>
+        <Text style={[styles.resultsText, { color: theme.text.secondary }]}>
           {filteredExercises.length} exercise{filteredExercises.length !== 1 ? 's' : ''}
         </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Favorites')}>
@@ -276,8 +279,8 @@ const ExercisesListScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No exercises found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            <Text style={[styles.emptyText, { color: theme.text.primary }]}>No exercises found</Text>
+            <Text style={[styles.emptySubtext, { color: theme.text.secondary }]}>Try adjusting your filters</Text>
           </View>
         }
       />
@@ -288,138 +291,116 @@ const ExercisesListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: spacing.md,
     fontSize: 16,
-    color: '#666',
   },
   searchContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.sm,
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     fontSize: 16,
-    color: '#333',
   },
   filterButton: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    paddingHorizontal: 16,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
   },
   filterButtonText: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '600',
   },
   filtersSection: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
   },
   filterGroup: {
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
   filterLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   filterOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.xs,
   },
   filterChip: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  filterChipActive: {
-    backgroundColor: '#FF6B35',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.full,
   },
   filterChipText: {
     fontSize: 14,
-    color: '#333',
     fontWeight: '500',
   },
-  filterChipTextActive: {
-    color: '#fff',
-  },
   clearButton: {
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
   },
   clearButtonText: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '600',
   },
   resultsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
   },
   resultsText: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   favoritesLink: {
     fontSize: 14,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
   },
   listContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   exerciseCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
   exerciseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   exerciseName: {
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginRight: 8,
+    marginRight: spacing.xs,
   },
   difficultyBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
   },
   difficultyBeginner: {
     backgroundColor: '#4CAF50',
@@ -433,35 +414,33 @@ const styles = StyleSheet.create({
   difficultyText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#fff',
+    color: '#FFFFFF',
   },
   exerciseDescription: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: spacing.sm,
   },
   muscleGroupsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 12,
+    marginBottom: spacing.sm,
     gap: 6,
   },
   muscleTag: {
-    backgroundColor: '#FFF5F2',
+    backgroundColor: colors.primary[50],
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: borderRadius.md,
   },
   muscleTagText: {
     fontSize: 11,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
     textTransform: 'capitalize',
   },
   moreText: {
     fontSize: 11,
-    color: '#999',
     alignSelf: 'center',
   },
   exerciseFooter: {
@@ -471,12 +450,11 @@ const styles = StyleSheet.create({
   },
   equipmentText: {
     fontSize: 12,
-    color: '#666',
     textTransform: 'capitalize',
   },
   videoIndicator: {
     fontSize: 12,
-    color: '#FF6B35',
+    color: colors.primary[500],
     fontWeight: '600',
   },
   emptyContainer: {
@@ -486,12 +464,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    marginBottom: spacing.xs,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#666',
   },
 });
 
