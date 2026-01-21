@@ -749,6 +749,78 @@ Each checkpoint includes:
 
 ---
 
+#### ✅ DOCS_CLEANUP (2026-01-20)
+**Status:** Complete
+**What Was Done:**
+- Cleaned up cluttered markdown files from project root
+- Created organized `/docs` folder structure
+- Consolidated 5 phase progress reports into single archive file
+- Consolidated 3 UX documents into single guide
+- Deleted 3 obsolete files (UX_BRANCH_SETUP_COMPLETE, RESUME_HERE, WORKOUT_GENERATION_DEBUG_RCA)
+- Moved guide files to `/docs/guides/`
+- Moved historical files to `/docs/archive/`
+
+**New Structure:**
+```
+/docs/
+├── archive/
+│   ├── DEVELOPMENT_HISTORY.md    (consolidated phase reports)
+│   ├── DESIGN_ASSESSMENT_REPORT.md
+│   ├── GEMINI3_DESIGN_ASSESSMENT.md
+│   ├── SCREEN_MIGRATION_GUIDE.md
+│   └── TEST_RESULTS.md
+├── guides/
+│   ├── BRANCH_WORKFLOW.md
+│   ├── DEPLOYMENT.md
+│   ├── DESIGN_SYSTEM_USAGE.md
+│   ├── EMPTY_STATE_GUIDELINES.md
+│   ├── GEMINI_WORKFLOW.md
+│   ├── HOW_TO_TEST.md
+│   └── QUICK_START.md
+└── UX_GUIDE.md                   (consolidated UX docs)
+```
+
+**Files Remaining at Root:**
+- `CLAUDE.md` - Claude context (required)
+- `README.md` - Project readme (standard)
+- `projectplan.md` - Project plan with checkpoints (required)
+- `design.md` - Design system (referenced by CLAUDE.md)
+
+**Impact:**
+- Reduced root-level MD files from 26 to 4
+- Better navigation and organization
+- Historical docs preserved but not cluttering workspace
+- No impact on app functionality
+
+---
+
+#### ✅ WORKFLOW_UPDATE_V1 (2026-01-21)
+**Status:** Complete
+**What Was Done:**
+- Updated Home screen "Start Workout" navigation to go to My Workouts list
+- Added "Start" button to each workout card on WorkoutsScreen
+- Updated WorkoutsScreen empty state with "Create Your First Workout" CTA
+- Maintained Exercise Library button on Home screen
+
+**Files Modified:**
+- `src/screens/home/HomeScreen.tsx` - Updated navigation target for Start Workout
+- `src/screens/workouts/WorkoutsScreen.tsx` - Added Start button, updated empty state
+
+**New Workflow:**
+```
+Home
+├── Start Workout → My Workouts list
+│   ├── [Workout Card] + [Start] button → WorkoutPreview
+│   └── Empty State → "Create Your First Workout" → TakeTheWheel
+├── New Workout → TakeTheWheel
+└── Exercise Library → Exercises
+```
+
+**Design Document:** `mobile/feature-workflow-update-1.md`
+**Implementation Plan:** `mobile/IMPLEMENTATION_PLAN_WORKFLOW_UPDATE.md`
+
+---
+
 #### ✅ CIRCUIT_WORKOUTS_REFACTOR_V1 (2026-01-27)
 **Status:** Complete
 **What's Working:**
@@ -866,5 +938,5 @@ Let's build something awesome! 💪
 
 ---
 
-*Last Updated: 2026-01-08*
-*Version: 1.0*
+*Last Updated: 2026-01-21*
+*Version: 1.2*
