@@ -67,7 +67,7 @@ const HomeScreen = () => {
             variant="secondary"
             icon={<PlusIcon size={24} color="#000000" />}
             onPress={() => navigation.navigate('Home', {
-              screen: 'TakeTheWheel',
+              screen: 'NewWorkout',
             })}
           />
 

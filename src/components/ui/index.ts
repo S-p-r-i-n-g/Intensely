@@ -10,6 +10,8 @@ export { Input } from './Input';
 export { Badge } from './Badge';
 export { ProgressBar } from './ProgressBar';
 export { SkeletonLoader } from './SkeletonLoader';
+export { PillSelector } from './PillSelector';
+export { Stepper } from './Stepper';
 
 // Type exports
 export type { ButtonVariant, ButtonSize } from './Button';

@@ -86,15 +86,31 @@ const ExerciseSelectionScreen = () => {
       return;
     }
 
-    // Navigate back with selected IDs and preserve other state
-    navigation.navigate('TakeTheWheel', {
-      selectedExerciseIds: selectedIds,
-      workoutName: route.params?.workoutName,
-      circuits: route.params?.circuits,
-      setsPerCircuit: route.params?.setsPerCircuit,
-      workInterval: route.params?.workInterval,
-      restInterval: route.params?.restInterval,
-    });
+    // Check if we came from NewWorkout (has circuitIndex) or TakeTheWheel
+    const isFromNewWorkout = route.params?.circuitIndex !== undefined;
+
+    if (isFromNewWorkout) {
+      // Navigate back to NewWorkout with selected IDs
+      navigation.navigate('NewWorkout', {
+        selectedExerciseIds: selectedIds,
+        circuitIndex: route.params?.circuitIndex,
+        workoutName: route.params?.workoutName,
+        circuits: route.params?.circuits,
+        setsPerCircuit: route.params?.setsPerCircuit,
+        workInterval: route.params?.workInterval,
+        restInterval: route.params?.restInterval,
+      });
+    } else {
+      // Legacy: Navigate back to TakeTheWheel
+      navigation.navigate('TakeTheWheel', {
+        selectedExerciseIds: selectedIds,
+        workoutName: route.params?.workoutName,
+        circuits: route.params?.circuits,
+        setsPerCircuit: route.params?.setsPerCircuit,
+        workInterval: route.params?.workInterval,
+        restInterval: route.params?.restInterval,
+      });
+    }
   };
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => {

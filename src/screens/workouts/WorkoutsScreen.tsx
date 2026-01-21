@@ -155,10 +155,10 @@ const WorkoutsScreen = () => {
   }
 
   const handleCreateWorkout = () => {
-    // Navigate to TakeTheWheel in the Home stack
+    // Navigate to NewWorkout in the Home stack
     const drawerNavigation = navigation.getParent<DrawerNavigationProp<DrawerParamList>>();
     drawerNavigation?.navigate('Home', {
-      screen: 'TakeTheWheel',
+      screen: 'NewWorkout',
       params: {},
     });
   };

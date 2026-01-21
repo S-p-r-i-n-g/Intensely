@@ -4,6 +4,7 @@ import { HomeStackParamList } from './types';
 
 // Screens
 import HomeScreen from '../screens/home/HomeScreen';
+import NewWorkoutScreen from '../screens/workouts/NewWorkoutScreen';
 import WorkoutFlowSelectionScreen from '../screens/workouts/WorkoutFlowSelectionScreen';
 import JumpRightInScreen from '../screens/workouts/JumpRightInScreen';
 import TakeTheWheelScreen from '../screens/workouts/TakeTheWheelScreen';
@@ -30,6 +31,13 @@ export const HomeStackNavigator = () => {
         component={HomeScreen}
         options={{
           headerShown: false, // Home screen shows its own header in the content
+        }}
+      />
+      <Stack.Screen
+        name="NewWorkout"
+        component={NewWorkoutScreen}
+        options={{
+          title: 'New Workout',
         }}
       />
       <Stack.Screen

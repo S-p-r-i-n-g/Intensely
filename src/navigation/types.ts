@@ -31,10 +31,21 @@ export type MainTabParamList = {
 // Home Stack (nested in Home tab)
 export type HomeStackParamList = {
   HomeMain: undefined;
+  NewWorkout: {
+    workoutId?: string; // If provided, we're editing an existing workout
+    selectedExerciseIds?: string[];
+    circuitIndex?: number;
+    workoutName?: string;
+    circuits?: number;
+    setsPerCircuit?: number;
+    workInterval?: number;
+    restInterval?: number;
+  };
+  // Legacy routes (kept for backward compatibility)
   WorkoutFlowSelection: undefined;
   JumpRightIn: undefined;
   TakeTheWheel: {
-    workoutId?: string; // If provided, we're editing an existing workout
+    workoutId?: string;
     selectedExerciseIds?: string[];
     workoutName?: string;
     circuits?: number;
@@ -44,6 +55,7 @@ export type HomeStackParamList = {
   };
   ExerciseSelection: {
     selectedIds?: string[];
+    circuitIndex?: number;
     workoutName?: string;
     circuits?: number;
     setsPerCircuit?: number;
