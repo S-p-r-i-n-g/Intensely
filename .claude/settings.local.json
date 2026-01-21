@@ -40,7 +40,8 @@
       "Bash(git remote add:*)",
       "Bash(gh auth login:*)",
       "Bash(brew install:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(ls:*)"
     ]
   }
 }
