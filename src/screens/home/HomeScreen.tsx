@@ -56,8 +56,8 @@ const HomeScreen = () => {
             title="Start Workout"
             variant="primary"
             icon={<PlayIcon size={24} color="#FFFFFF" />}
-            onPress={() => navigation.navigate('Home', {
-              screen: 'JumpRightIn',
+            onPress={() => navigation.navigate('Workouts', {
+              screen: 'WorkoutsList',
             })}
           />
 

@@ -10,11 +10,13 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { WorkoutsStackParamList } from '../../navigation/types';
+import type { DrawerNavigationProp } from '@react-navigation/drawer';
+import { WorkoutsStackParamList, DrawerParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { PlayIcon, PlusIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>;
 
@@ -80,6 +82,10 @@ const WorkoutsScreen = () => {
   const renderWorkoutCard = ({ item }: { item: Workout }) => {
     const primaryObjective = item.objectiveMappings?.[0]?.objective;
 
+    const handleStartWorkout = () => {
+      navigation.navigate('WorkoutPreview', { workoutId: item.id });
+    };
+
     return (
       <TouchableOpacity
         style={[styles.workoutCard, { backgroundColor: theme.background.secondary }]}
@@ -87,19 +93,28 @@ const WorkoutsScreen = () => {
       >
         <View style={styles.workoutHeader}>
           <Text style={[styles.workoutName, { color: theme.text.primary }]}>{item.name}</Text>
-          {primaryObjective && (
-            <View
-              style={[
-                styles.objectiveBadge,
-                { backgroundColor: primaryObjective.colorHex },
-              ]}
-            >
-              <Text style={styles.objectiveBadgeText}>
-                {primaryObjective.name}
-              </Text>
-            </View>
-          )}
+          <TouchableOpacity
+            style={styles.startButton}
+            onPress={handleStartWorkout}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <PlayIcon size={16} color="#FFFFFF" />
+            <Text style={styles.startButtonText}>Start</Text>
+          </TouchableOpacity>
         </View>
+
+        {primaryObjective && (
+          <View
+            style={[
+              styles.objectiveBadge,
+              { backgroundColor: primaryObjective.colorHex },
+            ]}
+          >
+            <Text style={styles.objectiveBadgeText}>
+              {primaryObjective.name}
+            </Text>
+          </View>
+        )}
 
         {item.description && (
           <Text style={[styles.workoutDescription, { color: theme.text.secondary }]} numberOfLines={2}>
@@ -139,14 +154,32 @@ const WorkoutsScreen = () => {
     );
   }
 
+  const handleCreateWorkout = () => {
+    // Navigate to TakeTheWheel in the Home stack
+    const drawerNavigation = navigation.getParent<DrawerNavigationProp<DrawerParamList>>();
+    drawerNavigation?.navigate('Home', {
+      screen: 'TakeTheWheel',
+      params: {},
+    });
+  };
+
   if (workouts.length === 0) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
         <Text style={styles.emptyIcon}>💪</Text>
         <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>No Workouts Yet</Text>
         <Text style={[styles.emptySubtitle, { color: theme.text.secondary }]}>
-          Create your first workout from the Home tab
+          You haven't created any workouts.{'\n'}Let's fix that!
         </Text>
+        <TouchableOpacity
+          style={styles.createWorkoutButton}
+          onPress={handleCreateWorkout}
+        >
+          <PlusIcon size={20} color="#FFFFFF" />
+          <Text style={styles.createWorkoutButtonText}>
+            Create Your First Workout
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -203,7 +236,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: borderRadius.md,
-    marginLeft: spacing[2],
+    alignSelf: 'flex-start',
+    marginBottom: spacing[2],
   },
   objectiveBadgeText: {
     color: '#FFFFFF',
@@ -244,6 +278,36 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     fontSize: 16,
     textAlign: 'center',
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary[500],
+    paddingHorizontal: spacing[3],
+    paddingVertical: spacing[2],
+    borderRadius: 100,
+    gap: 4,
+  },
+  startButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  createWorkoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#000000',
+    paddingHorizontal: spacing[6],
+    paddingVertical: spacing[4],
+    borderRadius: 100,
+    marginTop: spacing[6],
+    gap: spacing[2],
+  },
+  createWorkoutButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
