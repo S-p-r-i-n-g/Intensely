@@ -11,15 +11,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
-import { useWorkoutBuilder, WorkoutSettings } from '../../hooks/useWorkoutBuilder';
+import { useWorkoutBuilder } from '../../hooks/useWorkoutBuilder';
 import { workoutsApi } from '../../api';
-import { useAuthStore } from '../../stores';
-import { Text, Button, Input, Card, PillSelector, Stepper } from '../../components/ui';
+import { Text, Button, Card, PillSelector, Stepper } from '../../components/ui';
 import { SettingsAccordion } from '../../components/workout/SettingsAccordion';
 import { useTheme } from '../../theme';
 import { spacing, colors, borderRadius } from '../../tokens';
@@ -62,10 +65,11 @@ const NewWorkoutScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const { theme } = useTheme();
-  const { user } = useAuthStore();
 
   const [isLoading, setIsLoading] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [modalName, setModalName] = useState('');
+  const [pendingStartImmediately, setPendingStartImmediately] = useState(false);
 
   const {
     state,
@@ -116,38 +120,6 @@ const NewWorkoutScreen = () => {
     }
   }, [route.params?.selectedExerciseIds, route.params?.circuitIndex]);
 
-  // Validate workout name for duplicates
-  useEffect(() => {
-    const checkNameUniqueness = async () => {
-      if (!state.name.trim() || !user) {
-        setNameError(null);
-        return;
-      }
-
-      try {
-        const response = await workoutsApi.getAll({});
-        const duplicate = response.data.find(
-          (w: any) =>
-            w.name.toLowerCase() === state.name.trim().toLowerCase() &&
-            w.createdBy === user.id &&
-            !w.deletedAt
-        );
-
-        if (duplicate) {
-          setNameError('You already have a workout with this name');
-        } else {
-          setNameError(null);
-        }
-      } catch (error) {
-        console.error('Error checking workout name:', error);
-        setNameError(null);
-      }
-    };
-
-    const timeoutId = setTimeout(checkNameUniqueness, 500);
-    return () => clearTimeout(timeoutId);
-  }, [state.name, user]);
-
   const handleSelectExercises = useCallback(() => {
     const circuitIndex = getActiveCircuitIndex();
     navigation.navigate('ExerciseSelection', {
@@ -164,23 +136,26 @@ const NewWorkoutScreen = () => {
     });
   }, [navigation, state, getActiveCircuitIndex, getCurrentExercises]);
 
-  const handleSaveWorkout = async (startImmediately: boolean = false) => {
-    // Validate
-    if (!state.name.trim()) {
-      Alert.alert('Missing Name', 'Please give your workout a name.');
-      return;
-    }
-
-    if (nameError) {
-      Alert.alert('Invalid Name', nameError);
-      return;
-    }
-
+  const handleSavePress = useCallback((startImmediately: boolean) => {
     const exercises = getCurrentExercises();
     if (exercises.length === 0) {
       Alert.alert('No Exercises', 'Please select at least one exercise.');
       return;
     }
+    setPendingStartImmediately(startImmediately);
+    setModalName(state.name);
+    setShowNameModal(true);
+  }, [getCurrentExercises, state.name]);
+
+  const handleModalSave = async () => {
+    const trimmedName = modalName.trim();
+    if (!trimmedName) {
+      Alert.alert('Missing Name', 'Please give your workout a name.');
+      return;
+    }
+
+    setName(trimmedName);
+    setShowNameModal(false);
 
     try {
       setIsLoading(true);
@@ -200,7 +175,7 @@ const NewWorkoutScreen = () => {
       });
 
       const params = {
-        name: state.name,
+        name: trimmedName,
         circuits: circuitsData,
         intervalSeconds: state.settings.work,
         restSeconds: state.settings.rest,
@@ -209,11 +184,9 @@ const NewWorkoutScreen = () => {
 
       const response = await workoutsApi.takeTheWheel(params);
 
-      if (startImmediately) {
-        // Navigate directly to workout execution
+      if (pendingStartImmediately) {
         navigation.navigate('WorkoutExecution', { workoutId: response.data.id });
       } else {
-        // Navigate to workouts list
         // @ts-ignore - navigating across stacks
         navigation.navigate('Workouts', { screen: 'WorkoutsList' });
       }
@@ -249,17 +222,6 @@ const NewWorkoutScreen = () => {
         )}
       </View>
 
-      {/* Workout Name */}
-      <View style={styles.section}>
-        <Input
-          label="Workout Name"
-          placeholder="e.g., Morning HIIT"
-          value={state.name}
-          onChangeText={setName}
-          error={nameError || undefined}
-        />
-      </View>
-
       {/* Settings Accordion */}
       <View style={styles.section}>
         <SettingsAccordion
@@ -293,33 +255,33 @@ const NewWorkoutScreen = () => {
             </View>
           </View>
 
-          {/* Work Interval */}
+          {/* Work */}
           <PillSelector
-            label="Work Interval"
+            label="Work"
             options={WORK_OPTIONS}
             currentValue={state.settings.work}
             onChange={(value) => setSetting('work', value)}
           />
 
-          {/* Rest Interval */}
+          {/* Rest */}
           <PillSelector
-            label="Rest Interval"
+            label="Rest"
             options={REST_OPTIONS}
             currentValue={state.settings.rest}
             onChange={(value) => setSetting('rest', value)}
           />
 
-          {/* Warm-up */}
+          {/* Warm Up */}
           <PillSelector
-            label="Warm-up"
+            label="Warm Up"
             options={WARMUP_OPTIONS}
             currentValue={state.settings.warmUp}
             onChange={(value) => setSetting('warmUp', value)}
           />
 
-          {/* Cool-down */}
+          {/* Cool Down */}
           <PillSelector
-            label="Cool-down"
+            label="Cool Down"
             options={COOLDOWN_OPTIONS}
             currentValue={state.settings.coolDown}
             onChange={(value) => setSetting('coolDown', value)}
@@ -422,9 +384,9 @@ const NewWorkoutScreen = () => {
         <Button
           variant="secondary"
           fullWidth
-          onPress={() => handleSaveWorkout(false)}
+          onPress={() => handleSavePress(false)}
           loading={isLoading}
-          disabled={isLoading || !!nameError}
+          disabled={isLoading}
           style={styles.saveButton}
         >
           Save Workout
@@ -434,9 +396,9 @@ const NewWorkoutScreen = () => {
           variant="primary"
           size="large"
           fullWidth
-          onPress={() => handleSaveWorkout(true)}
+          onPress={() => handleSavePress(true)}
           loading={isLoading}
-          disabled={isLoading || !!nameError}
+          disabled={isLoading}
         >
           <View style={styles.buttonContent}>
             <PlayIcon size={20} color="#FFFFFF" />
@@ -444,6 +406,59 @@ const NewWorkoutScreen = () => {
           </View>
         </Button>
       </View>
+
+      {/* Name Modal */}
+      <Modal
+        visible={showNameModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNameModal(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={[styles.modalCard, { backgroundColor: theme.background.elevated }]}>
+            <Text variant="h3" style={[styles.modalTitle, { color: theme.text.primary }]}>
+              Name Your Workout
+            </Text>
+            <TextInput
+              style={[
+                styles.modalInput,
+                {
+                  backgroundColor: theme.background.primary,
+                  color: theme.text.primary,
+                  borderColor: theme.border.medium,
+                },
+              ]}
+              placeholder="e.g., Morning HIIT"
+              placeholderTextColor={theme.text.tertiary}
+              value={modalName}
+              onChangeText={setModalName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleModalSave}
+            />
+            <View style={styles.modalButtons}>
+              <Button
+                variant="secondary"
+                onPress={() => setShowNameModal(false)}
+                style={styles.modalButton}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onPress={handleModalSave}
+                loading={isLoading}
+                style={styles.modalButton}
+              >
+                Save
+              </Button>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </ScrollView>
   );
 };
@@ -466,10 +481,6 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing[5],
     marginBottom: spacing[4],
-  },
-  sectionLabel: {
-    fontWeight: '600',
-    marginBottom: spacing[3],
   },
   settingsRow: {
     flexDirection: 'row',
@@ -570,6 +581,38 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: spacing[5],
+  },
+  modalCard: {
+    width: '100%',
+    borderRadius: borderRadius.lg,
+    padding: spacing[6],
+  },
+  modalTitle: {
+    fontWeight: '700',
+    marginBottom: spacing[4],
+    textAlign: 'center',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing[4],
+    paddingVertical: spacing[3],
+    fontSize: 16,
+    marginBottom: spacing[5],
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing[3],
+  },
+  modalButton: {
+    flex: 1,
   },
 });
 

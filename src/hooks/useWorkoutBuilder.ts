@@ -9,8 +9,8 @@ import { useReducer, useCallback } from 'react';
 export type WorkoutSettings = {
   work: number;      // Work interval in seconds
   rest: number;      // Rest interval in seconds
-  warmUp: number;    // Warm-up duration in seconds
-  coolDown: number;  // Cool-down duration in seconds
+  warmUp: number;    // Warm up duration in seconds
+  coolDown: number;  // Cool down duration in seconds
   circuits: number;  // Number of circuits
   sets: number;      // Sets per circuit
 };
@@ -51,7 +51,7 @@ const initialState: WorkoutState = {
   isSynced: true,
   exercises: { 0: [] },
   activeCircuitTab: 0,
-  isSettingsExpanded: true,
+  isSettingsExpanded: false,
   isExercisesExpanded: true,
 };
 
@@ -222,8 +222,11 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
 
   // Generate summary text for collapsed settings
   const getSettingsSummary = useCallback(() => {
-    const { work, rest, circuits, sets } = state.settings;
-    return `${circuits} circuits • ${sets} sets • ${work}s work / ${rest}s rest`;
+    const { work, rest, circuits, sets, warmUp, coolDown } = state.settings;
+    const parts = [`${circuits} circuits`, `${sets} sets`, `${work}s work / ${rest}s rest`];
+    if (warmUp > 0) parts.push(`${warmUp / 60}m warm up`);
+    if (coolDown > 0) parts.push(`${coolDown / 60}m cool down`);
+    return parts.join(' • ');
   }, [state.settings]);
 
   // Generate summary text for collapsed exercises section
@@ -236,7 +239,8 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
       );
       return circuitCounts.map((c, i) => `C${i + 1}: ${c}`).join(' • ');
     }
-    return `${count} exercise${count !== 1 ? 's' : ''} selected`;
+    if (count === 0) return 'No exercises selected';
+    return `${count} exercise${count !== 1 ? 's' : ''} • all circuits`;
   }, [state.exercises, state.isSynced, state.settings.circuits]);
 
   return {

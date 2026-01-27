@@ -372,10 +372,10 @@ const TakeTheWheelScreen = () => {
         </View>
       </View>
 
-      {/* Work Interval */}
+      {/* Work */}
       <View style={styles.section}>
         <Text variant="bodyLarge" style={styles.sectionLabel}>
-          Work Interval (seconds)
+          Work (seconds)
         </Text>
         <View style={styles.intervalButtons}>
           {[10, 15, 20, 30, 45, 60].map((seconds) => (
@@ -401,10 +401,10 @@ const TakeTheWheelScreen = () => {
         </View>
       </View>
 
-      {/* Rest Interval */}
+      {/* Rest */}
       <View style={styles.section}>
         <Text variant="bodyLarge" style={styles.sectionLabel}>
-          Rest Interval (seconds)
+          Rest (seconds)
         </Text>
         <View style={styles.intervalButtons}>
           {[15, 30, 60, 90, 120].map((seconds) => (

@@ -875,6 +875,31 @@ Home
 
 ---
 
+#### ✅ UI_POLISH_V3 (2026-01-27)
+**Status:** Complete
+**What's Working:**
+- Workout Name input removed from main page; name is now prompted via in-app modal when saving
+- Labels renamed for consistency: "Work Interval" → "Work", "Rest Interval" → "Rest", "Warm-up" → "Warm Up", "Cool-down" → "Cool Down"
+- Settings summary includes Warm Up and Cool Down durations when non-zero
+- Circuit Exercises summary shows per-circuit exercise counts when in customize mode
+- Settings section collapsed by default
+- Navigation uses `navigate()` (not `push()`) to avoid recursive stack entries
+
+**Files Changed:**
+- `mobile/src/hooks/useWorkoutBuilder.ts` — Updated defaults, comments, `getSettingsSummary`, `getExercisesSummary`
+- `mobile/src/screens/workouts/NewWorkoutScreen.tsx` — Name modal, label renames, removed unused imports/styles
+- `mobile/src/screens/workouts/TakeTheWheelScreen.tsx` — Label renames ("Work Interval" → "Work", "Rest Interval" → "Rest")
+
+**Verification Checklist:**
+- No Workout Name field on main page; modal appears on Save/Start
+- All labels say "Work", "Rest", "Warm Up", "Cool Down" consistently
+- Settings summary updates live with warm up/cool down values
+- Exercises summary shows "C1: 3 • C2: 2 • C3: 4" in customize mode
+- Settings accordion starts collapsed
+- Zero TypeScript diagnostics across all changed files
+
+---
+
 #### ⏳ TAXONOMY_BUILT
 **Status:** Pending
 **Target:** Exercise database populated, browsing works
