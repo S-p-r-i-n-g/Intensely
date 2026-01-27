@@ -192,16 +192,12 @@ export class UsersController {
       }
 
       const {
-        defaultObjectiveId,
-        defaultDifficulty,
         defaultCircuits,
-        defaultExercisesPerCircuit,
+        defaultSets,
         defaultIntervalSeconds,
         defaultRestSeconds,
-        defaultSets,
-        availableEquipment,
-        smallSpace,
-        quietMode,
+        defaultWarmUpSeconds,
+        defaultCoolDownSeconds,
         soundEnabled,
         vibrationEnabled,
         voiceCoaching
@@ -211,31 +207,24 @@ export class UsersController {
       const preferences = await prisma.userPreference.upsert({
         where: { userId: req.user.id },
         update: {
-          defaultObjectiveId,
-          defaultDifficulty,
           defaultCircuits,
-          defaultExercisesPerCircuit,
+          defaultSets,
           defaultIntervalSeconds,
           defaultRestSeconds,
-          defaultSets,
-          availableEquipment,
-          smallSpace,
-          quietMode,
+          defaultWarmUpSeconds,
+          defaultCoolDownSeconds,
           soundEnabled,
           vibrationEnabled,
           voiceCoaching
         },
         create: {
           userId: req.user.id,
-          defaultDifficulty: defaultDifficulty || 'intermediate',
           defaultCircuits: defaultCircuits || 3,
-          defaultExercisesPerCircuit: defaultExercisesPerCircuit || 3,
-          defaultIntervalSeconds: defaultIntervalSeconds || 20,
-          defaultRestSeconds: defaultRestSeconds || 60,
           defaultSets: defaultSets || 3,
-          availableEquipment: availableEquipment || ['bodyweight'],
-          smallSpace: smallSpace || false,
-          quietMode: quietMode || false,
+          defaultIntervalSeconds: defaultIntervalSeconds || 30,
+          defaultRestSeconds: defaultRestSeconds || 60,
+          defaultWarmUpSeconds: defaultWarmUpSeconds || 0,
+          defaultCoolDownSeconds: defaultCoolDownSeconds || 0,
           soundEnabled: soundEnabled ?? true,
           vibrationEnabled: vibrationEnabled ?? true,
           voiceCoaching: voiceCoaching || false

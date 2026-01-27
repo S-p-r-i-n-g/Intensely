@@ -29,18 +29,8 @@ export class WorkoutFlowsController {
         });
       }
 
-      // Determine default objective (Fat Burn if no preference)
-      let objectiveSlug = 'fat-burn-weight-loss';
-
-      // If user has fitness goals, match to appropriate objective
-      if (preferences?.fitnessGoals) {
-        const goals = preferences.fitnessGoals as string[];
-        if (goals.includes('lose_weight')) objectiveSlug = 'fat-burn-weight-loss';
-        else if (goals.includes('build_muscle')) objectiveSlug = 'strength-building';
-        else if (goals.includes('improve_cardio')) objectiveSlug = 'cardiovascular-conditioning';
-        else if (goals.includes('increase_flexibility')) objectiveSlug = 'flexibility-mobility';
-        else if (goals.includes('improve_endurance')) objectiveSlug = 'muscle-endurance';
-      }
+      // Determine default objective (Fat Burn as default)
+      const objectiveSlug = 'fat-burn-weight-loss';
 
       // Fetch objective
       const objective = await prisma.workoutObjective.findUnique({
@@ -57,11 +47,15 @@ export class WorkoutFlowsController {
 
       // Build constraints from preferences or defaults
       const constraints: WorkoutConstraints = {
-        difficulty: preferences?.defaultDifficulty || 'beginner',
-        availableEquipment: (preferences?.availableEquipment as string[]) || ['bodyweight'],
-        smallSpace: preferences?.hasSmallSpace !== false, // Default true
-        quiet: preferences?.needsQuietWorkouts !== false, // Default true
-        durationMinutes: preferences?.workoutDuration || 20
+        difficulty: 'intermediate',
+        availableEquipment: ['bodyweight'],
+        smallSpace: true,
+        quiet: true,
+        durationMinutes: 20,
+        circuits: preferences?.defaultCircuits,
+        intervalSeconds: preferences?.defaultIntervalSeconds,
+        restSeconds: preferences?.defaultRestSeconds,
+        sets: preferences?.defaultSets,
       };
 
       // Generate workout
@@ -149,26 +143,17 @@ export class WorkoutFlowsController {
 
       // Build constraints: custom > preferences > defaults
       const constraints: WorkoutConstraints = {
-        difficulty: customConstraints?.difficulty ||
-                   preferences?.defaultDifficulty ||
-                   'intermediate',
-        availableEquipment: customConstraints?.availableEquipment ||
-                          (preferences?.availableEquipment as string[]) ||
-                          ['bodyweight'],
-        smallSpace: customConstraints?.smallSpace !== undefined ?
-                   customConstraints.smallSpace :
-                   (preferences?.hasSmallSpace !== false),
-        quiet: customConstraints?.quiet !== undefined ?
-              customConstraints.quiet :
-              (preferences?.needsQuietWorkouts !== false),
+        difficulty: customConstraints?.difficulty || 'intermediate',
+        availableEquipment: customConstraints?.availableEquipment || ['bodyweight'],
+        smallSpace: customConstraints?.smallSpace ?? true,
+        quiet: customConstraints?.quiet ?? true,
         durationMinutes: customConstraints?.durationMinutes ||
-                        preferences?.workoutDuration ||
                         objective.recommendedDurationMinutes,
-        circuits: customConstraints?.circuits,
+        circuits: customConstraints?.circuits ?? preferences?.defaultCircuits,
         exercisesPerCircuit: customConstraints?.exercisesPerCircuit,
-        intervalSeconds: customConstraints?.intervalSeconds,
-        restSeconds: customConstraints?.restSeconds,
-        sets: customConstraints?.sets
+        intervalSeconds: customConstraints?.intervalSeconds ?? preferences?.defaultIntervalSeconds,
+        restSeconds: customConstraints?.restSeconds ?? preferences?.defaultRestSeconds,
+        sets: customConstraints?.sets ?? preferences?.defaultSets,
       };
 
       // Generate curated workout

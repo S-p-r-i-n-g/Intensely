@@ -66,23 +66,13 @@ model UserPreference {
   userId String @unique @map("user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Default Workout Preferences
-  defaultObjectiveId String? @map("default_objective_id")
-  defaultDifficulty  String  @default("intermediate") @map("default_difficulty")
-
   // Default Workout Structure
   defaultCircuits              Int @default(3) @map("default_circuits")
-  defaultExercisesPerCircuit   Int @default(3) @map("default_exercises_per_circuit")
-  defaultIntervalSeconds       Int @default(20) @map("default_interval_seconds")
-  defaultRestSeconds           Int @default(60) @map("default_rest_seconds")
   defaultSets                  Int @default(3) @map("default_sets")
-
-  // Equipment Availability
-  availableEquipment Json @default("[\"bodyweight\"]") @map("available_equipment")
-
-  // Environment Constraints
-  smallSpace Boolean @default(false) @map("small_space")
-  quietMode  Boolean @default(false) @map("quiet_mode")
+  defaultIntervalSeconds       Int @default(30) @map("default_interval_seconds")
+  defaultRestSeconds           Int @default(60) @map("default_rest_seconds")
+  defaultWarmUpSeconds         Int @default(0) @map("default_warm_up_seconds")
+  defaultCoolDownSeconds       Int @default(0) @map("default_cool_down_seconds")
 
   // Workout Settings
   soundEnabled      Boolean @default(true) @map("sound_enabled")
