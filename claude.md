@@ -1,8 +1,1 @@
-- Once the project plan as been approved, update the projectplan.md file with the plan and task list.
-- When a task from the project plan is completed, update the projectplan.md file to check off the task to indicate that it has been completed.
-- When the project plan changes, update the projectplan.md file with the updated plan.
-- Periodically during chats and project progress, create checkpoints that we can use to revert back to.
-- When a new checkpoint is created, give it a name or identifier and print it out to the prompt and add it to the projectplan.md file.
-- A revert back to a checkpoint can be requested via the prompt. For example, "please revert back to checkpoint xyz". Claude may also suggest reverting back to a previous checkpoint if Claude detects that a task was unsuccessful.
-- When reverting back to a checkpoint, ask for a confirmation. Once confirmed, reset the entire project and all assets to their states and versions up to when that checkpoint was created. When reverting, prompt to ask if the chat history should also be reverted.
 - When generating UI, always reference design.md to ensure visual consistency.
