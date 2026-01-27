@@ -774,6 +774,35 @@ Each checkpoint includes:
 
 ---
 
+#### ✅ CIRCUIT_EXERCISES_BUGFIX_V2 (2026-01-27)
+**Status:** Complete
+**What's Working:**
+- Renamed section from "Circuit Workouts" to "Circuit Exercises"
+- Fixed sync toggle: removed confirmation dialog, direct toggle now works both directions (On→Off and Off→On)
+- Fixed state persistence: full workout state (name, settings, isSynced, all circuit exercises) now round-trips through ExerciseSelection via `exercisesJson` and `isSynced` nav params
+- Per-circuit exercise selections persist across navigation — each circuit maintains its own exercise list
+- On→Off: all circuits populate with currently selected exercises
+- Off→On: keeps only Circuit 1 exercises, forgets circuits 2+
+- "Circuit Exercises" section is now collapsible (same accordion pattern as Settings)
+- Added `isExercisesExpanded` state + `TOGGLE_EXERCISES` action + `getExercisesSummary` computed
+- SettingsAccordion now accepts a `title` prop (defaults to "Settings")
+
+**Files Changed:**
+- `mobile/src/hooks/useWorkoutBuilder.ts` — Added isExercisesExpanded, TOGGLE_EXERCISES, getExercisesSummary
+- `mobile/src/screens/workouts/NewWorkoutScreen.tsx` — Collapsible section, simplified toggle, full state restoration
+- `mobile/src/screens/workouts/ExerciseSelectionScreen.tsx` — Passes isSynced and exercisesJson back
+- `mobile/src/navigation/types.ts` — Added isSynced and exercisesJson to NewWorkout and ExerciseSelection params
+- `mobile/src/components/workout/SettingsAccordion.tsx` — Added optional title prop
+
+**Verification Checklist:**
+- Section labeled "Circuit Exercises" and collapses/expands like Settings
+- Sync toggle works in both directions without confirmation dialog
+- Selecting exercises for one circuit doesn't reset settings or other circuit exercises
+- Switching tabs and selecting different exercises per circuit persists correctly
+- On→Off clones current exercises to all circuits; Off→On keeps C1 only
+
+---
+
 #### ⏳ TAXONOMY_BUILT
 **Status:** Pending
 **Target:** Exercise database populated, browsing works

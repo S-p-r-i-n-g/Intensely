@@ -40,6 +40,8 @@ export type HomeStackParamList = {
     setsPerCircuit?: number;
     workInterval?: number;
     restInterval?: number;
+    isSynced?: boolean;
+    exercisesJson?: string; // JSON-encoded Record<number, string[]> for all circuits
   };
   // Legacy routes (kept for backward compatibility)
   WorkoutFlowSelection: undefined;
@@ -61,6 +63,8 @@ export type HomeStackParamList = {
     setsPerCircuit?: number;
     workInterval?: number;
     restInterval?: number;
+    isSynced?: boolean;
+    exercisesJson?: string; // JSON-encoded Record<number, string[]> for all circuits
   };
   WorkoutPreview: { workoutId: string };
   WorkoutExecution: { workoutId: string };

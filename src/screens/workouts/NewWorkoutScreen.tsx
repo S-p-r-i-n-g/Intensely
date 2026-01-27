@@ -75,17 +75,44 @@ const NewWorkoutScreen = () => {
     setExercises,
     setActiveTab,
     toggleSettings,
+    toggleExercises,
+    loadWorkout,
     getSettingsSummary,
+    getExercisesSummary,
     getEstimatedDuration,
     getActiveCircuitIndex,
     getCurrentExercises,
   } = useWorkoutBuilder();
 
-  // Handle returning from exercise selection
+  // Handle returning from exercise selection — restore full state
   useEffect(() => {
     if (route.params?.selectedExerciseIds) {
-      const circuitIndex = route.params.circuitIndex ?? getActiveCircuitIndex();
-      setExercises(circuitIndex, route.params.selectedExerciseIds);
+      const circuitIndex = route.params.circuitIndex ?? 0;
+
+      // Rebuild exercises map: start with persisted data, overlay the newly selected circuit
+      let restoredExercises: Record<number, string[]> = { 0: [] };
+      if (route.params.exercisesJson) {
+        try {
+          restoredExercises = JSON.parse(route.params.exercisesJson);
+        } catch {}
+      }
+      restoredExercises[circuitIndex] = route.params.selectedExerciseIds;
+
+      // Restore full workout state from route params
+      loadWorkout({
+        ...(route.params.workoutName !== undefined && { name: route.params.workoutName }),
+        ...(route.params.isSynced !== undefined && { isSynced: route.params.isSynced }),
+        exercises: restoredExercises,
+        activeCircuitTab: circuitIndex,
+        settings: {
+          work: route.params.workInterval ?? state.settings.work,
+          rest: route.params.restInterval ?? state.settings.rest,
+          warmUp: state.settings.warmUp,
+          coolDown: state.settings.coolDown,
+          circuits: route.params.circuits ?? state.settings.circuits,
+          sets: route.params.setsPerCircuit ?? state.settings.sets,
+        },
+      });
     }
   }, [route.params?.selectedExerciseIds, route.params?.circuitIndex]);
 
@@ -126,12 +153,14 @@ const NewWorkoutScreen = () => {
     navigation.navigate('ExerciseSelection', {
       selectedIds: getCurrentExercises(),
       circuitIndex,
-      // Pass current state to restore on return
+      // Pass full state to restore on return
       workoutName: state.name,
       circuits: state.settings.circuits,
       setsPerCircuit: state.settings.sets,
       workInterval: state.settings.work,
       restInterval: state.settings.rest,
+      isSynced: state.isSynced,
+      exercisesJson: JSON.stringify(state.exercises),
     });
   }, [navigation, state, getActiveCircuitIndex, getCurrentExercises]);
 
@@ -200,20 +229,7 @@ const NewWorkoutScreen = () => {
   };
 
   const handleSyncToggle = useCallback(() => {
-    if (state.isSynced) {
-      // Sync → Customize: no confirmation needed (additive clone)
-      setSynced(false);
-    } else {
-      // Customize → Sync: confirmation needed (destructive overwrite)
-      Alert.alert(
-        'Sync All Circuits?',
-        "This will overwrite all circuits with Circuit 1's exercises. Custom exercises in other circuits will be lost.",
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Sync All', style: 'destructive', onPress: () => setSynced(true) },
-        ]
-      );
-    }
+    setSynced(!state.isSynced);
   }, [state.isSynced, setSynced]);
 
   return (
@@ -311,90 +327,94 @@ const NewWorkoutScreen = () => {
         </SettingsAccordion>
       </View>
 
-      {/* Circuit Workouts */}
+      {/* Circuit Exercises */}
       <View style={styles.section}>
-        <Text variant="bodyLarge" style={[styles.sectionLabel, { color: theme.text.primary }]}>
-          Circuit Workouts
-        </Text>
-
-        {/* Sync toggle (when circuits > 1) */}
-        {state.settings.circuits > 1 && (
-          <TouchableOpacity
-            style={[styles.syncToggle, { backgroundColor: theme.background.elevated }]}
-            onPress={handleSyncToggle}
-            activeOpacity={0.7}
-          >
-            <ArrowsRightLeftIcon size={20} color={colors.primary[500]} />
-            <View style={styles.syncToggleContent}>
-              <Text variant="body" style={[styles.syncToggleTitle, { color: theme.text.primary }]}>
-                Sync all circuits?
-              </Text>
-            </View>
-            <View style={[styles.syncIndicator, state.isSynced && styles.syncIndicatorActive]}>
-              <Text variant="caption" style={styles.syncIndicatorText}>
-                {state.isSynced ? 'ON' : 'OFF'}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* Circuit tabs (when not synced and circuits > 1) */}
-        {!state.isSynced && state.settings.circuits > 1 && (
-          <View style={styles.circuitTabsInSection}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.tabs}>
-                {Array.from({ length: state.settings.circuits }, (_, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={[
-                      styles.tab,
-                      { backgroundColor: theme.background.elevated },
-                      state.activeCircuitTab === i && styles.tabActive,
-                    ]}
-                    onPress={() => setActiveTab(i)}
-                  >
-                    <Text
-                      variant="bodySmall"
-                      style={[
-                        styles.tabText,
-                        state.activeCircuitTab === i && styles.tabTextActive,
-                      ]}
-                    >
-                      C{i + 1}
-                    </Text>
-                    <Text
-                      variant="caption"
-                      style={[
-                        styles.tabCount,
-                        { color: theme.text.secondary },
-                        state.activeCircuitTab === i && styles.tabCountActive,
-                      ]}
-                    >
-                      {(state.exercises[i] || []).length}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        )}
-
-        {/* Exercise picker card */}
-        <Card
-          variant="filled"
-          padding="medium"
-          onPress={handleSelectExercises}
-          style={styles.exerciseCard}
+        <SettingsAccordion
+          title="Circuit Exercises"
+          isOpen={state.isExercisesExpanded}
+          onToggle={toggleExercises}
+          summaryText={getExercisesSummary()}
+          maxHeight={400}
         >
-          <View style={styles.exerciseCardContent}>
-            <Text variant="body" style={{ color: theme.text.primary }}>
-              {getCurrentExercises().length > 0
-                ? `${getCurrentExercises().length} exercises selected`
-                : 'Select Exercises'}
-            </Text>
-            <Text style={styles.arrow}>→</Text>
-          </View>
-        </Card>
+          {/* Sync toggle (when circuits > 1) */}
+          {state.settings.circuits > 1 && (
+            <TouchableOpacity
+              style={[styles.syncToggle, { backgroundColor: theme.background.elevated }]}
+              onPress={handleSyncToggle}
+              activeOpacity={0.7}
+            >
+              <ArrowsRightLeftIcon size={20} color={colors.primary[500]} />
+              <View style={styles.syncToggleContent}>
+                <Text variant="body" style={[styles.syncToggleTitle, { color: theme.text.primary }]}>
+                  Sync all circuits?
+                </Text>
+              </View>
+              <View style={[styles.syncIndicator, state.isSynced && styles.syncIndicatorActive]}>
+                <Text variant="caption" style={styles.syncIndicatorText}>
+                  {state.isSynced ? 'ON' : 'OFF'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* Circuit tabs (when not synced and circuits > 1) */}
+          {!state.isSynced && state.settings.circuits > 1 && (
+            <View style={styles.circuitTabsInSection}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.tabs}>
+                  {Array.from({ length: state.settings.circuits }, (_, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={[
+                        styles.tab,
+                        { backgroundColor: theme.background.elevated },
+                        state.activeCircuitTab === i && styles.tabActive,
+                      ]}
+                      onPress={() => setActiveTab(i)}
+                    >
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.tabText,
+                          state.activeCircuitTab === i && styles.tabTextActive,
+                        ]}
+                      >
+                        C{i + 1}
+                      </Text>
+                      <Text
+                        variant="caption"
+                        style={[
+                          styles.tabCount,
+                          { color: theme.text.secondary },
+                          state.activeCircuitTab === i && styles.tabCountActive,
+                        ]}
+                      >
+                        {(state.exercises[i] || []).length}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Exercise picker card */}
+          <Card
+            variant="filled"
+            padding="medium"
+            onPress={handleSelectExercises}
+            style={styles.exerciseCard}
+          >
+            <View style={styles.exerciseCardContent}>
+              <Text variant="body" style={{ color: theme.text.primary }}>
+                {getCurrentExercises().length > 0
+                  ? `${getCurrentExercises().length} exercises selected`
+                  : 'Select Exercises'}
+              </Text>
+              <Text style={styles.arrow}>→</Text>
+            </View>
+          </Card>
+        </SettingsAccordion>
       </View>
 
       {/* Action Buttons */}

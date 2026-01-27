@@ -24,6 +24,7 @@ interface SettingsAccordionProps {
   summaryText: string;
   children: React.ReactNode;
   maxHeight?: number;
+  title?: string;
 }
 
 export const SettingsAccordion: React.FC<SettingsAccordionProps> = ({
@@ -32,6 +33,7 @@ export const SettingsAccordion: React.FC<SettingsAccordionProps> = ({
   summaryText,
   children,
   maxHeight = 500,
+  title = 'Settings',
 }) => {
   const { theme } = useTheme();
   const animation = useSharedValue(isOpen ? 1 : 0);
@@ -59,7 +61,7 @@ export const SettingsAccordion: React.FC<SettingsAccordionProps> = ({
       >
         <View style={styles.headerContent}>
           <Text variant="bodyLarge" style={[styles.title, { color: theme.text.primary }]}>
-            Settings
+            {title}
           </Text>
           <Text variant="bodySmall" style={[styles.summary, { color: theme.text.secondary }]}>
             {summaryText}

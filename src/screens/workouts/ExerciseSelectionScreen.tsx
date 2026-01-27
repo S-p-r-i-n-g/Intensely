@@ -90,7 +90,7 @@ const ExerciseSelectionScreen = () => {
     const isFromNewWorkout = route.params?.circuitIndex !== undefined;
 
     if (isFromNewWorkout) {
-      // Navigate back to NewWorkout with selected IDs
+      // Navigate back to NewWorkout with selected IDs and full state
       navigation.navigate('NewWorkout', {
         selectedExerciseIds: selectedIds,
         circuitIndex: route.params?.circuitIndex,
@@ -99,6 +99,8 @@ const ExerciseSelectionScreen = () => {
         setsPerCircuit: route.params?.setsPerCircuit,
         workInterval: route.params?.workInterval,
         restInterval: route.params?.restInterval,
+        isSynced: route.params?.isSynced,
+        exercisesJson: route.params?.exercisesJson,
       });
     } else {
       // Legacy: Navigate back to TakeTheWheel

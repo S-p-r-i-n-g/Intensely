@@ -22,6 +22,7 @@ export type WorkoutState = {
   exercises: Record<number, string[]>;  // Key is circuit index: 0, 1, 2...
   activeCircuitTab: number;
   isSettingsExpanded: boolean;
+  isExercisesExpanded: boolean;
 };
 
 type Action =
@@ -31,6 +32,7 @@ type Action =
   | { type: 'SET_EXERCISES'; payload: { circuitIndex: number; exerciseIds: string[] } }
   | { type: 'SET_TAB'; payload: number }
   | { type: 'TOGGLE_SETTINGS' }
+  | { type: 'TOGGLE_EXERCISES' }
   | { type: 'RESET' }
   | { type: 'LOAD_WORKOUT'; payload: Partial<WorkoutState> };
 
@@ -50,6 +52,7 @@ const initialState: WorkoutState = {
   exercises: { 0: [] },
   activeCircuitTab: 0,
   isSettingsExpanded: true,
+  isExercisesExpanded: true,
 };
 
 function workoutReducer(state: WorkoutState, action: Action): WorkoutState {
@@ -135,6 +138,9 @@ function workoutReducer(state: WorkoutState, action: Action): WorkoutState {
     case 'TOGGLE_SETTINGS':
       return { ...state, isSettingsExpanded: !state.isSettingsExpanded };
 
+    case 'TOGGLE_EXERCISES':
+      return { ...state, isExercisesExpanded: !state.isExercisesExpanded };
+
     case 'RESET':
       return initialState;
 
@@ -174,6 +180,10 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
 
   const toggleSettings = useCallback(() => {
     dispatch({ type: 'TOGGLE_SETTINGS' });
+  }, []);
+
+  const toggleExercises = useCallback(() => {
+    dispatch({ type: 'TOGGLE_EXERCISES' });
   }, []);
 
   const reset = useCallback(() => {
@@ -216,6 +226,19 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     return `${circuits} circuits • ${sets} sets • ${work}s work / ${rest}s rest`;
   }, [state.settings]);
 
+  // Generate summary text for collapsed exercises section
+  const getExercisesSummary = useCallback(() => {
+    const count = state.exercises[0]?.length || 0;
+    if (!state.isSynced) {
+      const circuitCounts = Array.from(
+        { length: state.settings.circuits },
+        (_, i) => (state.exercises[i] || []).length
+      );
+      return circuitCounts.map((c, i) => `C${i + 1}: ${c}`).join(' • ');
+    }
+    return `${count} exercise${count !== 1 ? 's' : ''} selected`;
+  }, [state.exercises, state.isSynced, state.settings.circuits]);
+
   return {
     state,
     dispatch,
@@ -226,6 +249,7 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     setExercises,
     setActiveTab,
     toggleSettings,
+    toggleExercises,
     reset,
     loadWorkout,
     // Computed
@@ -233,6 +257,7 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     getActiveCircuitIndex,
     getEstimatedDuration,
     getSettingsSummary,
+    getExercisesSummary,
   };
 }
 
