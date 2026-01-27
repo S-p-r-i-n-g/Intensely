@@ -749,6 +749,31 @@ Each checkpoint includes:
 
 ---
 
+#### ✅ CIRCUIT_WORKOUTS_REFACTOR_V1 (2026-01-27)
+**Status:** Complete
+**What's Working:**
+- Sync toggle logic fixed: default is now "synced" (ON) instead of inverted "split" (OFF)
+- `isSplit` boolean renamed to `isSynced` (inverted semantics, default `true`)
+- `TOGGLE_SPLIT` action replaced with `SET_SYNCED` (explicit boolean payload)
+- Three separate UI blocks (sync toggle, circuit tabs, exercise picker) consolidated into one "Circuit Workouts" section
+- Confirmation dialog added when switching from Customize → Sync (destructive operation)
+- No confirmation needed for Sync → Customize (additive clone)
+- Compact circuit tabs ("C1", "C2", "C3") with exercise count badges
+- All style names updated from `split*` to `sync*`
+
+**Files Changed:**
+- `mobile/src/hooks/useWorkoutBuilder.ts` — State/reducer refactor
+- `mobile/src/screens/workouts/NewWorkoutScreen.tsx` — UI consolidation and confirmation flow
+
+**Verification Checklist:**
+- Default load shows "Sync all circuits?" toggle with "ON" badge
+- Toggle to Customize: no confirmation, circuit tabs appear, exercises cloned
+- Toggle back to Sync: confirmation alert, "Cancel" safe, "Sync All" collapses
+- Save workout correctly builds circuits based on `!state.isSynced`
+- Style tokens from design system, dark theme maintained
+
+---
+
 #### ⏳ TAXONOMY_BUILT
 **Status:** Pending
 **Target:** Exercise database populated, browsing works

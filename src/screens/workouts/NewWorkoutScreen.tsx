@@ -1,7 +1,7 @@
 /**
  * NewWorkoutScreen
  * Unified workout builder that replaces the old TakeTheWheel flow
- * Features: Settings accordion, Sync/Split exercise mode, circuit tabs
+ * Features: Settings accordion, Sync/Customize exercise mode, circuit tabs
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -71,7 +71,7 @@ const NewWorkoutScreen = () => {
     state,
     setName,
     setSetting,
-    toggleSplit,
+    setSynced,
     setExercises,
     setActiveTab,
     toggleSettings,
@@ -156,9 +156,9 @@ const NewWorkoutScreen = () => {
     try {
       setIsLoading(true);
 
-      // Build circuits array based on sync/split mode
+      // Build circuits array based on sync/customize mode
       const circuitsData = Array.from({ length: state.settings.circuits }, (_, i) => {
-        const circuitExercises = state.isSplit
+        const circuitExercises = !state.isSynced
           ? (state.exercises[i] || state.exercises[0] || [])
           : (state.exercises[0] || []);
 
@@ -199,49 +199,22 @@ const NewWorkoutScreen = () => {
     }
   };
 
-  const renderCircuitTabs = () => {
-    if (!state.isSplit || state.settings.circuits <= 1) return null;
-
-    return (
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={styles.tabs}>
-            {Array.from({ length: state.settings.circuits }, (_, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[
-                  styles.tab,
-                  { backgroundColor: theme.background.elevated },
-                  state.activeCircuitTab === i && styles.tabActive,
-                ]}
-                onPress={() => setActiveTab(i)}
-              >
-                <Text
-                  variant="bodySmall"
-                  style={[
-                    styles.tabText,
-                    state.activeCircuitTab === i && styles.tabTextActive,
-                  ]}
-                >
-                  Circuit {i + 1}
-                </Text>
-                <Text
-                  variant="caption"
-                  style={[
-                    styles.tabCount,
-                    { color: theme.text.secondary },
-                    state.activeCircuitTab === i && styles.tabCountActive,
-                  ]}
-                >
-                  {(state.exercises[i] || []).length} exercises
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
-      </View>
-    );
-  };
+  const handleSyncToggle = useCallback(() => {
+    if (state.isSynced) {
+      // Sync → Customize: no confirmation needed (additive clone)
+      setSynced(false);
+    } else {
+      // Customize → Sync: confirmation needed (destructive overwrite)
+      Alert.alert(
+        'Sync All Circuits?',
+        "This will overwrite all circuits with Circuit 1's exercises. Custom exercises in other circuits will be lost.",
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sync All', style: 'destructive', onPress: () => setSynced(true) },
+        ]
+      );
+    }
+  }, [state.isSynced, setSynced]);
 
   return (
     <ScrollView
@@ -338,42 +311,75 @@ const NewWorkoutScreen = () => {
         </SettingsAccordion>
       </View>
 
-      {/* Sync/Split Toggle */}
-      {state.settings.circuits > 1 && (
-        <View style={styles.section}>
+      {/* Circuit Workouts */}
+      <View style={styles.section}>
+        <Text variant="bodyLarge" style={[styles.sectionLabel, { color: theme.text.primary }]}>
+          Circuit Workouts
+        </Text>
+
+        {/* Sync toggle (when circuits > 1) */}
+        {state.settings.circuits > 1 && (
           <TouchableOpacity
-            style={[styles.splitToggle, { backgroundColor: theme.background.elevated }]}
-            onPress={toggleSplit}
+            style={[styles.syncToggle, { backgroundColor: theme.background.elevated }]}
+            onPress={handleSyncToggle}
             activeOpacity={0.7}
           >
             <ArrowsRightLeftIcon size={20} color={colors.primary[500]} />
-            <View style={styles.splitToggleContent}>
-              <Text variant="body" style={[styles.splitToggleTitle, { color: theme.text.primary }]}>
-                {state.isSplit ? 'Split Mode' : 'Sync Mode'}
-              </Text>
-              <Text variant="caption" style={{ color: theme.text.secondary }}>
-                {state.isSplit
-                  ? 'Different exercises per circuit'
-                  : 'Same exercises in all circuits'}
+            <View style={styles.syncToggleContent}>
+              <Text variant="body" style={[styles.syncToggleTitle, { color: theme.text.primary }]}>
+                Sync all circuits?
               </Text>
             </View>
-            <View style={[styles.splitIndicator, state.isSplit && styles.splitIndicatorActive]}>
-              <Text variant="caption" style={styles.splitIndicatorText}>
-                {state.isSplit ? 'ON' : 'OFF'}
+            <View style={[styles.syncIndicator, state.isSynced && styles.syncIndicatorActive]}>
+              <Text variant="caption" style={styles.syncIndicatorText}>
+                {state.isSynced ? 'ON' : 'OFF'}
               </Text>
             </View>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
 
-      {/* Circuit Tabs (only in split mode) */}
-      {renderCircuitTabs()}
+        {/* Circuit tabs (when not synced and circuits > 1) */}
+        {!state.isSynced && state.settings.circuits > 1 && (
+          <View style={styles.circuitTabsInSection}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View style={styles.tabs}>
+                {Array.from({ length: state.settings.circuits }, (_, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    style={[
+                      styles.tab,
+                      { backgroundColor: theme.background.elevated },
+                      state.activeCircuitTab === i && styles.tabActive,
+                    ]}
+                    onPress={() => setActiveTab(i)}
+                  >
+                    <Text
+                      variant="bodySmall"
+                      style={[
+                        styles.tabText,
+                        state.activeCircuitTab === i && styles.tabTextActive,
+                      ]}
+                    >
+                      C{i + 1}
+                    </Text>
+                    <Text
+                      variant="caption"
+                      style={[
+                        styles.tabCount,
+                        { color: theme.text.secondary },
+                        state.activeCircuitTab === i && styles.tabCountActive,
+                      ]}
+                    >
+                      {(state.exercises[i] || []).length}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
 
-      {/* Exercise Selection */}
-      <View style={styles.section}>
-        <Text variant="bodyLarge" style={[styles.sectionLabel, { color: theme.text.primary }]}>
-          {state.isSplit ? `Circuit ${state.activeCircuitTab + 1} Exercises` : 'Exercises'}
-        </Text>
+        {/* Exercise picker card */}
         <Card
           variant="filled"
           padding="medium"
@@ -453,37 +459,36 @@ const styles = StyleSheet.create({
   settingsHalf: {
     flex: 1,
   },
-  splitToggle: {
+  syncToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing[4],
     borderRadius: borderRadius.md,
     gap: spacing[3],
   },
-  splitToggleContent: {
+  syncToggleContent: {
     flex: 1,
   },
-  splitToggleTitle: {
+  syncToggleTitle: {
     fontWeight: '600',
     marginBottom: 2,
   },
-  splitIndicator: {
+  syncIndicator: {
     backgroundColor: colors.secondary[300],
     paddingHorizontal: spacing[3],
     paddingVertical: spacing[1],
     borderRadius: borderRadius.full,
   },
-  splitIndicatorActive: {
+  syncIndicatorActive: {
     backgroundColor: colors.primary[500],
   },
-  splitIndicatorText: {
+  syncIndicatorText: {
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 11,
   },
-  tabsContainer: {
-    paddingHorizontal: spacing[5],
-    marginBottom: spacing[4],
+  circuitTabsInSection: {
+    marginVertical: spacing[3],
   },
   tabs: {
     flexDirection: 'row',
@@ -515,6 +520,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: spacing[3],
   },
   exerciseCardContent: {
     flexDirection: 'row',

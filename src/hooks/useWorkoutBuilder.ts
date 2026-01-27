@@ -1,7 +1,7 @@
 /**
  * useWorkoutBuilder Hook
  * Manages complex workout builder state with reducer pattern
- * Handles Sync/Split logic for exercises across circuits
+ * Handles Sync/Customize logic for exercises across circuits
  */
 
 import { useReducer, useCallback } from 'react';
@@ -18,7 +18,7 @@ export type WorkoutSettings = {
 export type WorkoutState = {
   name: string;
   settings: WorkoutSettings;
-  isSplit: boolean;  // Whether each circuit has different exercises
+  isSynced: boolean;  // Whether all circuits share the same exercises
   exercises: Record<number, string[]>;  // Key is circuit index: 0, 1, 2...
   activeCircuitTab: number;
   isSettingsExpanded: boolean;
@@ -27,7 +27,7 @@ export type WorkoutState = {
 type Action =
   | { type: 'SET_NAME'; payload: string }
   | { type: 'SET_SETTING'; payload: { key: keyof WorkoutSettings; value: number } }
-  | { type: 'TOGGLE_SPLIT' }
+  | { type: 'SET_SYNCED'; payload: boolean }
   | { type: 'SET_EXERCISES'; payload: { circuitIndex: number; exerciseIds: string[] } }
   | { type: 'SET_TAB'; payload: number }
   | { type: 'TOGGLE_SETTINGS' }
@@ -46,7 +46,7 @@ const DEFAULT_SETTINGS: WorkoutSettings = {
 const initialState: WorkoutState = {
   name: '',
   settings: DEFAULT_SETTINGS,
-  isSplit: false,
+  isSynced: true,
   exercises: { 0: [] },
   activeCircuitTab: 0,
   isSettingsExpanded: true,
@@ -60,8 +60,8 @@ function workoutReducer(state: WorkoutState, action: Action): WorkoutState {
     case 'SET_SETTING': {
       const newSettings = { ...state.settings, [action.payload.key]: action.payload.value };
 
-      // If circuits changed and we're in split mode, adjust exercises
-      if (action.payload.key === 'circuits' && state.isSplit) {
+      // If circuits changed and we're in customize mode, adjust exercises
+      if (action.payload.key === 'circuits' && !state.isSynced) {
         const newCircuits = action.payload.value;
         const newExercises = { ...state.exercises };
 
@@ -97,24 +97,24 @@ function workoutReducer(state: WorkoutState, action: Action): WorkoutState {
       return { ...state, settings: newSettings };
     }
 
-    case 'TOGGLE_SPLIT': {
-      const newIsSplit = !state.isSplit;
+    case 'SET_SYNCED': {
+      const newIsSynced = action.payload;
       let newExercises = { ...state.exercises };
 
-      if (newIsSplit) {
-        // CLONING LOGIC: Copy Circuit 0 to all other circuits
+      if (!newIsSynced) {
+        // Sync → Customize: Clone circuit 0 exercises to all circuits
         const baseExercises = state.exercises[0] || [];
         for (let i = 1; i < state.settings.circuits; i++) {
           newExercises[i] = [...baseExercises];
         }
       } else {
-        // SYNCING LOGIC: Revert to only using index 0
+        // Customize → Sync: Collapse to circuit 0 only
         newExercises = { 0: [...(state.exercises[0] || [])] };
       }
 
       return {
         ...state,
-        isSplit: newIsSplit,
+        isSynced: newIsSynced,
         exercises: newExercises,
         activeCircuitTab: 0
       };
@@ -160,8 +160,8 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     dispatch({ type: 'SET_SETTING', payload: { key, value } });
   }, []);
 
-  const toggleSplit = useCallback(() => {
-    dispatch({ type: 'TOGGLE_SPLIT' });
+  const setSynced = useCallback((value: boolean) => {
+    dispatch({ type: 'SET_SYNCED', payload: value });
   }, []);
 
   const setExercises = useCallback((circuitIndex: number, exerciseIds: string[]) => {
@@ -186,16 +186,16 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
 
   // Get exercises for the current active circuit (or circuit 0 if synced)
   const getCurrentExercises = useCallback(() => {
-    if (state.isSplit) {
+    if (!state.isSynced) {
       return state.exercises[state.activeCircuitTab] || [];
     }
     return state.exercises[0] || [];
-  }, [state.isSplit, state.exercises, state.activeCircuitTab]);
+  }, [state.isSynced, state.exercises, state.activeCircuitTab]);
 
   // Get the circuit index to use for exercise operations
   const getActiveCircuitIndex = useCallback(() => {
-    return state.isSplit ? state.activeCircuitTab : 0;
-  }, [state.isSplit, state.activeCircuitTab]);
+    return !state.isSynced ? state.activeCircuitTab : 0;
+  }, [state.isSynced, state.activeCircuitTab]);
 
   // Calculate estimated duration
   const getEstimatedDuration = useCallback(() => {
@@ -222,7 +222,7 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     // Actions
     setName,
     setSetting,
-    toggleSplit,
+    setSynced,
     setExercises,
     setActiveTab,
     toggleSettings,
