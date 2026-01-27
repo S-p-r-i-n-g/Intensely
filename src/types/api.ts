@@ -12,21 +12,18 @@ export interface User {
   avatarUrl?: string;
   fitnessLevel: string;
   createdAt: string;
+  preferences?: UserPreference | null;
 }
 
 export interface UserPreference {
   id: string;
   userId: string;
-  defaultObjectiveId?: string;
-  defaultDifficulty: string;
   defaultCircuits: number;
-  defaultExercisesPerCircuit: number;
+  defaultSets: number;
   defaultIntervalSeconds: number;
   defaultRestSeconds: number;
-  defaultSets: number;
-  availableEquipment: string[];
-  smallSpace: boolean;
-  quietMode: boolean;
+  defaultWarmUpSeconds: number;
+  defaultCoolDownSeconds: number;
 }
 
 // Exercise Types

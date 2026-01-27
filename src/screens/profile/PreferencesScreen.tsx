@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -14,27 +12,64 @@ import { ProfileStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { usersApi } from '../../api';
 import { useTheme } from '../../theme';
-import { colors, spacing, borderRadius } from '../../tokens';
+import { Text, Button, PillSelector, Stepper } from '../../components/ui';
+import { spacing } from '../../tokens';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'Preferences'>;
+
+// Pill options (same as NewWorkoutScreen)
+const WORK_OPTIONS = [
+  { value: 15, label: '15s' },
+  { value: 20, label: '20s' },
+  { value: 30, label: '30s' },
+  { value: 45, label: '45s' },
+];
+
+const REST_OPTIONS = [
+  { value: 30, label: '30s' },
+  { value: 60, label: '60s' },
+  { value: 90, label: '90s' },
+  { value: 120, label: '120s' },
+];
+
+const WARMUP_OPTIONS = [
+  { value: 0, label: 'None' },
+  { value: 120, label: '2 min' },
+  { value: 300, label: '5 min' },
+  { value: 600, label: '10 min' },
+];
+
+const COOLDOWN_OPTIONS = [
+  { value: 0, label: 'None' },
+  { value: 120, label: '2 min' },
+  { value: 300, label: '5 min' },
+  { value: 600, label: '10 min' },
+];
 
 const PreferencesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { profile, syncProfile } = useAuthStore();
   const { theme } = useTheme();
 
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('intermediate');
-  const [smallSpace, setSmallSpace] = useState(false);
-  const [quiet, setQuiet] = useState(false);
+  // Workout timing defaults
+  const [circuits, setCircuits] = useState(3);
+  const [sets, setSets] = useState(3);
+  const [work, setWork] = useState(30);
+  const [rest, setRest] = useState(60);
+  const [warmUp, setWarmUp] = useState(0);
+  const [coolDown, setCoolDown] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
-  const difficulties = ['beginner', 'intermediate', 'advanced'];
-
+  // Initialize from profile preferences
   useEffect(() => {
-    if (profile?.preferences) {
-      setSelectedDifficulty(profile.preferences.defaultDifficulty || 'intermediate');
-      setSmallSpace(profile.preferences.smallSpace || false);
-      setQuiet(profile.preferences.quiet || false);
+    const prefs = profile?.preferences;
+    if (prefs) {
+      setCircuits(prefs.defaultCircuits ?? 3);
+      setSets(prefs.defaultSets ?? 3);
+      setWork(prefs.defaultIntervalSeconds ?? 30);
+      setRest(prefs.defaultRestSeconds ?? 60);
+      setWarmUp(prefs.defaultWarmUpSeconds ?? 0);
+      setCoolDown(prefs.defaultCoolDownSeconds ?? 0);
     }
   }, [profile]);
 
@@ -43,12 +78,14 @@ const PreferencesScreen = () => {
       setIsSaving(true);
 
       await usersApi.updatePreferences({
-        defaultDifficulty: selectedDifficulty,
-        smallSpace,
-        quiet,
+        defaultCircuits: circuits,
+        defaultSets: sets,
+        defaultIntervalSeconds: work,
+        defaultRestSeconds: rest,
+        defaultWarmUpSeconds: warmUp,
+        defaultCoolDownSeconds: coolDown,
       });
 
-      // Sync profile to update state
       await syncProfile();
 
       Alert.alert('Success', 'Preferences saved successfully!', [
@@ -72,102 +109,99 @@ const PreferencesScreen = () => {
     <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: theme.text.primary }]}>Workout Preferences</Text>
-        <Text style={[styles.headerSubtitle, { color: theme.text.secondary }]}>
-          Customize your default workout settings
+        <Text variant="h2" style={{ color: theme.text.primary }}>
+          Workout Preferences
+        </Text>
+        <Text variant="body" style={{ color: theme.text.secondary }}>
+          Set your default workout timing. You can always override these when creating a workout.
         </Text>
       </View>
 
-      {/* Default Difficulty */}
+      {/* Circuits & Sets */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Default Difficulty Level</Text>
-        <Text style={[styles.sectionDescription, { color: theme.text.secondary }]}>
-          This will be used as your default when generating workouts
-        </Text>
-
-        <View style={styles.optionsContainer}>
-          {difficulties.map((diff) => (
-            <TouchableOpacity
-              key={diff}
-              style={[
-                styles.optionButton,
-                { backgroundColor: theme.background.secondary },
-                selectedDifficulty === diff && styles.optionButtonActive,
-              ]}
-              onPress={() => setSelectedDifficulty(diff)}
-            >
-              <Text
-                style={[
-                  styles.optionButtonText,
-                  { color: theme.text.primary },
-                  selectedDifficulty === diff && styles.optionButtonTextActive,
-                ]}
-              >
-                {diff.charAt(0).toUpperCase() + diff.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.stepperRow}>
+          <View style={styles.stepperHalf}>
+            <Stepper
+              label="Circuits"
+              value={circuits}
+              onIncrease={() => setCircuits(circuits + 1)}
+              onDecrease={() => setCircuits(circuits - 1)}
+              min={1}
+              max={10}
+              size="small"
+            />
+          </View>
+          <View style={styles.stepperHalf}>
+            <Stepper
+              label="Sets"
+              value={sets}
+              onIncrease={() => setSets(sets + 1)}
+              onDecrease={() => setSets(sets - 1)}
+              min={1}
+              max={5}
+              size="small"
+            />
+          </View>
         </View>
       </View>
 
-      {/* Space Constraints */}
+      {/* Work */}
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Space & Environment</Text>
-        <Text style={[styles.sectionDescription, { color: theme.text.secondary }]}>
-          Set default constraints for your workout space
-        </Text>
-
-        <TouchableOpacity
-          style={[styles.toggleOption, { borderBottomColor: theme.border.light }]}
-          onPress={() => setSmallSpace(!smallSpace)}
-        >
-          <View style={styles.toggleInfo}>
-            <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>Small Space</Text>
-            <Text style={[styles.toggleDescription, { color: theme.text.secondary }]}>
-              Prefer exercises that don't require much room
-            </Text>
-          </View>
-          <View style={[styles.toggle, { backgroundColor: theme.border.medium }, smallSpace && styles.toggleActive]}>
-            <View style={[styles.toggleCircle, smallSpace && styles.toggleCircleActive]} />
-          </View>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.toggleOption, { borderBottomColor: theme.border.light }]}
-          onPress={() => setQuiet(!quiet)}
-        >
-          <View style={styles.toggleInfo}>
-            <Text style={[styles.toggleTitle, { color: theme.text.primary }]}>Quiet Mode</Text>
-            <Text style={[styles.toggleDescription, { color: theme.text.secondary }]}>
-              Avoid jumping exercises and loud movements
-            </Text>
-          </View>
-          <View style={[styles.toggle, { backgroundColor: theme.border.medium }, quiet && styles.toggleActive]}>
-            <View style={[styles.toggleCircle, quiet && styles.toggleCircleActive]} />
-          </View>
-        </TouchableOpacity>
+        <PillSelector
+          label="Work"
+          options={WORK_OPTIONS}
+          currentValue={work}
+          onChange={setWork}
+        />
       </View>
 
-      {/* Info Card */}
-      <View style={[styles.infoCard, { backgroundColor: theme.background.elevated }]}>
-        <Text style={styles.infoIcon}>💡</Text>
-        <Text style={[styles.infoText, { color: theme.text.secondary }]}>
-          You can always override these settings when creating a specific workout
-        </Text>
+      {/* Rest */}
+      <View style={styles.section}>
+        <PillSelector
+          label="Rest"
+          options={REST_OPTIONS}
+          currentValue={rest}
+          onChange={setRest}
+        />
+      </View>
+
+      {/* Warm Up */}
+      <View style={styles.section}>
+        <PillSelector
+          label="Warm Up"
+          options={WARMUP_OPTIONS}
+          currentValue={warmUp}
+          onChange={setWarmUp}
+        />
+      </View>
+
+      {/* Cool Down */}
+      <View style={styles.section}>
+        <PillSelector
+          label="Cool Down"
+          options={COOLDOWN_OPTIONS}
+          currentValue={coolDown}
+          onChange={setCoolDown}
+        />
       </View>
 
       {/* Save Button */}
-      <TouchableOpacity
-        style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-        onPress={handleSave}
-        disabled={isSaving}
-      >
-        {isSaving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveButtonText}>Save Preferences</Text>
-        )}
-      </TouchableOpacity>
+      <View style={styles.buttonContainer}>
+        <Button
+          variant="primary"
+          size="large"
+          fullWidth
+          onPress={handleSave}
+          loading={isSaving}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            'Save Preferences'
+          )}
+        </Button>
+      </View>
     </ScrollView>
   );
 };
@@ -178,120 +212,22 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: spacing[5],
-    paddingTop: spacing[7],
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: spacing[2],
-  },
-  headerSubtitle: {
-    fontSize: 16,
+    paddingTop: spacing[8],
+    gap: spacing[2],
   },
   section: {
     paddingHorizontal: spacing[5],
-    marginBottom: spacing[8],
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: spacing[2],
-  },
-  sectionDescription: {
-    fontSize: 14,
-    marginBottom: spacing[4],
-    lineHeight: 20,
-  },
-  optionsContainer: {
+  stepperRow: {
     flexDirection: 'row',
-    gap: spacing[3],
+    gap: spacing[4],
   },
-  optionButton: {
+  stepperHalf: {
     flex: 1,
-    paddingVertical: spacing[3],
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
   },
-  optionButtonActive: {
-    backgroundColor: colors.primary[500],
-  },
-  optionButtonText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  optionButtonTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  toggleOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing[4],
-    borderBottomWidth: 1,
-  },
-  toggleInfo: {
-    flex: 1,
-    marginRight: spacing[4],
-  },
-  toggleTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: spacing[1],
-  },
-  toggleDescription: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  toggle: {
-    width: 51,
-    height: 31,
-    borderRadius: 15.5,
-    padding: 2,
-    justifyContent: 'center',
-  },
-  toggleActive: {
-    backgroundColor: colors.primary[500],
-  },
-  toggleCircle: {
-    width: 27,
-    height: 27,
-    borderRadius: 13.5,
-    backgroundColor: '#fff',
-  },
-  toggleCircleActive: {
-    alignSelf: 'flex-end',
-  },
-  infoCard: {
-    flexDirection: 'row',
-    marginHorizontal: spacing[5],
-    marginBottom: spacing[6],
-    padding: spacing[4],
-    borderRadius: borderRadius.md,
-  },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: spacing[3],
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  saveButton: {
-    marginHorizontal: spacing[5],
-    marginBottom: spacing[10],
-    backgroundColor: colors.primary[500],
-    paddingVertical: spacing[4],
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+  buttonContainer: {
+    padding: spacing[5],
+    paddingBottom: spacing[10],
   },
 });
 

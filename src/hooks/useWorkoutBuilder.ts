@@ -38,7 +38,7 @@ type Action =
 
 const DEFAULT_SETTINGS: WorkoutSettings = {
   work: 30,
-  rest: 15,
+  rest: 60,
   warmUp: 0,
   coolDown: 0,
   circuits: 3,

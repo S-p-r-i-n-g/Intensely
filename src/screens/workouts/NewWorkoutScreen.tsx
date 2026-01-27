@@ -21,6 +21,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { useWorkoutBuilder } from '../../hooks/useWorkoutBuilder';
+import { useAuthStore } from '../../stores';
 import { workoutsApi } from '../../api';
 import { Text, Button, Card, PillSelector, Stepper } from '../../components/ui';
 import { SettingsAccordion } from '../../components/workout/SettingsAccordion';
@@ -33,38 +34,39 @@ type RoutePropType = RouteProp<HomeStackParamList, 'NewWorkout'>;
 
 // Timing options
 const WORK_OPTIONS = [
-  { value: 20, label: '20s' },
-  { value: 30, label: '30s' },
-  { value: 40, label: '40s' },
-  { value: 45, label: '45s' },
-  { value: 60, label: '60s' },
-];
-
-const REST_OPTIONS = [
-  { value: 10, label: '10s' },
   { value: 15, label: '15s' },
   { value: 20, label: '20s' },
   { value: 30, label: '30s' },
+  { value: 45, label: '45s' },
+];
+
+const REST_OPTIONS = [
+  { value: 30, label: '30s' },
+  { value: 60, label: '60s' },
+  { value: 90, label: '90s' },
+  { value: 120, label: '120s' },
 ];
 
 const WARMUP_OPTIONS = [
   { value: 0, label: 'None' },
-  { value: 60, label: '1 min' },
   { value: 120, label: '2 min' },
-  { value: 180, label: '3 min' },
+  { value: 300, label: '5 min' },
+  { value: 600, label: '10 min' },
 ];
 
 const COOLDOWN_OPTIONS = [
   { value: 0, label: 'None' },
-  { value: 60, label: '1 min' },
   { value: 120, label: '2 min' },
-  { value: 180, label: '3 min' },
+  { value: 300, label: '5 min' },
+  { value: 600, label: '10 min' },
 ];
 
 const NewWorkoutScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const { theme } = useTheme();
+  const { profile } = useAuthStore();
+  const preferences = profile?.preferences;
 
   const [isLoading, setIsLoading] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -86,7 +88,16 @@ const NewWorkoutScreen = () => {
     getEstimatedDuration,
     getActiveCircuitIndex,
     getCurrentExercises,
-  } = useWorkoutBuilder();
+  } = useWorkoutBuilder({
+    settings: {
+      work: preferences?.defaultIntervalSeconds ?? 30,
+      rest: preferences?.defaultRestSeconds ?? 60,
+      circuits: preferences?.defaultCircuits ?? 3,
+      sets: preferences?.defaultSets ?? 3,
+      warmUp: preferences?.defaultWarmUpSeconds ?? 0,
+      coolDown: preferences?.defaultCoolDownSeconds ?? 0,
+    },
+  });
 
   // Handle returning from exercise selection — restore full state
   useEffect(() => {
