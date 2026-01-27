@@ -71,6 +71,8 @@ Full-screen guided workout experience:
 ### Installation
 
 ```bash
+cd mobile
+
 # Install dependencies
 npm install
 
@@ -85,14 +87,14 @@ npm run web
 
 ### Configuration
 
-Create a `.env` file:
+Create a `.env` file in the `mobile/` directory:
 
 ```env
 EXPO_PUBLIC_SUPABASE_URL=your-supabase-url
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-The app connects to a backend API for exercise data, workout storage, and session tracking. Configure the API URL in `src/config/env.ts`.
+The app connects to a backend API for exercise data, workout storage, and session tracking. Configure the API URL in `mobile/src/config/env.ts`.
 
 ## Tech Stack
 
@@ -107,6 +109,8 @@ The app connects to a backend API for exercise data, workout storage, and sessio
 ## Building for Production
 
 ```bash
+cd mobile
+
 # Build for iOS
 eas build --platform ios
 
