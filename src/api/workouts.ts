@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { ApiResponse, Workout, WorkoutObjective, WorkoutConstraints } from '../types/api';
+import { ApiResponse, Workout } from '../types/api';
 
 /**
  * Workout API Service
@@ -8,25 +8,10 @@ import { ApiResponse, Workout, WorkoutObjective, WorkoutConstraints } from '../t
 
 export const workoutsApi = {
   /**
-   * Get all objectives
-   */
-  getObjectives: async (): Promise<ApiResponse<WorkoutObjective[]>> => {
-    return apiClient.get('/objectives');
-  },
-
-  /**
-   * Get a single objective by slug
-   */
-  getObjective: async (slug: string): Promise<ApiResponse<WorkoutObjective>> => {
-    return apiClient.get(`/objectives/${slug}`);
-  },
-
-  /**
    * Get all workouts
    */
   getAll: async (params?: {
     difficulty?: string;
-    objective?: string;
     isPublic?: boolean;
   }): Promise<ApiResponse<Workout[]>> => {
     return apiClient.get('/workouts', { params });
@@ -42,7 +27,7 @@ export const workoutsApi = {
   /**
    * Create a custom workout
    */
-  takeTheWheel: async (data: {
+  create: async (data: {
     name: string;
     circuits: {
       exercises: string[]; // exercise IDs
@@ -62,7 +47,6 @@ export const workoutsApi = {
    */
   update: async (id: string, data: {
     name?: string;
-    description?: string;
     difficulty?: string;
     durationMinutes?: number;
     isPublic?: boolean;

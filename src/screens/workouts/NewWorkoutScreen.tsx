@@ -347,7 +347,7 @@ const NewWorkoutScreen = () => {
         difficulty: difficulty.level,
       };
 
-      const response = await workoutsApi.takeTheWheel(params);
+      const response = await workoutsApi.create(params);
       const newWorkoutId = (response as any).data?.id || (response as any).id;
 
       if (pendingStartImmediately) {

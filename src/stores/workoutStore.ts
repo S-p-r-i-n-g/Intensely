@@ -1,49 +1,27 @@
 import { create } from 'zustand';
 import { workoutsApi } from '../api';
-import { Workout, WorkoutObjective } from '../types/api';
+import { Workout } from '../types/api';
 
 /**
  * Workout Store
- * Manages workout and objective state
+ * Manages workout state
  */
 
 interface WorkoutState {
-  objectives: WorkoutObjective[];
   workouts: Workout[];
   currentWorkout: Workout | null;
   isLoading: boolean;
 
   // Actions
-  loadObjectives: () => Promise<void>;
   loadWorkouts: () => Promise<void>;
   setCurrentWorkout: (workout: Workout | null) => void;
   getWorkoutById: (id: string) => Promise<Workout | null>;
 }
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => ({
-  objectives: [],
   workouts: [],
   currentWorkout: null,
   isLoading: false,
-
-  /**
-   * Load all workout objectives
-   */
-  loadObjectives: async () => {
-    try {
-      set({ isLoading: true });
-
-      const response = await workoutsApi.getObjectives();
-      set({ objectives: response.data });
-    } catch (error) {
-      console.error('Failed to load objectives:', error);
-      // Set empty array so app doesn't crash, but rethrow for caller to handle
-      set({ objectives: [] });
-      throw error;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
 
   /**
    * Load all workouts

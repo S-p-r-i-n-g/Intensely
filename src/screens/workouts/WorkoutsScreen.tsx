@@ -30,17 +30,10 @@ type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'Workout
 interface Workout {
   id: string;
   name: string;
-  description?: string;
   difficultyLevel: string;
   estimatedDurationMinutes: number;
   totalCircuits: number;
   exercisesPerCircuit: number;
-  objectiveMappings?: Array<{
-    objective: {
-      name: string;
-      colorHex: string;
-    };
-  }>;
 }
 
 const WorkoutsScreen = () => {
@@ -87,8 +80,6 @@ const WorkoutsScreen = () => {
   };
 
   const renderWorkoutCard = ({ item }: { item: Workout }) => {
-    const primaryObjective = item.objectiveMappings?.[0]?.objective;
-
     const handleStartWorkout = () => {
       navigation.navigate('WorkoutPreview', { workoutId: item.id });
     };
@@ -109,25 +100,6 @@ const WorkoutsScreen = () => {
             <Text style={styles.startButtonText}>Start</Text>
           </TouchableOpacity>
         </View>
-
-        {primaryObjective && (
-          <View
-            style={[
-              styles.objectiveBadge,
-              { backgroundColor: primaryObjective.colorHex },
-            ]}
-          >
-            <Text style={styles.objectiveBadgeText}>
-              {primaryObjective.name}
-            </Text>
-          </View>
-        )}
-
-        {item.description && (
-          <Text style={[styles.workoutDescription, { color: theme.text.secondary }]} numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
 
         <View style={styles.workoutStats}>
           <View style={styles.statItem}>
@@ -238,23 +210,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     flex: 1,
-  },
-  objectiveBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: borderRadius.md,
-    alignSelf: 'flex-start',
-    marginBottom: spacing[2],
-  },
-  objectiveBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  workoutDescription: {
-    fontSize: 14,
-    marginBottom: spacing[3],
-    lineHeight: 20,
   },
   workoutStats: {
     flexDirection: 'row',

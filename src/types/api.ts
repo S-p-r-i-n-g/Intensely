@@ -58,7 +58,6 @@ export interface Exercise {
 export interface Workout {
   id: string;
   name: string;
-  description?: string;
   createdBy?: string;
   isPublic: boolean;
   isTemplate: boolean;
@@ -94,27 +93,6 @@ export interface CircuitExercise {
   reps?: number;
   durationSeconds?: number;
   exercise: Exercise;
-}
-
-// Workout Objective Types
-export interface WorkoutObjective {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  tagline?: string;
-  preferredCategories: string[];
-  intensityPercentage?: number;
-  recommendedCircuits: number;
-  recommendedExercisesPerCircuit: number;
-  recommendedIntervalSeconds: number;
-  recommendedRestSeconds: number;
-  recommendedSets: number;
-  recommendedDurationMinutes: number;
-  iconUrl?: string;
-  colorHex?: string;
-  displayOrder: number;
-  isActive: boolean;
 }
 
 // Progress Types

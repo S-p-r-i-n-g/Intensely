@@ -112,9 +112,6 @@ const WorkoutPreviewScreen = () => {
       <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.text.primary }]}>{workout.name}</Text>
-          {workout.description && (
-            <Text style={[styles.description, { color: theme.text.secondary }]}>{workout.description}</Text>
-          )}
         </View>
 
         {/* Action Buttons */}
@@ -264,11 +261,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: spacing[3],
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
   },
   actionsContainer: {
     flexDirection: 'row',

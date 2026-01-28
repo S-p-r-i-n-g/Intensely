@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigation/types';
-import { useAuthStore, useWorkoutStore } from '../../stores';
+import { useAuthStore } from '../../stores';
 import { spacing, colors } from '../../tokens';
 import { useTheme } from '../../theme';
 import { Text } from '../../components/ui';
@@ -17,31 +17,9 @@ const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { profile } = useAuthStore();
-  const { loadObjectives } = useWorkoutStore();
-  const [showBackendWarning, setShowBackendWarning] = useState(false);
-
-  useEffect(() => {
-    loadObjectives().catch(() => {
-      // If objectives fail to load, show backend warning
-      setShowBackendWarning(true);
-    });
-  }, []);
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]} contentContainerStyle={styles.scrollContent}>
-        {/* Backend Warning Banner */}
-        {showBackendWarning && (
-          <View style={styles.warningBanner}>
-            <Text style={styles.warningIcon}>⚠️</Text>
-            <View style={styles.warningContent}>
-              <Text variant="bodySmall" style={styles.warningTitle}>Backend Offline</Text>
-              <Text variant="bodySmall" style={styles.warningText}>
-                Some features may be limited. Authentication still works!
-              </Text>
-            </View>
-          </View>
-        )}
-
         {/* Greeting */}
         <View style={styles.header}>
           <Text variant="h1" style={styles.greeting}>
@@ -92,31 +70,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20, // Match Gemini spec
-  },
-  warningBanner: {
-    flexDirection: 'row',
-    backgroundColor: colors.warning[100],
-    borderBottomWidth: 1,
-    borderBottomColor: colors.warning[500],
-    padding: spacing[4],
-    alignItems: 'center',
-    marginBottom: spacing[4],
-    borderRadius: 8,
-  },
-  warningIcon: {
-    fontSize: 20,
-    marginRight: spacing[4],
-  },
-  warningContent: {
-    flex: 1,
-  },
-  warningTitle: {
-    color: colors.warning[500],
-    marginBottom: 2,
-    fontWeight: '500',
-  },
-  warningText: {
-    color: colors.warning[500],
   },
   header: {
     paddingTop: 24,
