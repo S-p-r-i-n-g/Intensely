@@ -17,6 +17,13 @@ import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { PlayIcon, PlusIcon } from 'react-native-heroicons/outline';
+import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+
+// Helper to get difficulty color (matches design.md v1.3)
+const getDifficultyColor = (level?: string): string => {
+  const normalizedLevel = (level?.toLowerCase() || 'intermediate') as DifficultyLevel;
+  return DIFFICULTY_COLORS[normalizedLevel] || DIFFICULTY_COLORS.intermediate;
+};
 
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>;
 
@@ -136,7 +143,7 @@ const WorkoutsScreen = () => {
             <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Minutes</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>
+            <Text style={[styles.statValue, { color: getDifficultyColor(item.difficultyLevel) }]}>
               {item.difficultyLevel?.charAt(0).toUpperCase()}
             </Text>
             <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Level</Text>

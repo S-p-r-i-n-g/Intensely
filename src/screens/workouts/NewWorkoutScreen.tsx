@@ -21,7 +21,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
-import { useWorkoutBuilder } from '../../hooks/useWorkoutBuilder';
+import { useWorkoutBuilder, DifficultyResult } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores';
 import { workoutsApi, exercisesApi } from '../../api';
 import type { Exercise } from '../../types/api';
@@ -63,6 +63,20 @@ const COOLDOWN_OPTIONS = [
   { value: 600, label: '10 min' },
 ];
 
+// Map exercise difficulty string to numeric value (1-3 scale per design.md v1.3)
+const difficultyToNumber = (difficulty: string): number => {
+  switch (difficulty.toLowerCase()) {
+    case 'beginner':
+      return 1;
+    case 'intermediate':
+      return 2;
+    case 'advanced':
+      return 3;
+    default:
+      return 2; // Default to intermediate
+  }
+};
+
 const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
   <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
     <Text variant="caption" style={[styles.chipValue, { color: theme.text.primary }]}>
@@ -86,7 +100,7 @@ const NewWorkoutScreen = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [modalName, setModalName] = useState('');
   const [pendingStartImmediately, setPendingStartImmediately] = useState(false);
-  const [exerciseMetadata, setExerciseMetadata] = useState<Map<string, string>>(new Map());
+  const [exerciseMetadata, setExerciseMetadata] = useState<Map<string, { name: string; difficulty: number }>>(new Map());
 
   // Edit mode detection
   const isEditMode = !!route.params?.workoutId;
@@ -107,6 +121,7 @@ const NewWorkoutScreen = () => {
     getEstimatedDuration,
     getActiveCircuitIndex,
     getCurrentExercises,
+    getDifficulty,
   } = useWorkoutBuilder({
     settings: {
       work: preferences?.defaultIntervalSeconds ?? 30,
@@ -198,7 +213,7 @@ const NewWorkoutScreen = () => {
     }
   }, [route.params?.selectedExerciseIds, route.params?.circuitIndex]);
 
-  // Fetch exercise names for IDs not in cache
+  // Fetch exercise metadata (names and difficulty) for IDs not in cache
   useEffect(() => {
     const allIds = new Set<string>();
     Object.values(state.exercises).forEach((ids) => {
@@ -208,7 +223,7 @@ const NewWorkoutScreen = () => {
     const missingIds = Array.from(allIds).filter((id) => !exerciseMetadata.has(id));
     if (missingIds.length === 0) return;
 
-    const fetchExerciseNames = async () => {
+    const fetchExerciseMetadata = async () => {
       try {
         const response = await exercisesApi.getAll({ limit: 500 });
         // Backend returns { data: Exercise[], pagination: {...} }
@@ -216,22 +231,39 @@ const NewWorkoutScreen = () => {
         const newMetadata = new Map(exerciseMetadata);
         exercises.forEach((ex: Exercise) => {
           if (missingIds.includes(ex.id)) {
-            newMetadata.set(ex.id, ex.name);
+            newMetadata.set(ex.id, {
+              name: ex.name,
+              difficulty: difficultyToNumber(ex.difficulty || 'intermediate'),
+            });
           }
         });
         setExerciseMetadata(newMetadata);
       } catch (error) {
-        console.error('Failed to fetch exercise names:', error);
+        console.error('Failed to fetch exercise metadata:', error);
       }
     };
 
-    fetchExerciseNames();
+    fetchExerciseMetadata();
   }, [state.exercises]);
 
   // Helper to get exercise name from cache
   const getExerciseName = useCallback((id: string) => {
-    return exerciseMetadata.get(id) || 'Loading...';
+    return exerciseMetadata.get(id)?.name || 'Loading...';
   }, [exerciseMetadata]);
+
+  // Calculate average exercise difficulty (1-3 scale) for the difficulty formula
+  const getAvgExerciseDifficulty = useCallback((): number => {
+    const allIds = new Set<string>();
+    Object.values(state.exercises).forEach((ids) => {
+      ids.forEach((id) => allIds.add(id));
+    });
+    const difficulties = Array.from(allIds)
+      .map((id) => exerciseMetadata.get(id)?.difficulty)
+      .filter((d): d is number => d !== undefined);
+
+    if (difficulties.length === 0) return 1.5; // Default per design.md v1.3
+    return difficulties.reduce((a, b) => a + b, 0) / difficulties.length;
+  }, [state.exercises, exerciseMetadata]);
 
   // Format exercise names with truncation
   const formatExerciseNames = useCallback((exerciseIds: string[], maxDisplay = 3) => {
@@ -303,12 +335,16 @@ const NewWorkoutScreen = () => {
         };
       });
 
+      // Calculate difficulty level to send to backend
+      const difficulty = getDifficulty(getAvgExerciseDifficulty());
+
       const params = {
         name: trimmedName,
         circuits: circuitsData,
         intervalSeconds: state.settings.work,
         restSeconds: state.settings.rest,
         sets: state.settings.sets,
+        difficulty: difficulty.level,
       };
 
       const response = await workoutsApi.takeTheWheel(params);
@@ -364,11 +400,20 @@ const NewWorkoutScreen = () => {
         <Text variant="h1" style={{ color: theme.text.primary }}>
           {isEditMode ? 'Edit Workout' : 'New Workout'}
         </Text>
-        {getEstimatedDuration() > 0 && (
-          <Text variant="body" style={{ color: theme.text.secondary }}>
-            Est. {getEstimatedDuration()} min
-          </Text>
-        )}
+        {getEstimatedDuration() > 0 && (() => {
+          const difficulty = getDifficulty(getAvgExerciseDifficulty());
+          return (
+            <View style={styles.headerMeta}>
+              <Text variant="body" style={{ color: theme.text.secondary }}>
+                Est. {getEstimatedDuration()} min
+              </Text>
+              <View style={[styles.headerDot, { backgroundColor: theme.text.tertiary }]} />
+              <Text variant="body" style={[styles.difficultyText, { color: difficulty.color }]}>
+                {difficulty.label}
+              </Text>
+            </View>
+          );
+        })()}
       </View>
 
       {/* Settings Accordion */}
@@ -713,6 +758,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[5],
     paddingTop: 24,
     marginBottom: 32,
+  },
+  headerMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing[1],
+  },
+  headerDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: spacing[2],
+  },
+  difficultyText: {
+    fontWeight: '600',
   },
   section: {
     paddingHorizontal: spacing[5],

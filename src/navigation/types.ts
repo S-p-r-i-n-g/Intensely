@@ -43,18 +43,6 @@ export type HomeStackParamList = {
     isSynced?: boolean;
     exercisesJson?: string; // JSON-encoded Record<number, string[]> for all circuits
   };
-  // Legacy routes (kept for backward compatibility)
-  WorkoutFlowSelection: undefined;
-  JumpRightIn: undefined;
-  TakeTheWheel: {
-    workoutId?: string;
-    selectedExerciseIds?: string[];
-    workoutName?: string;
-    circuits?: number;
-    setsPerCircuit?: number;
-    workInterval?: number;
-    restInterval?: number;
-  };
   ExerciseSelection: {
     selectedIds?: string[];
     circuitIndex?: number;

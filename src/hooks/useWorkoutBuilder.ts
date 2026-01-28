@@ -21,6 +21,22 @@ export type ExerciseGroup = {
   exerciseIds: string[];
 };
 
+export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
+
+export type DifficultyResult = {
+  label: 'Beginner' | 'Intermediate' | 'Advanced';
+  level: DifficultyLevel;
+  color: string;
+  score: number;
+};
+
+// Difficulty color constants (from design.md v1.3)
+export const DIFFICULTY_COLORS = {
+  beginner: '#15803D',    // success.500
+  intermediate: '#1D4ED8', // accent.500
+  advanced: '#D92D20',     // primary.500
+} as const;
+
 export type WorkoutSettings = {
   work: number;      // Work interval in seconds
   rest: number;      // Rest interval in seconds
@@ -278,6 +294,66 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     );
   }, [state.exercises, state.isSynced, state.settings.circuits]);
 
+  // Get total unique exercises across all circuits
+  const getTotalExercises = useCallback(() => {
+    const uniqueIds = new Set<string>();
+    Object.values(state.exercises).forEach((ids) => {
+      ids.forEach((id) => uniqueIds.add(id));
+    });
+    return uniqueIds.size;
+  }, [state.exercises]);
+
+  /**
+   * Infer workout difficulty using design.md v1.3 formula:
+   * Final Score = Volume Score × Intensity Multiplier × Exercise Multiplier
+   *
+   * @param avgExerciseDifficulty - Average difficulty of selected exercises (1-3 scale)
+   *   - 1 = beginner, 2 = intermediate, 3 = advanced
+   *   - Default: 1.5 if no exercises selected
+   */
+  const getDifficulty = useCallback((avgExerciseDifficulty: number = 1.5): DifficultyResult => {
+    const { circuits, sets, work, rest } = state.settings;
+    const totalExercises = getTotalExercises();
+
+    // Volume Score = (Total Exercises × Circuits × Sets) / 10
+    const volumeScore = (totalExercises * circuits * sets) / 10;
+
+    // Intensity Multiplier = Work Interval / Rest Interval
+    // Prevent division by zero
+    const intensityMultiplier = rest > 0 ? work / rest : 1;
+
+    // Exercise Multiplier = average difficulty (1-3 scale)
+    const exerciseMultiplier = avgExerciseDifficulty;
+
+    // Final Score = Volume × Intensity × Exercise
+    const score = volumeScore * intensityMultiplier * exerciseMultiplier;
+
+    // Categories from design.md v1.3:
+    // Beginner: < 5, Intermediate: 5-12, Advanced: > 12
+    if (score > 12) {
+      return {
+        label: 'Advanced',
+        level: 'advanced',
+        color: DIFFICULTY_COLORS.advanced,
+        score,
+      };
+    }
+    if (score >= 5) {
+      return {
+        label: 'Intermediate',
+        level: 'intermediate',
+        color: DIFFICULTY_COLORS.intermediate,
+        score,
+      };
+    }
+    return {
+      label: 'Beginner',
+      level: 'beginner',
+      color: DIFFICULTY_COLORS.beginner,
+      score,
+    };
+  }, [state.settings, getTotalExercises]);
+
   return {
     state,
     dispatch,
@@ -298,6 +374,8 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     getSettingsGroups,
     getExercisesMetrics,
     getExerciseGroups,
+    getTotalExercises,
+    getDifficulty,
   };
 }
 

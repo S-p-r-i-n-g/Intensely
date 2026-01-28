@@ -40,24 +40,7 @@ export const workoutsApi = {
   },
 
   /**
-   * Jump Right In - Instant workout generation
-   */
-  jumpRightIn: async (): Promise<ApiResponse<Workout>> => {
-    return apiClient.post('/flows/jump-right-in');
-  },
-
-  /**
-   * Let Us Curate - Objective-based with customization
-   */
-  letUsCurate: async (data: {
-    objectiveSlug: string;
-    constraints?: WorkoutConstraints;
-  }): Promise<ApiResponse<Workout>> => {
-    return apiClient.post('/flows/let-us-curate', data);
-  },
-
-  /**
-   * Take the Wheel - Custom workout building
+   * Create a custom workout
    */
   takeTheWheel: async (data: {
     name: string;

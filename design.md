@@ -1,5 +1,5 @@
 # Intensely - Design System
-**Version 1.2 | Last Updated: 2026-01-27**
+**Version 1.3 | Last Updated: 2026-01-28**
 
 ## Design Philosophy
 
@@ -255,3 +255,52 @@ Used in collapsed cards to show workout parameters at a glance.
 - **Color Blindness**: Avoid red-green color coding for critical status. Use explicit text labels and distinct grouping.
 - **Contrast**: Maintain a minimum **4.5:1 ratio** for all text, including inactive states (e.g., unselected tabs).
 - **Touch Targets**: Minimum **44x44pt** (iOS HIG) and recommended **48x48pt**.
+
+---
+
+## 13. Difficulty Inference Engine
+
+### Purpose
+Automatically infer workout difficulty based on volume, intensity, and exercise selection to provide consistent user feedback across all screens.
+
+### Formula
+
+```
+Final Score = Volume Score × Intensity Multiplier × Exercise Multiplier
+```
+
+#### Components
+
+1. **Volume Score**: Measures workout load
+   ```
+   Volume Score = (Total Exercises × Circuits × Sets) / 10
+   ```
+
+2. **Intensity Multiplier**: Measures work-to-rest ratio
+   ```
+   Intensity Multiplier = Work Interval / Rest Interval
+   ```
+   - Higher ratio = harder workout (less rest relative to work)
+
+3. **Exercise Multiplier**: Average inherent difficulty of selected exercises
+   ```
+   Exercise Multiplier = Average of exercise difficulty values (1-3 scale)
+   ```
+   - Beginner exercises = 1
+   - Intermediate exercises = 2
+   - Advanced exercises = 3
+   - Default (no exercises): 1.5
+
+### Difficulty Categories & Colors
+
+| Level        | Score Range | Color Token    | Hex       |
+|--------------|-------------|----------------|-----------|
+| Beginner     | < 5         | success.500    | #15803D   |
+| Intermediate | 5 - 12      | accent.500     | #1D4ED8   |
+| Advanced     | > 12        | primary.500    | #D92D20   |
+
+### Implementation Notes
+- Display difficulty badge with **both label and color** (Universal Design compliance)
+- Update in real-time as user modifies workout settings
+- Persist calculated difficulty when saving workout
+- Use consistent colors across Builder, Preview, and List screens

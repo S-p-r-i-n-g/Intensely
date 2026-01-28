@@ -5,9 +5,6 @@ import { HomeStackParamList } from './types';
 // Screens
 import HomeScreen from '../screens/home/HomeScreen';
 import NewWorkoutScreen from '../screens/workouts/NewWorkoutScreen';
-import WorkoutFlowSelectionScreen from '../screens/workouts/WorkoutFlowSelectionScreen';
-import JumpRightInScreen from '../screens/workouts/JumpRightInScreen';
-// TakeTheWheelScreen removed - replaced by NewWorkoutScreen
 import ExerciseSelectionScreen from '../screens/workouts/ExerciseSelectionScreen';
 import WorkoutPreviewScreen from '../screens/workouts/WorkoutPreviewScreen';
 import WorkoutExecutionScreen from '../screens/workouts/WorkoutExecutionScreen';
@@ -39,20 +36,6 @@ export const HomeStackNavigator = () => {
         options={({ route }) => ({
           title: route.params?.workoutId ? 'Edit Workout' : 'New Workout',
         })}
-      />
-      <Stack.Screen
-        name="WorkoutFlowSelection"
-        component={WorkoutFlowSelectionScreen}
-        options={{
-          title: 'Choose Your Workout',
-        }}
-      />
-      <Stack.Screen
-        name="JumpRightIn"
-        component={JumpRightInScreen}
-        options={{
-          title: 'Jump Right In',
-        }}
       />
       <Stack.Screen
         name="ExerciseSelection"

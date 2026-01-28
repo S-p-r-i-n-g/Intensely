@@ -17,6 +17,16 @@ import { workoutsApi } from '../../api';
 import type { Workout } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+
+// Helper to get difficulty color (matches design.md v1.3)
+const getDifficultyColor = (level?: string): string => {
+  const normalizedLevel = (level?.toLowerCase() || 'intermediate') as DifficultyLevel;
+  return DIFFICULTY_COLORS[normalizedLevel] || DIFFICULTY_COLORS.intermediate;
+};
+
+// Helper to capitalize first letter
+const capitalize = (s?: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutPreview'>;
 type RoutePropType = RouteProp<WorkoutsStackParamList, 'WorkoutPreview'>;
@@ -156,8 +166,8 @@ const WorkoutPreviewScreen = () => {
           <Text style={[styles.metricLabel, { color: theme.text.secondary }]}>Est. Calories</Text>
         </View>
         <View style={[styles.metricCard, { backgroundColor: theme.background.secondary }]}>
-          <Text style={[styles.metricValue, { color: theme.text.primary }]}>
-            {workout.difficultyLevel}
+          <Text style={[styles.metricValue, { color: getDifficultyColor(workout.difficultyLevel) }]}>
+            {capitalize(workout.difficultyLevel)}
           </Text>
           <Text style={[styles.metricLabel, { color: theme.text.secondary }]}>Difficulty</Text>
         </View>
