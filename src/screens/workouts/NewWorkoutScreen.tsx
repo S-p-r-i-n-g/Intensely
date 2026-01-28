@@ -15,6 +15,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -81,10 +82,14 @@ const NewWorkoutScreen = () => {
   const preferences = profile?.preferences;
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isHydrating, setIsHydrating] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [modalName, setModalName] = useState('');
   const [pendingStartImmediately, setPendingStartImmediately] = useState(false);
   const [exerciseMetadata, setExerciseMetadata] = useState<Map<string, string>>(new Map());
+
+  // Edit mode detection
+  const isEditMode = !!route.params?.workoutId;
 
   const {
     state,
@@ -112,6 +117,54 @@ const NewWorkoutScreen = () => {
       coolDown: preferences?.defaultCoolDownSeconds ?? 0,
     },
   });
+
+  // Hydrate workout state when editing an existing workout
+  useEffect(() => {
+    if (!isEditMode || route.params?.selectedExerciseIds) return; // Skip if returning from exercise selection
+
+    const hydrateWorkout = async () => {
+      try {
+        setIsHydrating(true);
+        const response = await workoutsApi.getById(route.params!.workoutId!);
+        const workout = (response as any).data;
+
+        if (!workout) return;
+
+        // Build exercises map from workout circuits
+        const exercisesMap: Record<number, string[]> = {};
+        const allSame = workout.circuits?.every(
+          (c: any) => JSON.stringify(c.exercises.map((e: any) => e.exerciseId)) ===
+                      JSON.stringify(workout.circuits[0]?.exercises.map((e: any) => e.exerciseId))
+        );
+
+        workout.circuits?.forEach((circuit: any, index: number) => {
+          exercisesMap[index] = circuit.exercises.map((ex: any) => ex.exerciseId);
+        });
+
+        loadWorkout({
+          name: workout.name,
+          isSynced: allSame,
+          exercises: exercisesMap,
+          settings: {
+            work: workout.intervalSeconds || 30,
+            rest: workout.restSeconds || 60,
+            circuits: workout.totalCircuits || 3,
+            sets: workout.setsPerCircuit || 3,
+            warmUp: 0,
+            coolDown: 0,
+          },
+        });
+      } catch (error) {
+        console.error('Failed to load workout for editing:', error);
+        Alert.alert('Error', 'Could not load workout. Please try again.');
+        navigation.goBack();
+      } finally {
+        setIsHydrating(false);
+      }
+    };
+
+    hydrateWorkout();
+  }, [isEditMode, route.params?.workoutId]);
 
   // Handle returning from exercise selection — restore full state
   useEffect(() => {
@@ -231,6 +284,11 @@ const NewWorkoutScreen = () => {
     try {
       setIsLoading(true);
 
+      // If editing, delete the old workout first (app's established update pattern)
+      if (isEditMode && route.params?.workoutId) {
+        await workoutsApi.delete(route.params.workoutId);
+      }
+
       // Build circuits array based on sync/customize mode
       const circuitsData = Array.from({ length: state.settings.circuits }, (_, i) => {
         const circuitExercises = !state.isSynced
@@ -254,9 +312,17 @@ const NewWorkoutScreen = () => {
       };
 
       const response = await workoutsApi.takeTheWheel(params);
+      const newWorkoutId = (response as any).data?.id || (response as any).id;
 
       if (pendingStartImmediately) {
-        navigation.navigate('WorkoutExecution', { workoutId: response.data.id });
+        navigation.navigate('WorkoutExecution', { workoutId: newWorkoutId });
+      } else if (isEditMode) {
+        // Navigate back to preview with the new workout ID
+        // @ts-ignore - navigating across stacks
+        navigation.navigate('Workouts', {
+          screen: 'WorkoutPreview',
+          params: { workoutId: newWorkoutId },
+        });
       } else {
         // @ts-ignore - navigating across stacks
         navigation.navigate('Workouts', { screen: 'WorkoutsList' });
@@ -276,6 +342,18 @@ const NewWorkoutScreen = () => {
     setSynced(!state.isSynced);
   }, [state.isSynced, setSynced]);
 
+  // Show loading state when hydrating workout for editing
+  if (isHydrating) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background.primary }]}>
+        <ActivityIndicator size="large" color={colors.primary[500]} />
+        <Text variant="body" style={{ color: theme.text.secondary, marginTop: spacing[4] }}>
+          Loading workout...
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.background.primary }]}
@@ -284,7 +362,7 @@ const NewWorkoutScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text variant="h1" style={{ color: theme.text.primary }}>
-          New Workout
+          {isEditMode ? 'Edit Workout' : 'New Workout'}
         </Text>
         {getEstimatedDuration() > 0 && (
           <Text variant="body" style={{ color: theme.text.secondary }}>
@@ -622,6 +700,11 @@ const NewWorkoutScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     paddingBottom: spacing[10],

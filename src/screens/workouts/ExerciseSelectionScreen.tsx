@@ -86,33 +86,18 @@ const ExerciseSelectionScreen = () => {
       return;
     }
 
-    // Check if we came from NewWorkout (has circuitIndex) or TakeTheWheel
-    const isFromNewWorkout = route.params?.circuitIndex !== undefined;
-
-    if (isFromNewWorkout) {
-      // Navigate back to NewWorkout with selected IDs and full state
-      navigation.navigate('NewWorkout', {
-        selectedExerciseIds: selectedIds,
-        circuitIndex: route.params?.circuitIndex,
-        workoutName: route.params?.workoutName,
-        circuits: route.params?.circuits,
-        setsPerCircuit: route.params?.setsPerCircuit,
-        workInterval: route.params?.workInterval,
-        restInterval: route.params?.restInterval,
-        isSynced: route.params?.isSynced,
-        exercisesJson: route.params?.exercisesJson,
-      });
-    } else {
-      // Legacy: Navigate back to TakeTheWheel
-      navigation.navigate('TakeTheWheel', {
-        selectedExerciseIds: selectedIds,
-        workoutName: route.params?.workoutName,
-        circuits: route.params?.circuits,
-        setsPerCircuit: route.params?.setsPerCircuit,
-        workInterval: route.params?.workInterval,
-        restInterval: route.params?.restInterval,
-      });
-    }
+    // Navigate back to NewWorkout with selected IDs and full state
+    navigation.navigate('NewWorkout', {
+      selectedExerciseIds: selectedIds,
+      circuitIndex: route.params?.circuitIndex ?? 0,
+      workoutName: route.params?.workoutName,
+      circuits: route.params?.circuits,
+      setsPerCircuit: route.params?.setsPerCircuit,
+      workInterval: route.params?.workInterval,
+      restInterval: route.params?.restInterval,
+      isSynced: route.params?.isSynced,
+      exercisesJson: route.params?.exercisesJson,
+    });
   };
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => {

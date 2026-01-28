@@ -51,21 +51,12 @@ const WorkoutPreviewScreen = () => {
   const handleEdit = () => {
     if (!workout) return;
 
-    // Extract exercise IDs from the first circuit (assuming all circuits have the same exercises)
-    const selectedExerciseIds = workout.circuits?.[0]?.exercises.map(ex => ex.exerciseId) || [];
-
-    // Navigate to TakeTheWheel with workout data pre-filled
+    // Navigate to NewWorkout with workout ID for editing
     // @ts-ignore - navigating across stacks
     navigation.navigate('Home', {
-      screen: 'TakeTheWheel',
+      screen: 'NewWorkout',
       params: {
-        workoutId: workout.id, // Pass the workout ID for updating
-        workoutName: workout.name,
-        selectedExerciseIds,
-        circuits: workout.totalCircuits,
-        setsPerCircuit: workout.setsPerCircuit,
-        workInterval: workout.intervalSeconds,
-        restInterval: workout.restSeconds,
+        workoutId: workout.id,
       }
     });
   };

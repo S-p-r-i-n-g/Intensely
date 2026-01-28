@@ -71,7 +71,7 @@ const WorkoutFlowSelectionScreen = () => {
         <Card
           variant="elevated"
           padding="large"
-          onPress={() => navigation.navigate('TakeTheWheel')}
+          onPress={() => navigation.navigate('NewWorkout', {})}
           style={styles.flowCard}
         >
           <Text style={styles.flowIcon}>🛠️</Text>
