@@ -105,24 +105,57 @@ export const lightMode = {
 };
 ```
 
-### Gradients (Premium Elements)
+### Timer Colors (High Contrast)
 
-Linear gradients are used for primary CTAs and success states to provide depth.
-- **Primary**: `#F97066` → `#D92D20` (Top-left to bottom-right)
-- **Success**: `#15803D` → `#15803D` (Tonal variation)
-- **Accent**: `#1D4ED8` → `#1D4ED8` (Tonal variation)
+```javascript
+export const timerColors = {
+  active: '#00FF00',      // Bright green for exercise intervals
+  rest: '#FFD700',        // Gold for rest periods
+  ready: '#FF6600',       // Orange for get-ready countdown
+  paused: '#94A3B8',      // Muted for paused state
+  background: '#000000',  // Pure black for timer screen
+};
+```
 
 ---
 
 ## 2. Typography
 
-### Type Scale & Hierarchy
+### Font Families
 
-- **H1 (36px, Bold)**: Main page titles.
-- **H2 (30px, Bold)**: Section headers.
-- **H3 (24px, Semibold)**: Card titles.
-- **Body (16px, Regular)**: Default content.
-- **Caption (12px, Regular)**: Metadata, uppercase with 0.5 letter spacing.
+```javascript
+// tokens/typography.js
+export const fontFamilies = {
+  ios: {
+    primary: 'SF Pro Display',
+    secondary: 'SF Pro Text',
+    mono: 'SF Mono',
+  },
+  android: {
+    primary: 'Roboto',
+    secondary: 'Roboto',
+    mono: 'Roboto Mono',
+  },
+};
+```
+
+### Type Scale
+
+```javascript
+export const fontSize = {
+  xs: 12,    // Captions, metadata
+  sm: 14,    // Supporting text
+  base: 16,  // Body text (default)
+  lg: 18,    // Emphasized body
+  xl: 20,    // Small headings
+  '2xl': 24, // Section headings
+  '3xl': 30, // Page titles
+  '4xl': 36, // Large titles
+  '6xl': 60, // Timer
+  '7xl': 72, // Timer primary
+  '8xl': 96, // Timer fullscreen
+};
+```
 
 ---
 
@@ -138,28 +171,87 @@ export const spacing = {
 
 ---
 
+## 4. Component Library
+
+### Buttons
+
+```javascript
+// components/Button.styles.js
+export const buttonStyles = {
+  primary: {
+    container: {
+      backgroundColor: colors.primary[500],
+      borderRadius: 12,
+      minHeight: 48, 
+    },
+    text: { color: '#FFFFFF' },
+  },
+};
+```
+
+---
+
+## 5. Layout & Grid
+
+- **Screen Layout**: `padding: layout.screenPadding` (16px).
+- **Grid System**: Two-column layout with `gap: spacing[3]` (12px).
+
+---
+
+## 6. Motion & Animation
+
+- **Transitions**: 300ms ease-out for screens.
+- **Interactions**: 100ms scale bounce for buttons.
+
+---
+
+## 7. Iconography
+
+- **Library**: `@expo/vector-icons` (Ionicons).
+- **Sizes**: 16px (xs), 24px (md), 32px (lg).
+
+---
+
+## 8. State Feedback
+
+- **Loading**: Use `ActivityIndicator` with `colors.primary[500]`.
+- **Empty States**: High-contrast title with secondary supportive text.
+
+---
+
+## 9. Accessibility Baseline
+
+- **Contrast**: Minimum 4.5:1 ratio for all text.
+- **Touch Targets**: Minimum 44x44pt (iOS HIG).
+
+---
+
+## 10. Workout-Specific Design Patterns
+
+### Workout Mode Screen
+- Immersive fullscreen timer with black background.
+- Bold exercise names (36px+) and primary action buttons within thumb zones.
+
+---
+
 ## 11. Summary & Metric Components (Universal Design)
 
 ### Metric Chips
-Used in collapsed cards (Settings, Circuit Exercises) to show workout parameters without requiring expansion.
+Used in collapsed cards to show workout parameters at a glance.
 
-- **Visual Principles**: High-contrast, monochromatic design. Categorization is handled by grouping, never by color alone.
+- **Visual Principles**: High-contrast, monochromatic design. Categorization is handled by grouping, never by color-coded borders alone.
 - **Structure**: Rounded rectangles with `borderWidth: 1` using `theme.border.strong`.
-- **Background**: Uses `theme.background.tertiary` to create a subtle inset effect.
+- **Background**: Uses `theme.background.tertiary`.
 - **Typography Hierarchy**:
-  - **Value**: Bold (Weight 700) and primary text color.
-  - **Label**: Regular (Weight 400) and secondary text color.
-- **Grouping**: Logical clusters (e.g., Structure vs. Timing) are separated by `spacing[4]` and vertical dividers to avoid confusion for color-blind users.
-
-### Example Layout
-`[ 3 CIRCUITS ] [ 3 SETS ]`  |  `[ 30s WORK ] [ 60s REST ]`
+  - **Value**: Bold (Weight 700) and `text.primary` color.
+  - **Label**: Regular (Weight 400) and `text.secondary` color.
+- **Grouping**: Clusters (e.g., Structure vs. Timing) are separated by `spacing[4]` and vertical dividers.
 
 ---
 
 ## 12. Accessibility Guidelines
 
 ### Universal Design Rules
-- **Color Blindness**: Avoid red-green color coding for critical status or categorization. Use explicit text labels and distinct grouping.
+- **Color Blindness**: Avoid red-green color coding for critical status. Use explicit text labels and distinct grouping.
 - **Contrast**: Maintain a minimum **4.5:1 ratio** for all text, including inactive states (e.g., unselected tabs).
-- **Touch Targets**: Minimum **44x44pt** (iOS HIG) and recommended **48x48pt** for primary actions.
-- **Motion**: Support "Reduce Motion" system settings by using `useNativeDriver` and controlled animation durations.
+- **Touch Targets**: Minimum **44x44pt** (iOS HIG) and recommended **48x48pt**.
