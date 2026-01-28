@@ -126,7 +126,7 @@ const ExerciseSelectionScreen = () => {
           isSelected && {
             backgroundColor: theme.background.elevated,
             borderColor: colors.primary[500],
-            borderLeftWidth: 4,
+            borderWidth: 3,
           },
         ]}
         onPress={() => toggleExercise(item.id)}
