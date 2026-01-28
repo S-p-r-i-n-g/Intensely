@@ -61,6 +61,17 @@ const COOLDOWN_OPTIONS = [
   { value: 600, label: '10 min' },
 ];
 
+const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
+  <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
+    <Text variant="caption" style={[styles.chipValue, { color: theme.text.primary }]}>
+      {value}
+    </Text>
+    <Text variant="caption" style={[styles.chipLabel, { color: theme.text.secondary }]}>
+      {label}
+    </Text>
+  </View>
+);
+
 const NewWorkoutScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
@@ -83,8 +94,8 @@ const NewWorkoutScreen = () => {
     toggleSettings,
     toggleExercises,
     loadWorkout,
-    getSettingsSummary,
-    getExercisesSummary,
+    getSettingsGroups,
+    getExercisesMetrics,
     getEstimatedDuration,
     getActiveCircuitIndex,
     getCurrentExercises,
@@ -238,7 +249,24 @@ const NewWorkoutScreen = () => {
         <SettingsAccordion
           isOpen={state.isSettingsExpanded}
           onToggle={toggleSettings}
-          summaryText={getSettingsSummary()}
+          summary={(() => {
+            const groups = getSettingsGroups();
+            return (
+              <View style={styles.chipGroupRow}>
+                <View style={styles.chipGroup}>
+                  {groups.structure.map((m) => (
+                    <MetricChip key={m.label} value={m.value} label={m.label} theme={theme} />
+                  ))}
+                </View>
+                <View style={[styles.chipDivider, { backgroundColor: theme.border.strong }]} />
+                <View style={styles.chipGroup}>
+                  {groups.timing.map((m) => (
+                    <MetricChip key={m.label} value={m.value} label={m.label} theme={theme} />
+                  ))}
+                </View>
+              </View>
+            );
+          })()}
         >
           {/* Circuits & Sets */}
           <View style={styles.settingsRow}>
@@ -306,7 +334,13 @@ const NewWorkoutScreen = () => {
           title="Circuit Exercises"
           isOpen={state.isExercisesExpanded}
           onToggle={toggleExercises}
-          summaryText={getExercisesSummary()}
+          summary={
+            <View style={styles.chipGroup}>
+              {getExercisesMetrics().map((m) => (
+                <MetricChip key={m.label} value={m.value} label={m.label} theme={theme} />
+              ))}
+            </View>
+          }
           maxHeight={400}
         >
           {/* Sync toggle (when circuits > 1) */}
@@ -349,6 +383,7 @@ const NewWorkoutScreen = () => {
                         variant="bodySmall"
                         style={[
                           styles.tabText,
+                          { color: colors.secondary[300] },
                           state.activeCircuitTab === i && styles.tabTextActive,
                         ]}
                       >
@@ -358,7 +393,7 @@ const NewWorkoutScreen = () => {
                         variant="caption"
                         style={[
                           styles.tabCount,
-                          { color: theme.text.secondary },
+                          { color: colors.secondary[300] },
                           state.activeCircuitTab === i && styles.tabCountActive,
                         ]}
                       >
@@ -492,6 +527,39 @@ const styles = StyleSheet.create({
   section: {
     paddingHorizontal: spacing[5],
     marginBottom: spacing[4],
+  },
+  chipGroupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[4],
+  },
+  chipGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing[2],
+  },
+  chipDivider: {
+    width: 1,
+    height: 16,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+    paddingHorizontal: spacing[2],
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+  },
+  chipValue: {
+    fontWeight: '700',
+    fontSize: 10,
+    textTransform: 'uppercase',
+  },
+  chipLabel: {
+    fontWeight: '400',
+    fontSize: 10,
+    textTransform: 'uppercase',
   },
   settingsRow: {
     flexDirection: 'row',

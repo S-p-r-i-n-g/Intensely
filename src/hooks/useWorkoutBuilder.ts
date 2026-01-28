@@ -6,6 +6,16 @@
 
 import { useReducer, useCallback } from 'react';
 
+export type ChipMetric = {
+  value: string;
+  label: string;
+};
+
+export type SettingsGroups = {
+  structure: ChipMetric[];
+  timing: ChipMetric[];
+};
+
 export type WorkoutSettings = {
   work: number;      // Work interval in seconds
   rest: number;      // Rest interval in seconds
@@ -220,27 +230,36 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     return Math.ceil(total / 60); // Return in minutes
   }, [state.settings, state.exercises]);
 
-  // Generate summary text for collapsed settings
-  const getSettingsSummary = useCallback(() => {
+  // Generate grouped settings metrics for chip-based display
+  const getSettingsGroups = useCallback((): SettingsGroups => {
     const { work, rest, circuits, sets, warmUp, coolDown } = state.settings;
-    const parts = [`${circuits} circuits`, `${sets} sets`, `${work}s work / ${rest}s rest`];
-    if (warmUp > 0) parts.push(`${warmUp / 60}m warm up`);
-    if (coolDown > 0) parts.push(`${coolDown / 60}m cool down`);
-    return parts.join(' • ');
+    const structure: ChipMetric[] = [
+      { value: `${circuits}`, label: 'Circuits' },
+      { value: `${sets}`, label: 'Sets' },
+    ];
+    const timing: ChipMetric[] = [
+      { value: `${work}s`, label: 'Work' },
+      { value: `${rest}s`, label: 'Rest' },
+    ];
+    if (warmUp > 0) timing.push({ value: `${warmUp / 60}m`, label: 'Warm Up' });
+    if (coolDown > 0) timing.push({ value: `${coolDown / 60}m`, label: 'Cool Down' });
+    return { structure, timing };
   }, [state.settings]);
 
-  // Generate summary text for collapsed exercises section
-  const getExercisesSummary = useCallback(() => {
+  // Generate exercise metrics for chip-based display
+  const getExercisesMetrics = useCallback((): ChipMetric[] => {
     const count = state.exercises[0]?.length || 0;
     if (!state.isSynced) {
-      const circuitCounts = Array.from(
+      return Array.from(
         { length: state.settings.circuits },
-        (_, i) => (state.exercises[i] || []).length
+        (_, i) => ({ value: `${(state.exercises[i] || []).length}`, label: `C${i + 1}` })
       );
-      return circuitCounts.map((c, i) => `C${i + 1}: ${c}`).join(' • ');
     }
-    if (count === 0) return 'No exercises selected';
-    return `${count} exercise${count !== 1 ? 's' : ''} • all circuits`;
+    if (count === 0) return [{ value: '0', label: 'Exercises' }];
+    return [
+      { value: `${count}`, label: `Exercise${count !== 1 ? 's' : ''}` },
+      { value: 'All', label: 'Circuits' },
+    ];
   }, [state.exercises, state.isSynced, state.settings.circuits]);
 
   return {
@@ -260,8 +279,8 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     getCurrentExercises,
     getActiveCircuitIndex,
     getEstimatedDuration,
-    getSettingsSummary,
-    getExercisesSummary,
+    getSettingsGroups,
+    getExercisesMetrics,
   };
 }
 

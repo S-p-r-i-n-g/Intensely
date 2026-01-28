@@ -21,7 +21,9 @@ import { useTheme } from '../../theme';
 interface SettingsAccordionProps {
   isOpen: boolean;
   onToggle: () => void;
-  summaryText: string;
+  summary?: React.ReactNode | string;
+  /** @deprecated Use `summary` instead */
+  summaryText?: string;
   children: React.ReactNode;
   maxHeight?: number;
   title?: string;
@@ -30,6 +32,7 @@ interface SettingsAccordionProps {
 export const SettingsAccordion: React.FC<SettingsAccordionProps> = ({
   isOpen,
   onToggle,
+  summary,
   summaryText,
   children,
   maxHeight = 500,
@@ -63,9 +66,13 @@ export const SettingsAccordion: React.FC<SettingsAccordionProps> = ({
           <Text variant="bodyLarge" style={[styles.title, { color: theme.text.primary }]}>
             {title}
           </Text>
-          <Text variant="bodySmall" style={[styles.summary, { color: theme.text.secondary }]}>
-            {summaryText}
-          </Text>
+          {typeof (summary ?? summaryText) === 'string' ? (
+            <Text variant="bodySmall" style={[styles.summary, { color: theme.text.secondary }]}>
+              {summary ?? summaryText}
+            </Text>
+          ) : (
+            <View style={styles.summaryContainer}>{summary}</View>
+          )}
         </View>
         <Animated.View style={arrowStyle}>
           <ChevronDownIcon size={20} color={colors.primary[500]} />
@@ -103,6 +110,9 @@ const styles = StyleSheet.create({
   },
   summary: {
     fontSize: 13,
+  },
+  summaryContainer: {
+    marginTop: spacing[1],
   },
   body: {
     overflow: 'hidden',
