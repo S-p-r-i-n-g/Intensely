@@ -16,6 +16,11 @@ export type SettingsGroups = {
   timing: ChipMetric[];
 };
 
+export type ExerciseGroup = {
+  label: string;
+  exerciseIds: string[];
+};
+
 export type WorkoutSettings = {
   work: number;      // Work interval in seconds
   rest: number;      // Rest interval in seconds
@@ -262,6 +267,17 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     ];
   }, [state.exercises, state.isSynced, state.settings.circuits]);
 
+  // Get exercise IDs organized by circuit groups
+  const getExerciseGroups = useCallback((): ExerciseGroup[] => {
+    if (state.isSynced) {
+      return [{ label: 'All', exerciseIds: state.exercises[0] || [] }];
+    }
+    return Array.from(
+      { length: state.settings.circuits },
+      (_, i) => ({ label: `C${i + 1}`, exerciseIds: state.exercises[i] || [] })
+    );
+  }, [state.exercises, state.isSynced, state.settings.circuits]);
+
   return {
     state,
     dispatch,
@@ -281,6 +297,7 @@ export function useWorkoutBuilder(initial?: Partial<WorkoutState>) {
     getEstimatedDuration,
     getSettingsGroups,
     getExercisesMetrics,
+    getExerciseGroups,
   };
 }
 

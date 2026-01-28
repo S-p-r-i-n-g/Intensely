@@ -122,8 +122,12 @@ const ExerciseSelectionScreen = () => {
       <TouchableOpacity
         style={[
           styles.exerciseCard,
-          { backgroundColor: theme.background.secondary },
-          isSelected && styles.exerciseCardSelected,
+          { backgroundColor: theme.background.secondary, borderColor: theme.border.strong },
+          isSelected && {
+            backgroundColor: theme.background.elevated,
+            borderColor: colors.primary[500],
+            borderLeftWidth: 4,
+          },
         ]}
         onPress={() => toggleExercise(item.id)}
       >
@@ -134,14 +138,19 @@ const ExerciseSelectionScreen = () => {
               <View style={styles.muscleGroupsContainer}>
                 {item.targetMuscleGroups.slice(0, 3).map((muscle) => (
                   <View key={muscle} style={[styles.muscleTag, { backgroundColor: theme.background.tertiary }]}>
-                    <Text style={styles.muscleTagText}>{muscle}</Text>
+                    <Text style={[styles.muscleTagText, { color: theme.text.secondary }]}>{muscle}</Text>
                   </View>
                 ))}
               </View>
             )}
           </View>
 
-          <View style={[styles.checkbox, { borderColor: theme.border.light, backgroundColor: theme.background.primary }]}>
+          <View style={[
+            styles.checkbox,
+            isSelected
+              ? { borderColor: colors.primary[500], backgroundColor: colors.primary[500] }
+              : { borderColor: theme.border.strong, backgroundColor: theme.border.medium },
+          ]}>
             {isSelected && <Text style={styles.checkmark}>✓</Text>}
           </View>
         </View>
@@ -256,11 +265,6 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     marginBottom: spacing[3],
     borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  exerciseCardSelected: {
-    backgroundColor: colors.primary[50],
-    borderColor: colors.primary[500],
   },
   cardContent: {
     flexDirection: 'row',
@@ -287,7 +291,6 @@ const styles = StyleSheet.create({
   },
   muscleTagText: {
     fontSize: 10,
-    color: colors.primary[500],
     fontWeight: '600',
     textTransform: 'capitalize',
   },
@@ -300,7 +303,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   checkmark: {
-    color: colors.primary[500],
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },

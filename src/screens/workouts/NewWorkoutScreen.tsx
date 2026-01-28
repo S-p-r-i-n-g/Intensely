@@ -22,12 +22,13 @@ import type { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { useWorkoutBuilder } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores';
-import { workoutsApi } from '../../api';
+import { workoutsApi, exercisesApi } from '../../api';
+import type { Exercise } from '../../types/api';
 import { Text, Button, PillSelector, Stepper } from '../../components/ui';
 import { SettingsAccordion } from '../../components/workout/SettingsAccordion';
 import { useTheme } from '../../theme';
 import { spacing, colors, borderRadius } from '../../tokens';
-import { PlayIcon, ArrowsRightLeftIcon, ChevronRightIcon } from 'react-native-heroicons/outline';
+import { PlayIcon, ArrowsRightLeftIcon, ChevronRightIcon, PencilIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'NewWorkout'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'NewWorkout'>;
@@ -83,6 +84,7 @@ const NewWorkoutScreen = () => {
   const [showNameModal, setShowNameModal] = useState(false);
   const [modalName, setModalName] = useState('');
   const [pendingStartImmediately, setPendingStartImmediately] = useState(false);
+  const [exerciseMetadata, setExerciseMetadata] = useState<Map<string, string>>(new Map());
 
   const {
     state,
@@ -96,6 +98,7 @@ const NewWorkoutScreen = () => {
     loadWorkout,
     getSettingsGroups,
     getExercisesMetrics,
+    getExerciseGroups,
     getEstimatedDuration,
     getActiveCircuitIndex,
     getCurrentExercises,
@@ -141,6 +144,52 @@ const NewWorkoutScreen = () => {
       });
     }
   }, [route.params?.selectedExerciseIds, route.params?.circuitIndex]);
+
+  // Fetch exercise names for IDs not in cache
+  useEffect(() => {
+    const allIds = new Set<string>();
+    Object.values(state.exercises).forEach((ids) => {
+      ids.forEach((id) => allIds.add(id));
+    });
+
+    const missingIds = Array.from(allIds).filter((id) => !exerciseMetadata.has(id));
+    if (missingIds.length === 0) return;
+
+    const fetchExerciseNames = async () => {
+      try {
+        const response = await exercisesApi.getAll({ limit: 500 });
+        // Backend returns { data: Exercise[], pagination: {...} }
+        const exercises = (response as any).data || [];
+        const newMetadata = new Map(exerciseMetadata);
+        exercises.forEach((ex: Exercise) => {
+          if (missingIds.includes(ex.id)) {
+            newMetadata.set(ex.id, ex.name);
+          }
+        });
+        setExerciseMetadata(newMetadata);
+      } catch (error) {
+        console.error('Failed to fetch exercise names:', error);
+      }
+    };
+
+    fetchExerciseNames();
+  }, [state.exercises]);
+
+  // Helper to get exercise name from cache
+  const getExerciseName = useCallback((id: string) => {
+    return exerciseMetadata.get(id) || 'Loading...';
+  }, [exerciseMetadata]);
+
+  // Format exercise names with truncation
+  const formatExerciseNames = useCallback((exerciseIds: string[], maxDisplay = 3) => {
+    if (exerciseIds.length === 0) return 'No exercises';
+    const names = exerciseIds.slice(0, maxDisplay).map((id) => getExerciseName(id));
+    const remaining = exerciseIds.length - maxDisplay;
+    if (remaining > 0) {
+      return `${names.join(', ')} +${remaining} more`;
+    }
+    return names.join(', ');
+  }, [getExerciseName]);
 
   const handleSelectExercises = useCallback(() => {
     const circuitIndex = getActiveCircuitIndex();
@@ -234,7 +283,7 @@ const NewWorkoutScreen = () => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text variant="h2" style={[styles.title, { color: theme.text.primary }]}>
+        <Text variant="h1" style={{ color: theme.text.primary }}>
           New Workout
         </Text>
         {getEstimatedDuration() > 0 && (
@@ -334,14 +383,38 @@ const NewWorkoutScreen = () => {
           title="Circuit Exercises"
           isOpen={state.isExercisesExpanded}
           onToggle={toggleExercises}
-          summary={
-            <View style={styles.chipGroup}>
-              {getExercisesMetrics().map((m) => (
-                <MetricChip key={m.label} value={m.value} label={m.label} theme={theme} />
-              ))}
-            </View>
-          }
-          maxHeight={400}
+          summary={(() => {
+            const groups = getExerciseGroups();
+            const totalExercises = groups.reduce((sum, g) => sum + g.exerciseIds.length, 0);
+            if (totalExercises === 0) {
+              return (
+                <Text variant="bodySmall" style={{ color: theme.text.tertiary }}>
+                  No exercises selected
+                </Text>
+              );
+            }
+            return (
+              <View style={styles.summaryExerciseList}>
+                {groups.map((group) => (
+                  <View key={group.label} style={styles.summaryGroup}>
+                    {groups.length > 1 && (
+                      <Text variant="caption" style={[styles.summaryLabel, { color: theme.text.secondary }]}>
+                        {group.label}:
+                      </Text>
+                    )}
+                    <Text
+                      variant="bodySmall"
+                      style={{ color: theme.text.primary, flex: 1 }}
+                      numberOfLines={1}
+                    >
+                      {formatExerciseNames(group.exerciseIds, 2)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })()}
+          maxHeight={600}
         >
           {/* Sync toggle (when circuits > 1) */}
           {state.settings.circuits > 1 && (
@@ -406,31 +479,58 @@ const NewWorkoutScreen = () => {
             </View>
           )}
 
+          {/* Exercise list (expanded view) */}
+          {getCurrentExercises().length > 0 && (
+            <View style={styles.exerciseListContainer}>
+              {getCurrentExercises().map((exerciseId, index) => (
+                <View
+                  key={exerciseId}
+                  style={[
+                    styles.exerciseListItem,
+                    index < getCurrentExercises().length - 1 && {
+                      borderBottomWidth: 1,
+                      borderBottomColor: theme.border.medium,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.exerciseListNumber, { color: theme.text.tertiary }]}>
+                    {index + 1}.
+                  </Text>
+                  <Text style={[styles.exerciseListName, { color: theme.text.primary }]}>
+                    {getExerciseName(exerciseId)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           {/* Exercise picker */}
-          <Button
-            variant="secondary"
-            fullWidth
+          <TouchableOpacity
+            style={[
+              styles.exerciseButton,
+              { backgroundColor: theme.background.elevated, borderColor: theme.border.strong },
+            ]}
             onPress={handleSelectExercises}
-            style={styles.exerciseButton}
+            activeOpacity={0.7}
           >
             <View style={styles.exerciseButtonContent}>
               {getCurrentExercises().length > 0 ? (
-                <View style={styles.exerciseButtonLabel}>
-                  <Text style={[styles.exerciseCount, { color: theme.text.primary }]}>
-                    {getCurrentExercises().length}
+                <>
+                  <PencilIcon size={18} color={colors.primary[500]} />
+                  <Text style={{ color: colors.primary[500], fontWeight: '600' }}>
+                    Edit Exercises
                   </Text>
-                  <Text style={{ color: theme.text.secondary }}>
-                    Exercises Selected
-                  </Text>
-                </View>
+                </>
               ) : (
-                <Text style={{ color: theme.text.secondary }}>
-                  Select Exercises
-                </Text>
+                <>
+                  <Text style={{ color: theme.text.secondary }}>
+                    Select Exercises
+                  </Text>
+                  <ChevronRightIcon size={20} color={theme.text.secondary} />
+                </>
               )}
-              <ChevronRightIcon size={18} color={theme.text.secondary} />
             </View>
-          </Button>
+          </TouchableOpacity>
         </SettingsAccordion>
       </View>
 
@@ -442,7 +542,7 @@ const NewWorkoutScreen = () => {
           onPress={() => handleSavePress(false)}
           loading={isLoading}
           disabled={isLoading}
-          style={styles.saveButton}
+          style={[styles.saveButton, styles.pillButton]}
         >
           Save Workout
         </Button>
@@ -454,6 +554,7 @@ const NewWorkoutScreen = () => {
           onPress={() => handleSavePress(true)}
           loading={isLoading}
           disabled={isLoading}
+          style={styles.pillButton}
         >
           <View style={styles.buttonContent}>
             <PlayIcon size={20} color="#FFFFFF" />
@@ -526,12 +627,9 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[10],
   },
   header: {
-    padding: spacing[5],
-    paddingTop: spacing[4],
-  },
-  title: {
-    fontWeight: '700',
-    marginBottom: spacing[1],
+    paddingHorizontal: spacing[5],
+    paddingTop: 24,
+    marginBottom: 32,
   },
   section: {
     paddingHorizontal: spacing[5],
@@ -635,23 +733,49 @@ const styles = StyleSheet.create({
   tabCountActive: {
     color: 'rgba(255, 255, 255, 0.8)',
   },
-  exerciseButton: {
-    marginTop: spacing[3],
+  summaryExerciseList: {
+    gap: spacing[1],
   },
-  exerciseButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flex: 1,
-  },
-  exerciseButtonLabel: {
+  summaryGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[1],
   },
-  exerciseCount: {
-    fontWeight: '700',
-    fontSize: 16,
+  summaryLabel: {
+    fontWeight: '600',
+    fontSize: 11,
+    textTransform: 'uppercase',
+  },
+  exerciseListContainer: {
+    marginBottom: spacing[3],
+  },
+  exerciseListItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing[2],
+    gap: spacing[2],
+  },
+  exerciseListNumber: {
+    fontSize: 12,
+    fontWeight: '500',
+    width: 20,
+  },
+  exerciseListName: {
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  exerciseButton: {
+    marginTop: spacing[3],
+    padding: spacing[4],
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  exerciseButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing[2],
   },
   buttonContainer: {
     padding: spacing[5],
@@ -660,6 +784,10 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginBottom: spacing[1],
+  },
+  pillButton: {
+    borderRadius: 100,
+    paddingVertical: 18,
   },
   buttonContent: {
     flexDirection: 'row',
