@@ -25,16 +25,50 @@ const getDifficultyColor = (level?: string): string => {
   return DIFFICULTY_COLORS[normalizedLevel] || DIFFICULTY_COLORS.intermediate;
 };
 
+// Helper to capitalize first letter
+const capitalize = (s?: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>;
+
+interface CircuitExercise {
+  id: string;
+  exerciseId: string;
+  exercise: {
+    id: string;
+    name: string;
+  };
+}
+
+interface Circuit {
+  id: string;
+  exercises: CircuitExercise[];
+}
 
 interface Workout {
   id: string;
   name: string;
   difficultyLevel: string;
   estimatedDurationMinutes: number;
+  estimatedCalories?: number;
   totalCircuits: number;
   exercisesPerCircuit: number;
+  setsPerCircuit: number;
+  intervalSeconds: number;
+  restSeconds: number;
+  circuits?: Circuit[];
 }
+
+// MetricChip component matching the Builder's style
+const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
+  <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
+    <Text style={[styles.chipValue, { color: theme.text.primary }]}>
+      {value}
+    </Text>
+    <Text style={[styles.chipLabel, { color: theme.text.secondary }]}>
+      {label}
+    </Text>
+  </View>
+);
 
 const WorkoutsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -79,16 +113,34 @@ const WorkoutsScreen = () => {
     loadWorkouts();
   };
 
+  // Format exercise names with truncation
+  const formatExerciseNames = (circuits?: Circuit[], maxDisplay = 3): string => {
+    if (!circuits || circuits.length === 0) return '';
+    const exercises = circuits[0]?.exercises || [];
+    if (exercises.length === 0) return '';
+
+    const names = exercises.slice(0, maxDisplay).map((ex) => ex.exercise?.name || 'Unknown');
+    const remaining = exercises.length - maxDisplay;
+
+    if (remaining > 0) {
+      return `${names.join(', ')} +${remaining} more`;
+    }
+    return names.join(', ');
+  };
+
   const renderWorkoutCard = ({ item }: { item: Workout }) => {
     const handleStartWorkout = () => {
       navigation.navigate('WorkoutPreview', { workoutId: item.id });
     };
 
+    const exercisePreview = formatExerciseNames(item.circuits);
+
     return (
       <TouchableOpacity
-        style={[styles.workoutCard, { backgroundColor: theme.background.secondary }]}
+        style={[styles.workoutCard, { backgroundColor: theme.background.elevated }]}
         onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
       >
+        {/* Header: Name + Start Button */}
         <View style={styles.workoutHeader}>
           <Text style={[styles.workoutName, { color: theme.text.primary }]}>{item.name}</Text>
           <TouchableOpacity
@@ -101,25 +153,45 @@ const WorkoutsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.workoutStats}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{item.totalCircuits}</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Circuits</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{item.exercisesPerCircuit}</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Exercises</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{item.estimatedDurationMinutes}</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Minutes</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: getDifficultyColor(item.difficultyLevel) }]}>
-              {item.difficultyLevel?.charAt(0).toUpperCase()}
-            </Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Level</Text>
-          </View>
+        {/* Metrics Row: Duration, Calories, Difficulty */}
+        <View style={styles.metricsRow}>
+          <Text style={[styles.metricText, { color: theme.text.secondary }]}>
+            {item.estimatedDurationMinutes} min
+          </Text>
+          {item.estimatedCalories && (
+            <>
+              <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
+              <Text style={[styles.metricText, { color: theme.text.secondary }]}>
+                {Math.round(item.estimatedCalories)} cal
+              </Text>
+            </>
+          )}
+          <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
+          <Text style={[styles.metricText, { color: getDifficultyColor(item.difficultyLevel), fontWeight: '600' }]}>
+            {capitalize(item.difficultyLevel)}
+          </Text>
+        </View>
+
+        {/* Exercise Preview */}
+        {exercisePreview && (
+          <Text
+            style={[styles.exercisePreview, { color: theme.text.secondary }]}
+            numberOfLines={1}
+          >
+            {exercisePreview}
+          </Text>
+        )}
+
+        {/* Metric Chips: Row 1 - Structure */}
+        <View style={styles.chipRow}>
+          <MetricChip value={String(item.totalCircuits)} label="Circuits" theme={theme} />
+          <MetricChip value={String(item.setsPerCircuit)} label="Sets" theme={theme} />
+        </View>
+
+        {/* Metric Chips: Row 2 - Timing */}
+        <View style={styles.chipRow}>
+          <MetricChip value={`${item.intervalSeconds}s`} label="Work" theme={theme} />
+          <MetricChip value={`${item.restSeconds}s`} label="Rest" theme={theme} />
         </View>
       </TouchableOpacity>
     );
@@ -196,7 +268,7 @@ const styles = StyleSheet.create({
     padding: spacing[4],
   },
   workoutCard: {
-    borderRadius: borderRadius.md,
+    borderRadius: 16,
     padding: spacing[4],
     marginBottom: spacing[3],
   },
@@ -210,22 +282,46 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     flex: 1,
+    marginRight: spacing[2],
   },
-  workoutStats: {
+  metricsRow: {
     flexDirection: 'row',
-    gap: spacing[3],
-  },
-  statItem: {
     alignItems: 'center',
-    flex: 1,
+    marginBottom: spacing[2],
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.primary[500],
-    marginBottom: 2,
+  metricText: {
+    fontSize: 13,
   },
-  statLabel: {
+  metricDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginHorizontal: spacing[2],
+  },
+  exercisePreview: {
+    fontSize: 12,
+    marginBottom: spacing[3],
+  },
+  chipRow: {
+    flexDirection: 'row',
+    gap: spacing[2],
+    marginBottom: spacing[2],
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+    paddingHorizontal: spacing[2],
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+  },
+  chipValue: {
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  chipLabel: {
+    fontWeight: '400',
     fontSize: 11,
   },
   emptyIcon: {
