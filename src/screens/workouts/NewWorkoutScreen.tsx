@@ -23,11 +23,11 @@ import { HomeStackParamList } from '../../navigation/types';
 import { useWorkoutBuilder } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores';
 import { workoutsApi } from '../../api';
-import { Text, Button, Card, PillSelector, Stepper } from '../../components/ui';
+import { Text, Button, PillSelector, Stepper } from '../../components/ui';
 import { SettingsAccordion } from '../../components/workout/SettingsAccordion';
 import { useTheme } from '../../theme';
 import { spacing, colors, borderRadius } from '../../tokens';
-import { PlayIcon, ArrowsRightLeftIcon } from 'react-native-heroicons/outline';
+import { PlayIcon, ArrowsRightLeftIcon, ChevronRightIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'NewWorkout'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'NewWorkout'>;
@@ -406,22 +406,31 @@ const NewWorkoutScreen = () => {
             </View>
           )}
 
-          {/* Exercise picker card */}
-          <Card
-            variant="filled"
-            padding="medium"
+          {/* Exercise picker */}
+          <Button
+            variant="secondary"
+            fullWidth
             onPress={handleSelectExercises}
-            style={styles.exerciseCard}
+            style={styles.exerciseButton}
           >
-            <View style={styles.exerciseCardContent}>
-              <Text variant="body" style={{ color: theme.text.primary }}>
-                {getCurrentExercises().length > 0
-                  ? `${getCurrentExercises().length} exercises selected`
-                  : 'Select Exercises'}
-              </Text>
-              <Text style={styles.arrow}>→</Text>
+            <View style={styles.exerciseButtonContent}>
+              {getCurrentExercises().length > 0 ? (
+                <View style={styles.exerciseButtonLabel}>
+                  <Text style={[styles.exerciseCount, { color: theme.text.primary }]}>
+                    {getCurrentExercises().length}
+                  </Text>
+                  <Text style={{ color: theme.text.secondary }}>
+                    Exercises Selected
+                  </Text>
+                </View>
+              ) : (
+                <Text style={{ color: theme.text.secondary }}>
+                  Select Exercises
+                </Text>
+              )}
+              <ChevronRightIcon size={18} color={theme.text.secondary} />
             </View>
-          </Card>
+          </Button>
         </SettingsAccordion>
       </View>
 
@@ -626,21 +635,23 @@ const styles = StyleSheet.create({
   tabCountActive: {
     color: 'rgba(255, 255, 255, 0.8)',
   },
-  exerciseCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  exerciseButton: {
     marginTop: spacing[3],
   },
-  exerciseCardContent: {
+  exerciseButtonContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     flex: 1,
   },
-  arrow: {
-    fontSize: 18,
-    color: colors.secondary[400],
+  exerciseButtonLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1],
+  },
+  exerciseCount: {
+    fontWeight: '700',
+    fontSize: 16,
   },
   buttonContainer: {
     padding: spacing[5],
