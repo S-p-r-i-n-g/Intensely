@@ -292,26 +292,15 @@ const NewWorkoutScreen = () => {
     });
   }, [navigation, state, getActiveCircuitIndex, getCurrentExercises]);
 
-  const handleSavePress = useCallback((startImmediately: boolean) => {
-    const exercises = getCurrentExercises();
-    if (exercises.length === 0) {
-      Alert.alert('No Exercises', 'Please select at least one exercise.');
-      return;
-    }
-    setPendingStartImmediately(startImmediately);
-    setModalName(state.name);
-    setShowNameModal(true);
-  }, [getCurrentExercises, state.name]);
-
-  const handleModalSave = async () => {
-    const trimmedName = modalName.trim();
+  // Core save logic extracted for reuse
+  const performSave = useCallback(async (workoutName: string, startImmediately: boolean) => {
+    const trimmedName = workoutName.trim();
     if (!trimmedName) {
       Alert.alert('Missing Name', 'Please give your workout a name.');
       return;
     }
 
     setName(trimmedName);
-    setShowNameModal(false);
 
     try {
       setIsLoading(true);
@@ -350,7 +339,7 @@ const NewWorkoutScreen = () => {
       const response = await workoutsApi.create(params);
       const newWorkoutId = (response as any).data?.id || (response as any).id;
 
-      if (pendingStartImmediately) {
+      if (startImmediately) {
         navigation.navigate('WorkoutExecution', { workoutId: newWorkoutId });
       } else if (isEditMode) {
         // Navigate back to preview with the new workout ID
@@ -372,6 +361,29 @@ const NewWorkoutScreen = () => {
     } finally {
       setIsLoading(false);
     }
+  }, [isEditMode, route.params?.workoutId, state, setName, getDifficulty, getAvgExerciseDifficulty, navigation]);
+
+  const handleSavePress = useCallback((startImmediately: boolean) => {
+    const exercises = getCurrentExercises();
+    if (exercises.length === 0) {
+      Alert.alert('No Exercises', 'Please select at least one exercise.');
+      return;
+    }
+
+    if (isEditMode) {
+      // In edit mode, save directly using existing name
+      performSave(state.name, startImmediately);
+    } else {
+      // In create mode, show name modal first
+      setPendingStartImmediately(startImmediately);
+      setModalName(state.name);
+      setShowNameModal(true);
+    }
+  }, [getCurrentExercises, state.name, isEditMode, performSave]);
+
+  const handleModalSave = async () => {
+    setShowNameModal(false);
+    await performSave(modalName, pendingStartImmediately);
   };
 
   const handleSyncToggle = useCallback(() => {
@@ -397,9 +409,24 @@ const NewWorkoutScreen = () => {
     >
       {/* Header */}
       <View style={styles.header}>
-        <Text variant="h1" style={{ color: theme.text.primary }}>
-          {isEditMode ? 'Edit Workout' : 'New Workout'}
-        </Text>
+        {isEditMode ? (
+          <TouchableOpacity
+            onPress={() => {
+              setModalName(state.name);
+              setShowNameModal(true);
+            }}
+            style={styles.editableHeader}
+          >
+            <Text variant="h1" style={{ color: theme.text.primary }}>
+              {state.name}
+            </Text>
+            <PencilIcon size={22} color={colors.primary[500]} style={{ marginLeft: 8 }} />
+          </TouchableOpacity>
+        ) : (
+          <Text variant="h1" style={{ color: theme.text.primary }}>
+            New Workout
+          </Text>
+        )}
         {getEstimatedDuration() > 0 && (() => {
           const difficulty = getDifficulty(getAvgExerciseDifficulty());
           return (
@@ -699,7 +726,7 @@ const NewWorkoutScreen = () => {
         >
           <View style={[styles.modalCard, { backgroundColor: theme.background.elevated }]}>
             <Text variant="h3" style={[styles.modalTitle, { color: theme.text.primary }]}>
-              Name Your Workout
+              {isEditMode ? 'Rename Workout' : 'Name Your Workout'}
             </Text>
             <TextInput
               style={[
@@ -758,6 +785,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[5],
     paddingTop: 24,
     marginBottom: 32,
+  },
+  editableHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerMeta: {
     flexDirection: 'row',
