@@ -11,8 +11,70 @@ function isUniqueConstraintError(error: any): boolean {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
 }
 
+type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';
+
+/**
+ * Map exercise difficulty string to numeric value (1-3 scale per design.md v1.3)
+ */
+function difficultyToNumber(difficulty: string): number {
+  switch (difficulty.toLowerCase()) {
+    case 'beginner':
+      return 1;
+    case 'intermediate':
+      return 2;
+    case 'advanced':
+      return 3;
+    default:
+      return 2; // Default to intermediate
+  }
+}
+
+/**
+ * Infer workout difficulty using design.md v1.3 formula:
+ * Final Score = Volume Score × Intensity Multiplier × Exercise Multiplier
+ *
+ * - Volume Score = (Total Exercises × Circuits × Sets) / 10
+ * - Intensity Multiplier = Work Interval / Rest Interval
+ * - Exercise Multiplier = Average of exercise difficulty values (1-3 scale)
+ *
+ * Categories: Beginner < 5, Intermediate 5-12, Advanced > 12
+ */
+function inferDifficultyLevel(
+  totalExercises: number,
+  circuits: number,
+  sets: number,
+  work: number,
+  rest: number,
+  exerciseDifficulties?: string[]
+): DifficultyLevel {
+  // Volume Score = (Total Exercises × Circuits × Sets) / 10
+  const volumeScore = (totalExercises * circuits * sets) / 10;
+
+  // Intensity Multiplier = Work Interval / Rest Interval
+  const intensityMultiplier = rest > 0 ? work / rest : 1;
+
+  // Exercise Multiplier = average difficulty (1-3 scale)
+  let exerciseMultiplier = 1.5; // Default per design.md v1.3
+  if (exerciseDifficulties && exerciseDifficulties.length > 0) {
+    const numericValues = exerciseDifficulties.map(d => difficultyToNumber(d));
+    exerciseMultiplier = numericValues.reduce((a, b) => a + b, 0) / numericValues.length;
+  }
+
+  // Final Score = Volume × Intensity × Exercise
+  const score = volumeScore * intensityMultiplier * exerciseMultiplier;
+
+  // Categories from design.md v1.3:
+  // Beginner: < 5, Intermediate: 5-12, Advanced: > 12
+  if (score > 12) return 'advanced';
+  if (score >= 5) return 'intermediate';
+  return 'beginner';
+}
+
 export class WorkoutFlowsController {
   /**
+   * @deprecated This endpoint is no longer used by the mobile app.
+   * Kept for backward compatibility with potential external integrations.
+   *
    * POST /api/flows/jump-right-in
    * "Jump Right In" flow - instant workout generation with smart defaults
    *
@@ -97,6 +159,9 @@ export class WorkoutFlowsController {
   }
 
   /**
+   * @deprecated This endpoint is no longer used by the mobile app.
+   * Kept for backward compatibility with potential external integrations.
+   *
    * POST /api/flows/let-us-curate
    * "Let Us Curate" flow - objective-based workout generation
    *
@@ -234,19 +299,47 @@ export class WorkoutFlowsController {
       // Calculate workout metadata
       const totalCircuits = circuits.length;
       const exercisesPerCircuit = circuits[0]?.exercises?.length || 0;
-      const intervalSeconds = circuits[0]?.exercises?.[0]?.durationSeconds || 30;
-      const restSeconds = circuits[0]?.exercises?.[0]?.restAfterSeconds || 30;
+      const intervalSeconds = circuits[0]?.intervalSeconds || circuits[0]?.exercises?.[0]?.durationSeconds || 30;
+      const restSeconds = circuits[0]?.restSeconds || circuits[0]?.exercises?.[0]?.restAfterSeconds || 60;
       const setsPerCircuit = circuits[0]?.sets || 3;
 
       // Calculate duration
       let totalSeconds = 0;
       circuits.forEach((circuit: any) => {
         const exerciseTime = circuit.exercises.reduce((sum: number, ex: any) => {
-          return sum + (ex.durationSeconds || 30) + (ex.restAfterSeconds || 30);
+          return sum + (circuit.intervalSeconds || ex.durationSeconds || 30) + (circuit.restSeconds || ex.restAfterSeconds || 60);
         }, 0);
         totalSeconds += exerciseTime * (circuit.sets || 3);
       });
       const durationMinutes = Math.ceil(totalSeconds / 60);
+
+      // Collect all unique exercise IDs to fetch their difficulties
+      const allExerciseIds = new Set<string>();
+      circuits.forEach((circuit: any) => {
+        circuit.exercises.forEach((exerciseId: any) => {
+          const actualId = typeof exerciseId === 'string' ? exerciseId : exerciseId.exerciseId;
+          allExerciseIds.add(actualId);
+        });
+      });
+      const totalExercises = allExerciseIds.size;
+
+      // Fetch exercises to get their difficulty levels
+      const exercises = await prisma.exercise.findMany({
+        where: { id: { in: Array.from(allExerciseIds) } },
+        select: { id: true, difficulty: true }
+      });
+
+      const exerciseDifficulties = exercises.map(ex => ex.difficulty);
+
+      // Infer difficulty using design.md v1.3 formula
+      const inferredDifficulty = difficulty || inferDifficultyLevel(
+        totalExercises,
+        totalCircuits,
+        setsPerCircuit,
+        intervalSeconds,
+        restSeconds,
+        exerciseDifficulties
+      );
 
       // Ensure user exists in database if authenticated
       if (req.user) {
@@ -268,7 +361,7 @@ export class WorkoutFlowsController {
         data: {
           name,
           description,
-          difficultyLevel: difficulty || 'intermediate',
+          difficultyLevel: inferredDifficulty,
           estimatedDurationMinutes: durationMinutes,
           totalCircuits,
           exercisesPerCircuit,
