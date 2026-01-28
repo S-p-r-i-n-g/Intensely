@@ -297,7 +297,7 @@ export class WorkoutsController {
 
   /**
    * DELETE /api/workouts/:id
-   * Delete a workout (soft delete)
+   * Delete a workout (hard delete to support edit-as-delete+create pattern)
    */
   static async deleteWorkout(req: Request, res: Response): Promise<void> {
     try {
@@ -316,12 +316,9 @@ export class WorkoutsController {
         return;
       }
 
-      // Soft delete
-      await prisma.workout.update({
-        where: { id },
-        data: {
-          deletedAt: new Date()
-        }
+      // Hard delete (cascades to circuits and circuit_exercises via schema)
+      await prisma.workout.delete({
+        where: { id }
       });
 
       res.json({
