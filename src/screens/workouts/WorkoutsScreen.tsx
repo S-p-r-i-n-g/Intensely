@@ -28,6 +28,42 @@ const getDifficultyColor = (level?: string): string => {
 // Helper to capitalize first letter
 const capitalize = (s?: string) => s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
 
+// Check if circuits are "synced" (all have the same exercises in the same order)
+const areCircuitsSynced = (circuits: Circuit[]): boolean => {
+  if (circuits.length <= 1) return true;
+  const firstCircuitIds = circuits[0].exercises.map((e) => e.exerciseId).join(',');
+  return circuits.every(
+    (c) => c.exercises.map((e) => e.exerciseId).join(',') === firstCircuitIds
+  );
+};
+
+// Render exercise preview: single line for synced, multi-line for split
+const renderExercisePreview = (circuits?: Circuit[], maxPerCircuit = 3): string[] => {
+  if (!circuits || circuits.length === 0) return [];
+
+  const synced = areCircuitsSynced(circuits);
+
+  if (synced) {
+    // Single line: first 3 exercise names
+    const exercises = circuits[0]?.exercises || [];
+    if (exercises.length === 0) return [];
+    const names = exercises.slice(0, maxPerCircuit).map((ex) => ex.exercise?.name || 'Unknown');
+    const remaining = exercises.length - maxPerCircuit;
+    if (remaining > 0) {
+      return [`${names.join(', ')} +${remaining} more`];
+    }
+    return [names.join(', ')];
+  } else {
+    // Multi-line: "C1: Name, Name...", "C2: Name, Name..."
+    return circuits.slice(0, 3).map((circuit, idx) => {
+      const names = circuit.exercises.slice(0, 2).map((ex) => ex.exercise?.name || 'Unknown');
+      const remaining = circuit.exercises.length - 2;
+      const suffix = remaining > 0 ? ` +${remaining}` : '';
+      return `C${idx + 1}: ${names.join(', ')}${suffix}`;
+    });
+  }
+};
+
 type NavigationProp = NativeStackNavigationProp<WorkoutsStackParamList, 'WorkoutsList'>;
 
 interface CircuitExercise {
@@ -69,6 +105,84 @@ const MetricChip = ({ value, label, theme }: { value: string; label: string; the
     </Text>
   </View>
 );
+
+// Dedicated WorkoutCard component
+interface WorkoutCardProps {
+  workout: Workout;
+  theme: any;
+  onPress: () => void;
+  onStart: () => void;
+}
+
+const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => {
+  const exerciseLines = renderExercisePreview(workout.circuits);
+
+  return (
+    <TouchableOpacity
+      style={[styles.workoutCard, { backgroundColor: theme.background.elevated }]}
+      onPress={onPress}
+    >
+      {/* Header: Name + Start Button */}
+      <View style={styles.workoutHeader}>
+        <Text style={[styles.workoutName, { color: theme.text.primary }]}>{workout.name}</Text>
+        <TouchableOpacity
+          style={styles.startButton}
+          onPress={onStart}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <PlayIcon size={16} color="#FFFFFF" />
+          <Text style={styles.startButtonText}>Start</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Metrics Row: Duration, Calories, Difficulty */}
+      <View style={styles.metricsRow}>
+        <Text style={[styles.metricText, { color: theme.text.secondary }]}>
+          {workout.estimatedDurationMinutes} min
+        </Text>
+        {workout.estimatedCalories && (
+          <>
+            <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
+            <Text style={[styles.metricText, { color: theme.text.secondary }]}>
+              {Math.round(workout.estimatedCalories)} cal
+            </Text>
+          </>
+        )}
+        <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
+        <Text style={[styles.metricText, { color: getDifficultyColor(workout.difficultyLevel), fontWeight: '600' }]}>
+          {capitalize(workout.difficultyLevel)}
+        </Text>
+      </View>
+
+      {/* Exercise Preview (single or multi-line) */}
+      {exerciseLines.length > 0 && (
+        <View style={styles.exercisePreviewContainer}>
+          {exerciseLines.map((line, idx) => (
+            <Text
+              key={idx}
+              style={[styles.exercisePreview, { color: theme.text.secondary }]}
+              numberOfLines={1}
+            >
+              {line}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {/* Metric Chips: Row 1 - Structure */}
+      <View style={styles.chipRow}>
+        <MetricChip value={String(workout.totalCircuits)} label="Circuits" theme={theme} />
+        <MetricChip value={String(workout.setsPerCircuit)} label="Sets" theme={theme} />
+      </View>
+
+      {/* Metric Chips: Row 2 - Timing */}
+      <View style={[styles.chipRow, { marginBottom: 0 }]}>
+        <MetricChip value={`${workout.intervalSeconds}s`} label="Work" theme={theme} />
+        <MetricChip value={`${workout.restSeconds}s`} label="Rest" theme={theme} />
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 const WorkoutsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -113,89 +227,14 @@ const WorkoutsScreen = () => {
     loadWorkouts();
   };
 
-  // Format exercise names with truncation
-  const formatExerciseNames = (circuits?: Circuit[], maxDisplay = 3): string => {
-    if (!circuits || circuits.length === 0) return '';
-    const exercises = circuits[0]?.exercises || [];
-    if (exercises.length === 0) return '';
-
-    const names = exercises.slice(0, maxDisplay).map((ex) => ex.exercise?.name || 'Unknown');
-    const remaining = exercises.length - maxDisplay;
-
-    if (remaining > 0) {
-      return `${names.join(', ')} +${remaining} more`;
-    }
-    return names.join(', ');
-  };
-
-  const renderWorkoutCard = ({ item }: { item: Workout }) => {
-    const handleStartWorkout = () => {
-      navigation.navigate('WorkoutPreview', { workoutId: item.id });
-    };
-
-    const exercisePreview = formatExerciseNames(item.circuits);
-
-    return (
-      <TouchableOpacity
-        style={[styles.workoutCard, { backgroundColor: theme.background.elevated }]}
-        onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
-      >
-        {/* Header: Name + Start Button */}
-        <View style={styles.workoutHeader}>
-          <Text style={[styles.workoutName, { color: theme.text.primary }]}>{item.name}</Text>
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStartWorkout}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <PlayIcon size={16} color="#FFFFFF" />
-            <Text style={styles.startButtonText}>Start</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Metrics Row: Duration, Calories, Difficulty */}
-        <View style={styles.metricsRow}>
-          <Text style={[styles.metricText, { color: theme.text.secondary }]}>
-            {item.estimatedDurationMinutes} min
-          </Text>
-          {item.estimatedCalories && (
-            <>
-              <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
-              <Text style={[styles.metricText, { color: theme.text.secondary }]}>
-                {Math.round(item.estimatedCalories)} cal
-              </Text>
-            </>
-          )}
-          <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
-          <Text style={[styles.metricText, { color: getDifficultyColor(item.difficultyLevel), fontWeight: '600' }]}>
-            {capitalize(item.difficultyLevel)}
-          </Text>
-        </View>
-
-        {/* Exercise Preview */}
-        {exercisePreview && (
-          <Text
-            style={[styles.exercisePreview, { color: theme.text.secondary }]}
-            numberOfLines={1}
-          >
-            {exercisePreview}
-          </Text>
-        )}
-
-        {/* Metric Chips: Row 1 - Structure */}
-        <View style={styles.chipRow}>
-          <MetricChip value={String(item.totalCircuits)} label="Circuits" theme={theme} />
-          <MetricChip value={String(item.setsPerCircuit)} label="Sets" theme={theme} />
-        </View>
-
-        {/* Metric Chips: Row 2 - Timing */}
-        <View style={styles.chipRow}>
-          <MetricChip value={`${item.intervalSeconds}s`} label="Work" theme={theme} />
-          <MetricChip value={`${item.restSeconds}s`} label="Rest" theme={theme} />
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  const renderWorkoutCard = ({ item }: { item: Workout }) => (
+    <WorkoutCard
+      workout={item}
+      theme={theme}
+      onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
+      onStart={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
+    />
+  );
 
   if (isLoading) {
     return (
@@ -298,9 +337,12 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginHorizontal: spacing[2],
   },
+  exercisePreviewContainer: {
+    marginBottom: spacing[4],
+  },
   exercisePreview: {
     fontSize: 12,
-    marginBottom: spacing[3],
+    lineHeight: 16,
   },
   chipRow: {
     flexDirection: 'row',
