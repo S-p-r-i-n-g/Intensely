@@ -18,18 +18,19 @@ export class WorkoutHistoryController {
 
       const {
         workoutId,
+        startedAt,
         completedAt,
-        durationMinutes,
-        caloriesBurned,
+        durationSeconds,
+        estimatedCaloriesBurned,
         notes,
-        circuitResults
+        workoutSnapshot
       } = req.body;
 
       // Validate required fields
-      if (!workoutId) {
+      if (!workoutId || !startedAt || !workoutSnapshot) {
         res.status(400).json({
           error: 'Missing required field',
-          message: 'workoutId is required'
+          message: 'workoutId, startedAt, and workoutSnapshot are required'
         });
         return;
       }
@@ -39,11 +40,12 @@ export class WorkoutHistoryController {
         data: {
           userId: req.user.id,
           workoutId,
+          startedAt: new Date(startedAt),
           completedAt: completedAt ? new Date(completedAt) : new Date(),
-          durationMinutes: durationMinutes || null,
-          caloriesBurned: caloriesBurned || null,
+          durationSeconds: durationSeconds || null,
+          estimatedCaloriesBurned: estimatedCaloriesBurned || null,
           notes,
-          circuitResults: circuitResults || null
+          workoutSnapshot
         },
         include: {
           workout: {
@@ -131,22 +133,7 @@ export class WorkoutHistoryController {
           take: limitNum,
           skip: offsetNum,
           include: {
-            workout: {
-              include: {
-                objectiveMappings: {
-                  include: {
-                    objective: {
-                      select: {
-                        id: true,
-                        name: true,
-                        slug: true,
-                        colorHex: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            workout: true
           },
           orderBy: { completedAt: 'desc' }
         }),
@@ -200,39 +187,23 @@ export class WorkoutHistoryController {
           }
         },
         include: {
-          workout: {
-            include: {
-              objectiveMappings: {
-                include: {
-                  objective: true
-                }
-              }
-            }
-          }
+          workout: true
         }
       });
 
       // Calculate statistics
       const totalWorkouts = history.length;
-      const totalMinutes = history.reduce((sum, h) => sum + (h.durationMinutes || 0), 0);
-      const totalCalories = history.reduce((sum, h) => sum + (Number(h.caloriesBurned) || 0), 0);
-
-      // Group by objective
-      const byObjective: Record<string, number> = {};
-      history.forEach(h => {
-        const objectives = h.workout.objectiveMappings;
-        objectives.forEach(mapping => {
-          const name = mapping.objective.name;
-          byObjective[name] = (byObjective[name] || 0) + 1;
-        });
-      });
+      const totalSeconds = history.reduce((sum, h) => sum + (h.durationSeconds || 0), 0);
+      const totalMinutes = Math.round(totalSeconds / 60);
+      const totalCalories = history.reduce((sum, h) => sum + (Number(h.estimatedCaloriesBurned) || 0), 0);
 
       // Calculate streak
       let currentStreak = 0;
       let longestStreak = 0;
       let tempStreak = 0;
       const sortedDates = history
-        .map(h => h.completedAt.toDateString())
+        .filter(h => h.completedAt !== null)
+        .map(h => h.completedAt!.toDateString())
         .filter((date, index, self) => self.indexOf(date) === index)
         .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
@@ -268,7 +239,6 @@ export class WorkoutHistoryController {
           totalCalories: Math.round(totalCalories),
           averageMinutesPerWorkout: totalWorkouts > 0 ?
             Math.round(totalMinutes / totalWorkouts) : 0,
-          workoutsByObjective: byObjective,
           currentStreak,
           longestStreak
         }
@@ -310,11 +280,6 @@ export class WorkoutHistoryController {
                       exercise: true
                     }
                   }
-                }
-              },
-              objectiveMappings: {
-                include: {
-                  objective: true
                 }
               }
             }

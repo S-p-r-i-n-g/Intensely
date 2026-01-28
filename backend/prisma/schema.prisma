@@ -183,54 +183,13 @@ model Exercise {
 }
 
 // ============================================================================
-// WORKOUT OBJECTIVES
-// ============================================================================
-
-model WorkoutObjective {
-  id          String  @id @default(uuid())
-  name        String  @unique
-  slug        String  @unique
-  description String
-  tagline     String?
-
-  // Objective Preferences
-  preferredCategories Json @map("preferred_categories")
-  intensityPercentage Int? @map("intensity_percentage")
-
-  // Recommended Workout Structure
-  recommendedCircuits              Int @default(3) @map("recommended_circuits")
-  recommendedExercisesPerCircuit   Int @default(3) @map("recommended_exercises_per_circuit")
-  recommendedIntervalSeconds       Int @default(20) @map("recommended_interval_seconds")
-  recommendedRestSeconds           Int @default(60) @map("recommended_rest_seconds")
-  recommendedSets                  Int @default(3) @map("recommended_sets")
-  recommendedDurationMinutes       Int @default(20) @map("recommended_duration_minutes")
-
-  // Display
-  iconUrl      String? @map("icon_url")
-  colorHex     String? @map("color_hex")
-  displayOrder Int     @default(0) @map("display_order")
-  isActive     Boolean @default(true) @map("is_active")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  workoutMappings WorkoutObjectiveMapping[]
-
-  @@index([slug])
-  @@index([displayOrder])
-  @@map("workout_objectives")
-}
-
-// ============================================================================
 // WORKOUTS
 // ============================================================================
 
 model Workout {
-  id          String  @id @default(uuid())
-  name        String
-  slug        String?
-  description String?
+  id   String  @id @default(uuid())
+  name String
+  slug String?
 
   // Ownership
   createdBy  String?  @map("created_by")
@@ -251,11 +210,10 @@ model Workout {
   difficultyLevel          String?  @map("difficulty_level")
 
   // Tags
-  equipmentRequired  Json    @default("[\"bodyweight\"]") @map("equipment_required")
-  primaryObjectiveId String? @map("primary_objective_id")
+  equipmentRequired Json @default("[\"bodyweight\"]") @map("equipment_required")
 
   // Metrics
-  timesCompleted Int     @default(0) @map("times_completed")
+  timesCompleted Int      @default(0) @map("times_completed")
   averageRating  Decimal? @map("average_rating") @db.Decimal(3, 2)
 
   createdAt DateTime  @default(now()) @map("created_at")
@@ -263,16 +221,14 @@ model Workout {
   deletedAt DateTime? @map("deleted_at")
 
   // Relations
-  circuits         Circuit[]
-  history          WorkoutHistory[]
-  objectiveMappings WorkoutObjectiveMapping[]
-  favoritedBy      FavoriteWorkout[]
+  circuits    Circuit[]
+  history     WorkoutHistory[]
+  favoritedBy FavoriteWorkout[]
 
   @@unique([name, createdBy], name: "unique_workout_name_per_user")
   @@index([createdBy])
   @@index([isTemplate])
   @@index([isPublic])
-  @@index([primaryObjectiveId])
   @@index([difficultyLevel])
   @@index([deletedAt])
   @@map("workouts")
@@ -357,22 +313,6 @@ model WorkoutHistory {
   @@index([completedAt])
   @@index([startedAt])
   @@map("workout_history")
-}
-
-model WorkoutObjectiveMapping {
-  id             String           @id @default(uuid())
-  workoutId      String           @map("workout_id")
-  workout        Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  objectiveId    String           @map("objective_id")
-  objective      WorkoutObjective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
-  relevanceScore Int              @default(100) @map("relevance_score")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@unique([workoutId, objectiveId])
-  @@index([workoutId])
-  @@index([objectiveId])
-  @@map("workout_objective_mappings")
 }
 
 // ============================================================================

@@ -2,7 +2,6 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import exercisesRoutes from './routes/exercises.routes';
-import objectivesRoutes from './routes/objectives.routes';
 import workoutsRoutes from './routes/workouts.routes';
 import usersRoutes from './routes/users.routes';
 import workoutFlowsRoutes from './routes/workout-flows.routes';
@@ -38,7 +37,6 @@ app.get('/api', (req: Request, res: Response) => {
     version: '1.0.0',
     endpoints: {
       exercises: '/api/exercises',
-      objectives: '/api/objectives',
       workouts: '/api/workouts',
       users: '/api/users',
       flows: '/api/flows',
@@ -54,7 +52,6 @@ app.get('/api', (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/exercises', exercisesRoutes);
-app.use('/api/objectives', objectivesRoutes);
 app.use('/api/workouts', workoutsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/flows', workoutFlowsRoutes);

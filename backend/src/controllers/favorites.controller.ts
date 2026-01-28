@@ -312,11 +312,6 @@ export class FavoritesController {
                   }
                 },
                 orderBy: { circuitOrder: 'asc' }
-              },
-              objectiveMappings: {
-                include: {
-                  objective: true
-                }
               }
             }
           }

@@ -1,56 +1,15 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { WorkoutGeneratorService } from '../services/workout-generator.service';
-import { WorkoutGenerationRequest } from '../types/workout.types';
 
 export class WorkoutsController {
   /**
-   * POST /api/workouts/generate
-   * Generate a workout based on objective and constraints
-   */
-  static async generateWorkout(req: Request, res: Response): Promise<void> {
-    try {
-      const request: WorkoutGenerationRequest = {
-        objectiveId: req.body.objectiveId,
-        constraints: req.body.constraints,
-        userId: req.body.userId // Optional for now
-      };
-
-      // Validate required fields
-      if (!request.objectiveId) {
-        res.status(400).json({
-          error: 'Missing required field',
-          message: 'objectiveId is required'
-        });
-        return;
-      }
-
-      // Generate workout
-      const result = await WorkoutGeneratorService.generateWorkout(request);
-
-      res.json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      console.error('Error generating workout:', error);
-      res.status(500).json({
-        error: 'Failed to generate workout',
-        message: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  }
-
-  /**
    * POST /api/workouts
-   * Save a generated workout to the database
+   * Create a new workout
    */
   static async createWorkout(req: Request, res: Response): Promise<void> {
     try {
       const {
         name,
-        description,
-        objectiveId,
         difficulty,
         durationMinutes,
         circuits,
@@ -59,10 +18,10 @@ export class WorkoutsController {
       } = req.body;
 
       // Validate required fields
-      if (!name || !objectiveId || !circuits || circuits.length === 0) {
+      if (!name || !circuits || circuits.length === 0) {
         res.status(400).json({
           error: 'Missing required fields',
-          message: 'name, objectiveId, and circuits are required'
+          message: 'name and circuits are required'
         });
         return;
       }
@@ -78,7 +37,6 @@ export class WorkoutsController {
       const workout = await prisma.workout.create({
         data: {
           name,
-          description,
           difficultyLevel: difficulty || 'intermediate',
           estimatedDurationMinutes: durationMinutes || 20,
           totalCircuits,
@@ -87,16 +45,7 @@ export class WorkoutsController {
           restSeconds,
           setsPerCircuit,
           isPublic,
-          createdBy: userId || null,
-          primaryObjectiveId: objectiveId
-        }
-      });
-
-      // Create workout-objective mapping
-      await prisma.workoutObjectiveMapping.create({
-        data: {
-          workoutId: workout.id,
-          objectiveId
+          createdBy: userId || null
         }
       });
 
@@ -141,11 +90,6 @@ export class WorkoutsController {
               }
             },
             orderBy: { circuitOrder: 'asc' }
-          },
-          objectiveMappings: {
-            include: {
-              objective: true
-            }
           }
         }
       });
@@ -171,7 +115,6 @@ export class WorkoutsController {
     try {
       const {
         difficulty,
-        objectiveId,
         isPublic,
         userId,
         limit = '50',
@@ -192,15 +135,6 @@ export class WorkoutsController {
 
       if (userId) {
         where.creatorId = userId;
-      }
-
-      // If filtering by objective, use relation
-      if (objectiveId) {
-        where.objectives = {
-          some: {
-            objectiveId: objectiveId as string
-          }
-        };
       }
 
       const limitNum = Math.min(parseInt(limit as string) || 50, 100);
@@ -230,18 +164,6 @@ export class WorkoutsController {
                 }
               },
               orderBy: { circuitOrder: 'asc' }
-            },
-            objectiveMappings: {
-              include: {
-                objective: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    colorHex: true
-                  }
-                }
-              }
             }
           },
           orderBy: { createdAt: 'desc' }
@@ -289,11 +211,6 @@ export class WorkoutsController {
               }
             },
             orderBy: { circuitOrder: 'asc' }
-          },
-          objectiveMappings: {
-            include: {
-              objective: true
-            }
           }
         }
       });
@@ -326,7 +243,7 @@ export class WorkoutsController {
   static async updateWorkout(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { name, description, difficulty, durationMinutes, isPublic } = req.body;
+      const { name, difficulty, durationMinutes, isPublic } = req.body;
 
       // Check if workout exists
       const existing = await prisma.workout.findUnique({
@@ -346,7 +263,6 @@ export class WorkoutsController {
         where: { id },
         data: {
           name,
-          description,
           difficultyLevel: difficulty,
           estimatedDurationMinutes: durationMinutes,
           isPublic
@@ -362,11 +278,6 @@ export class WorkoutsController {
               }
             },
             orderBy: { circuitOrder: 'asc' }
-          },
-          objectiveMappings: {
-            include: {
-              objective: true
-            }
           }
         }
       });

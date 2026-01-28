@@ -3,9 +3,6 @@ import { WorkoutsController } from '../controllers/workouts.controller';
 
 const router = Router();
 
-// POST /api/workouts/generate - Generate a workout
-router.post('/generate', WorkoutsController.generateWorkout);
-
 // POST /api/workouts - Create/save a workout
 router.post('/', WorkoutsController.createWorkout);
 
