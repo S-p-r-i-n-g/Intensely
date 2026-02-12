@@ -1,3 +1,5 @@
+** This file is outdated. Please only use it for historical context. **
+
 # Exercise Library API Research
 ## Research Date: 2026-01-08
 

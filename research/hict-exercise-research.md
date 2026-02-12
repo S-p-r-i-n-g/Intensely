@@ -1,3 +1,5 @@
+** This file is outdated. Please only use it for historical context. **
+
 # HICT, Bodyweight, and HIIT Exercise Research
 ## Research Date: 2026-01-08
 

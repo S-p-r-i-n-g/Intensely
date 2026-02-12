@@ -1,3 +1,5 @@
+** This file is outdated. Please only use it for historical context. **
+
 # Database Schema Design
 ## Intensely HICT Workout App | Version 1.0 | 2026-01-08
 
