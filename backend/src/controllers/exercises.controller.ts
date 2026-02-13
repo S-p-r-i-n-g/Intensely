@@ -205,4 +205,95 @@ export class ExercisesController {
       });
     }
   }
+
+  /**
+   * POST /api/exercises
+   * Create a new custom exercise
+   */
+  static async createExercise(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'You must be logged in to create an exercise'
+        });
+        return;
+      }
+
+      const {
+        name,
+        primaryCategory,
+        difficulty,
+        primaryMuscles,
+        secondaryMuscles,
+        equipment,
+        description,
+        instructions
+      } = req.body;
+
+      // Validate required fields
+      if (!name || !primaryCategory || !difficulty || !primaryMuscles || primaryMuscles.length === 0) {
+        res.status(400).json({
+          error: 'Validation Error',
+          message: 'Name, category, difficulty, and at least one primary muscle are required'
+        });
+        return;
+      }
+
+      // Check for duplicate exercise name (case-insensitive)
+      const existingExercise = await prisma.exercise.findFirst({
+        where: {
+          name: {
+            equals: name.trim(),
+            mode: 'insensitive'
+          }
+        }
+      });
+
+      if (existingExercise) {
+        res.status(409).json({
+          error: 'Duplicate Exercise',
+          message: `An exercise named "${name.trim()}" already exists`
+        });
+        return;
+      }
+
+      // Generate unique slug
+      const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      const uniqueSlug = `${baseSlug}-${Date.now()}`;
+
+      const exercise = await prisma.exercise.create({
+        data: {
+          name,
+          slug: uniqueSlug,
+          primaryCategory,
+          difficulty,
+          primaryMuscles: primaryMuscles || [],
+          secondaryMuscles: secondaryMuscles || [],
+          equipment: equipment || ['bodyweight'],
+          description: description || null,
+          instructions: instructions || [],
+          createdBy: req.user.id,
+          isVerified: false,
+          hictSuitable: true,
+          smallSpace: true,
+          quiet: true,
+          beginnerFriendly: difficulty === 'beginner',
+          minimalTransition: true
+        }
+      });
+
+      res.status(201).json({
+        success: true,
+        data: exercise,
+        message: 'Exercise created successfully'
+      });
+    } catch (error) {
+      console.error('Error creating exercise:', error);
+      res.status(500).json({
+        error: 'Failed to create exercise',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
 }
