@@ -32,7 +32,9 @@ export class ExercisesController {
       } = req.query;
 
       // Build where clause
-      const where: any = {};
+      const where: any = {
+        deletedAt: null // Filter out soft-deleted items
+      };
 
       if (category) {
         where.primaryCategory = category;
@@ -292,6 +294,137 @@ export class ExercisesController {
       console.error('Error creating exercise:', error);
       res.status(500).json({
         error: 'Failed to create exercise',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * PUT /api/exercises/:id
+   * Update an existing exercise
+   */
+  static async updateExercise(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'You must be logged in.'
+        });
+        return;
+      }
+
+      const { id } = req.params;
+      const {
+        name,
+        primaryCategory,
+        difficulty,
+        primaryMuscles,
+        secondaryMuscles,
+        equipment,
+        description,
+        instructions
+      } = req.body;
+
+      // 1. Find existing exercise
+      const existingExercise = await prisma.exercise.findUnique({
+        where: { id }
+      });
+
+      if (!existingExercise) {
+        res.status(404).json({
+          error: 'Not Found',
+          message: 'Exercise not found.'
+        });
+        return;
+      }
+
+      // 2. Check ownership
+      if (existingExercise.createdBy !== req.user.id) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only edit exercises you created.'
+        });
+        return;
+      }
+
+      // 3. Update
+      const updatedExercise = await prisma.exercise.update({
+        where: { id },
+        data: {
+          name: name || undefined,
+          primaryCategory: primaryCategory || undefined,
+          difficulty: difficulty || undefined,
+          primaryMuscles: primaryMuscles || undefined,
+          secondaryMuscles: secondaryMuscles || undefined,
+          equipment: equipment || undefined,
+          description: description || undefined,
+          instructions: instructions || undefined,
+          updatedAt: new Date()
+        }
+      });
+
+      res.json({
+        success: true,
+        data: updatedExercise,
+        message: 'Exercise updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating exercise:', error);
+      res.status(500).json({
+        error: 'Update Failed',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  /**
+   * DELETE /api/exercises/:id
+   * Soft delete an exercise
+   */
+  static async deleteExercise(req: Request, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'You must be logged in.'
+        });
+        return;
+      }
+
+      const { id } = req.params;
+
+      const existingExercise = await prisma.exercise.findUnique({ where: { id } });
+
+      if (!existingExercise) {
+        res.status(404).json({
+          error: 'Not Found',
+          message: 'Exercise not found.'
+        });
+        return;
+      }
+
+      if (existingExercise.createdBy !== req.user.id) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'You can only delete exercises you created.'
+        });
+        return;
+      }
+
+      // Soft delete
+      await prisma.exercise.update({
+        where: { id },
+        data: { deletedAt: new Date() }
+      });
+
+      res.json({
+        success: true,
+        message: 'Exercise deleted successfully'
+      });
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      res.status(500).json({
+        error: 'Delete Failed',
         message: error instanceof Error ? error.message : 'Unknown error'
       });
     }

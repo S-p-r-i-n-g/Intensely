@@ -12,5 +12,7 @@ router.get('/:id', ExercisesController.getExercise);
 
 // Protected routes (require authentication)
 router.post('/', authenticateUser, ExercisesController.createExercise);
+router.put('/:id', authenticateUser, ExercisesController.updateExercise);
+router.delete('/:id', authenticateUser, ExercisesController.deleteExercise);
 
 export default router;
