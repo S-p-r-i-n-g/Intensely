@@ -36,4 +36,20 @@ export const exercisesApi = {
   search: async (query: string): Promise<ApiResponse<Exercise[]>> => {
     return apiClient.get('/exercises', { params: { search: query } });
   },
+
+  /**
+   * Create a new custom exercise
+   */
+  create: async (data: {
+    name: string;
+    primaryCategory: string;
+    difficulty: string;
+    primaryMuscles: string[];
+    secondaryMuscles?: string[];
+    equipment?: string[];
+    description?: string;
+    instructions?: string[];
+  }): Promise<ApiResponse<Exercise>> => {
+    return apiClient.post('/exercises', data);
+  },
 };

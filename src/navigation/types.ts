@@ -71,7 +71,7 @@ export type WorkoutsStackParamList = {
 export type ExercisesStackParamList = {
   ExercisesList: undefined;
   ExerciseDetail: { exerciseId: string };
-  Favorites: undefined;
+  CreateExercise: undefined;
 };
 
 // Profile Stack

@@ -5,7 +5,7 @@ import { ExercisesStackParamList } from './types';
 // Screens
 import ExercisesListScreen from '../screens/exercises/ExercisesListScreen';
 import ExerciseDetailScreen from '../screens/exercises/ExerciseDetailScreen';
-import FavoritesScreen from '../screens/exercises/FavoritesScreen';
+import CreateExerciseScreen from '../screens/exercises/CreateExerciseScreen';
 
 const Stack = createNativeStackNavigator<ExercisesStackParamList>();
 
@@ -24,7 +24,14 @@ export const ExercisesStackNavigator = () => {
         name="ExercisesList"
         component={ExercisesListScreen}
         options={{
-          title: 'Exercises',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CreateExercise"
+        component={CreateExerciseScreen}
+        options={{
+          title: 'Create Exercise',
         }}
       />
       <Stack.Screen
@@ -32,13 +39,6 @@ export const ExercisesStackNavigator = () => {
         component={ExerciseDetailScreen}
         options={{
           title: 'Exercise Details',
-        }}
-      />
-      <Stack.Screen
-        name="Favorites"
-        component={FavoritesScreen}
-        options={{
-          title: 'Favorite Exercises',
         }}
       />
     </Stack.Navigator>
