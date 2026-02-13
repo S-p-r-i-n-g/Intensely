@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,12 +9,15 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { ExercisesStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme';
 import { Text } from '../../components/ui';
 import { exercisesApi } from '../../api';
 import { spacing, borderRadius, colors } from '../../tokens';
 import { ChevronDownIcon, ChevronUpIcon } from 'react-native-heroicons/outline';
+
+type CreateScreenRouteProp = RouteProp<ExercisesStackParamList, 'CreateExercise'>;
 
 // Category options matching database taxonomy
 const CATEGORY_OPTIONS = [
@@ -138,20 +141,35 @@ const PillSelector = ({
 
 const CreateExerciseScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute<CreateScreenRouteProp>();
   const { theme } = useTheme();
 
+  // Check if we are in Edit Mode
+  const editingExercise = route.params?.exercise;
+  const isEditMode = !!editingExercise;
+
   // Form state
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('full_body');
-  const [difficulty, setDifficulty] = useState('intermediate');
-  const [primaryMuscles, setPrimaryMuscles] = useState<string[]>([]);
-  const [equipment, setEquipment] = useState<string[]>(['bodyweight']);
+  const [name, setName] = useState(editingExercise?.name || '');
+  const [description, setDescription] = useState(editingExercise?.description || '');
+  const [instructionsText, setInstructionsText] = useState(
+    Array.isArray(editingExercise?.instructions) ? editingExercise.instructions.join('\n') : ''
+  );
+  const [category, setCategory] = useState(editingExercise?.primaryCategory || 'full_body');
+  const [difficulty, setDifficulty] = useState(editingExercise?.difficulty || 'intermediate');
+  const [primaryMuscles, setPrimaryMuscles] = useState<string[]>(editingExercise?.primaryMuscles || []);
+  const [equipment, setEquipment] = useState<string[]>(editingExercise?.equipment || ['bodyweight']);
   const [isLoading, setIsLoading] = useState(false);
 
   // Accordion state
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
   const [isAttributesOpen, setIsAttributesOpen] = useState(true);
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(true);
+
+  useEffect(() => {
+    if (isEditMode) {
+      navigation.setOptions({ title: 'Edit Exercise' });
+    }
+  }, [isEditMode, navigation]);
 
   const toggleMuscle = (muscle: string) => {
     if (primaryMuscles.includes(muscle)) {
@@ -185,21 +203,31 @@ const CreateExerciseScreen = () => {
 
     try {
       setIsLoading(true);
-      await exercisesApi.create({
+
+      const exerciseData = {
         name: name.trim(),
         description: description.trim() || undefined,
         primaryCategory: category,
         difficulty,
         primaryMuscles,
         equipment,
-        instructions: [],
-      });
+        // Split text by newlines to create the string[] expected by backend
+        instructions: instructionsText.trim() ? instructionsText.split('\n').filter(line => line.trim()) : [],
+      };
+
+      if (isEditMode && editingExercise) {
+        await exercisesApi.update(editingExercise.id, exerciseData);
+        Alert.alert('Success', 'Exercise updated successfully!');
+      } else {
+        await exercisesApi.create(exerciseData);
+        Alert.alert('Success', 'Exercise created successfully!');
+      }
 
       // Navigate back immediately - list will refresh via useFocusEffect
       navigation.goBack();
     } catch (error: any) {
-      console.error('Failed to create exercise:', error);
-      const message = error.response?.data?.message || 'Failed to create exercise. Please try again.';
+      console.error('Failed to save exercise:', error);
+      const message = error.response?.data?.message || 'Failed to save exercise. Please try again.';
       Alert.alert('Error', message);
     } finally {
       setIsLoading(false);
@@ -265,6 +293,39 @@ const CreateExerciseScreen = () => {
           </View>
         </Accordion>
 
+        {/* Instructions Section */}
+        <Accordion
+          title="Instructions"
+          summary={`${instructionsText.split('\n').filter(l => l.trim()).length} steps`}
+          isOpen={isInstructionsOpen}
+          onToggle={() => setIsInstructionsOpen(!isInstructionsOpen)}
+          theme={theme}
+        >
+          <View style={styles.formGroup}>
+            <Text style={[styles.label, { color: theme.text.primary }]}>Step-by-step instructions</Text>
+            <Text style={[styles.helperText, { color: theme.text.secondary }]}>
+              Enter each step on a new line.
+            </Text>
+            <TextInput
+              style={[
+                styles.input,
+                styles.textAreaLarge,
+                {
+                  backgroundColor: theme.background.primary,
+                  color: theme.text.primary,
+                  borderColor: theme.border.medium,
+                },
+              ]}
+              placeholder="1. Start in a standing position...&#10;2. Drop into a squat...&#10;3. Jump up explosively..."
+              placeholderTextColor={theme.text.tertiary}
+              value={instructionsText}
+              onChangeText={setInstructionsText}
+              multiline
+              numberOfLines={6}
+            />
+          </View>
+        </Accordion>
+
         {/* Attributes */}
         <Accordion
           title="Attributes"
@@ -323,7 +384,7 @@ const CreateExerciseScreen = () => {
           disabled={isLoading}
         >
           <Text style={styles.saveButtonText}>
-            {isLoading ? 'Saving...' : 'Save Exercise'}
+            {isLoading ? 'Saving...' : isEditMode ? 'Update Exercise' : 'Save Exercise'}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -378,6 +439,14 @@ const styles = StyleSheet.create({
   },
   textArea: {
     minHeight: 80,
+    textAlignVertical: 'top',
+  },
+  helperText: {
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  textAreaLarge: {
+    minHeight: 120,
     textAlignVertical: 'top',
   },
   pillContainer: {

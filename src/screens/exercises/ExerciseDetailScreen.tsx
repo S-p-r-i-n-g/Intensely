@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Platform,
+  Modal,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,9 +19,10 @@ import type { Exercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
-import { HeartIcon, PlayCircleIcon } from 'react-native-heroicons/outline';
+import { HeartIcon, PlayCircleIcon, PencilSquareIcon, TrashIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+import { useAuthStore } from '../../stores/authStore';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExerciseDetail'>;
 type RoutePropType = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
@@ -45,11 +48,13 @@ const ExerciseDetailScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const { theme } = useTheme();
+  const { user } = useAuthStore();
 
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     loadExercise();
@@ -110,6 +115,33 @@ const ExerciseDetailScreen = () => {
     }
   };
 
+  const handleEdit = () => {
+    if (!exercise) return;
+    navigation.navigate('CreateExercise', { exercise });
+  };
+
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+
+    try {
+      setIsLoading(true);
+      await exercisesApi.delete(exercise!.id);
+      navigation.goBack();
+    } catch (error) {
+      console.error('Failed to delete exercise:', error);
+      Alert.alert('Error', 'Failed to delete exercise.');
+      setIsLoading(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
   if (isLoading || !exercise) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
@@ -127,7 +159,11 @@ const ExerciseDetailScreen = () => {
   const tips = Array.isArray(exercise.tips) ? exercise.tips : [];
   const commonMistakes = Array.isArray(exercise.commonMistakes) ? exercise.commonMistakes : [];
 
+  // Check if current user owns this exercise
+  const isOwner = user && exercise.createdBy === user.id;
+
   return (
+    <>
     <ScrollView
       style={[styles.container, { backgroundColor: theme.background.primary }]}
       contentContainerStyle={styles.contentContainer}
@@ -137,17 +173,33 @@ const ExerciseDetailScreen = () => {
         <View style={styles.headerTop}>
           <View style={styles.headerTitleRow}>
             <Text style={[styles.title, { color: theme.text.primary }]}>{exercise.name}</Text>
-            <TouchableOpacity
-              onPress={toggleFavorite}
-              disabled={isTogglingFavorite}
-              style={styles.favoriteButton}
-            >
-              {isFavorite ? (
-                <HeartIconSolid size={28} color={colors.primary[500]} />
-              ) : (
-                <HeartIcon size={28} color={theme.text.tertiary} />
+
+            <View style={styles.actionButtons}>
+              {/* Edit/Delete Actions for Owner */}
+              {isOwner && (
+                <>
+                  <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
+                    <PencilSquareIcon size={24} color={theme.text.secondary} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleDelete} style={styles.iconButton}>
+                    <TrashIcon size={24} color={colors.error[500]} />
+                  </TouchableOpacity>
+                </>
               )}
-            </TouchableOpacity>
+
+              {/* Favorite Button */}
+              <TouchableOpacity
+                onPress={toggleFavorite}
+                disabled={isTogglingFavorite}
+                style={styles.favoriteButton}
+              >
+                {isFavorite ? (
+                  <HeartIconSolid size={28} color={colors.primary[500]} />
+                ) : (
+                  <HeartIcon size={28} color={theme.text.tertiary} />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Badges Row */}
@@ -270,6 +322,38 @@ const ExerciseDetailScreen = () => {
       )}
 
     </ScrollView>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={showDeleteModal}
+        transparent
+        animationType="fade"
+        onRequestClose={cancelDelete}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
+            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Delete Exercise</Text>
+            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
+              Are you sure you want to delete this exercise? This cannot be undone.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: theme.background.tertiary }]}
+                onPress={cancelDelete}
+              >
+                <Text style={[styles.modalButtonText, { color: theme.text.primary }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonDelete]}
+                onPress={confirmDelete}
+              >
+                <Text style={styles.modalButtonTextDelete}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 };
 
@@ -305,6 +389,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     flex: 1,
     marginRight: spacing[2],
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: spacing[1],
   },
   favoriteButton: {
     padding: spacing[1],
@@ -458,6 +550,54 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     lineHeight: 22,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing[4],
+  },
+  modalContent: {
+    borderRadius: 16,
+    padding: spacing[5],
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: spacing[2],
+  },
+  modalMessage: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: spacing[5],
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: spacing[3],
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: spacing[3],
+    borderRadius: 100,
+    alignItems: 'center',
+  },
+  modalButtonCancel: {
+    // backgroundColor comes from theme
+  },
+  modalButtonDelete: {
+    backgroundColor: colors.error[500],
+  },
+  modalButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonTextDelete: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 

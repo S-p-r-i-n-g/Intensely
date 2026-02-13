@@ -52,4 +52,18 @@ export const exercisesApi = {
   }): Promise<ApiResponse<Exercise>> => {
     return apiClient.post('/exercises', data);
   },
+
+  /**
+   * Update an existing exercise
+   */
+  update: async (id: string, data: Partial<Exercise>): Promise<ApiResponse<Exercise>> => {
+    return apiClient.put(`/exercises/${id}`, data);
+  },
+
+  /**
+   * Delete (archive) an exercise
+   */
+  delete: async (id: string): Promise<ApiResponse<void>> => {
+    return apiClient.delete(`/exercises/${id}`);
+  },
 };
