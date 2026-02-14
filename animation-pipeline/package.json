@@ -1,0 +1,19 @@
+{
+  "name": "exercise-animation-pipeline",
+  "version": "1.0.0",
+  "description": "AI-powered exercise animation pipeline for Intensely mobile app",
+  "private": true,
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "animation",
+    "exercise",
+    "smpl-h",
+    "webp",
+    "ai",
+    "motion"
+  ],
+  "author": "",
+  "license": "ISC"
+}
