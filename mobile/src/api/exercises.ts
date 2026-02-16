@@ -58,14 +58,55 @@ export const exercisesApi = {
    * Get a single exercise by ID
    */
   getById: async (id: string): Promise<ApiResponse<Exercise>> => {
-    return apiClient.get(`/exercises/${id}`);
+    // Use Supabase directly instead of backend API
+    try {
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      return {
+        data: data as Exercise,
+        status: 200,
+        message: 'Success'
+      };
+    } catch (error: any) {
+      return {
+        data: {} as Exercise,
+        status: 404,
+        message: error.message || 'Exercise not found'
+      };
+    }
   },
 
   /**
    * Search exercises
    */
   search: async (query: string): Promise<ApiResponse<Exercise[]>> => {
-    return apiClient.get('/exercises', { params: { search: query } });
+    // Use Supabase directly instead of backend API
+    try {
+      const { data, error } = await supabase
+        .from('exercises')
+        .select('*')
+        .ilike('name', `%${query}%`);
+
+      if (error) throw error;
+
+      return {
+        data: data || [],
+        status: 200,
+        message: 'Success'
+      };
+    } catch (error: any) {
+      return {
+        data: [],
+        status: 500,
+        message: error.message
+      };
+    }
   },
 
   /**
