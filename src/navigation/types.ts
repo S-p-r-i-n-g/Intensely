@@ -79,6 +79,7 @@ export type ProfileStackParamList = {
   ProfileMain: undefined;
   Preferences: undefined;
   EditProfile: undefined;
+  AnimationTest: undefined;
 };
 
 // Root Navigator

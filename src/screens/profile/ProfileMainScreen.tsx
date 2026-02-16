@@ -15,7 +15,7 @@ import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
 import { ActionButton } from '../../components/home';
-import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon } from 'react-native-heroicons/outline';
+import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, PlayIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
@@ -73,6 +73,13 @@ const ProfileMainScreen = () => {
           variant="secondary"
           icon={<Cog6ToothIcon size={24} color="#000000" />}
           onPress={() => navigation.navigate('Preferences')}
+        />
+
+        <ActionButton
+          title="Animation Test"
+          variant="secondary"
+          icon={<PlayIcon size={24} color="#000000" />}
+          onPress={() => navigation.navigate('AnimationTest')}
         />
 
         <ActionButton

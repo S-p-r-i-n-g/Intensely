@@ -6,6 +6,7 @@ import { ProfileStackParamList } from './types';
 import ProfileMainScreen from '../screens/profile/ProfileMainScreen';
 import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import PreferencesScreen from '../screens/profile/PreferencesScreen';
+import AnimationTestScreen from '../screens/AnimationTestScreen';
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
 
@@ -39,6 +40,13 @@ export const ProfileStackNavigator = () => {
         component={PreferencesScreen}
         options={{
           title: 'Preferences',
+        }}
+      />
+      <Stack.Screen
+        name="AnimationTest"
+        component={AnimationTestScreen}
+        options={{
+          title: 'Animation Test',
         }}
       />
     </Stack.Navigator>
