@@ -46,8 +46,12 @@ const ExerciseSelectionScreen = () => {
     try {
       setIsLoading(true);
       const response = await exercisesApi.getAll();
-      setExercises(response.data);
-      setFilteredExercises(response.data);
+      // Handle both response formats: direct array or nested data
+      const data = Array.isArray(response.data)
+        ? response.data
+        : response.data?.exercises || response.data?.data || [];
+      setExercises(data);
+      setFilteredExercises(data);
     } catch (error: any) {
       console.error('Failed to load exercises:', error);
       Alert.alert('Error', 'Could not load exercises. Please try again.');

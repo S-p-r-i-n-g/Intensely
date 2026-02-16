@@ -226,8 +226,11 @@ const NewWorkoutScreen = () => {
     const fetchExerciseMetadata = async () => {
       try {
         const response = await exercisesApi.getAll({ limit: 500 });
-        // Backend returns { data: Exercise[], pagination: {...} }
-        const exercises = (response as any).data || [];
+        // Handle both response formats: direct array or nested data
+        const data = (response as any).data || {};
+        const exercises = Array.isArray(data)
+          ? data
+          : data.exercises || data.data || [];
         const newMetadata = new Map(exerciseMetadata);
         exercises.forEach((ex: Exercise) => {
           if (missingIds.includes(ex.id)) {

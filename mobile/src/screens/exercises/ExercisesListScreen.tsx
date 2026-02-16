@@ -55,19 +55,25 @@ const ExercisesListScreen = () => {
 
   const loadData = async () => {
     try {
-      const [exercisesResponse, favoritesResponse] = await Promise.all([
-        exercisesApi.getAll(),
-        favoritesApi.getFavoriteExercises(),
-      ]);
-      // Backend returns { data: [...], pagination: {...} }
+      // Load exercises - this is the critical data
+      const exercisesResponse = await exercisesApi.getAll();
+
+      // Handle both response formats: direct array or nested data
       const data = Array.isArray(exercisesResponse.data)
         ? exercisesResponse.data
-        : exercisesResponse.data?.data || [];
+        : exercisesResponse.data?.exercises || exercisesResponse.data?.data || [];
       setExercises(data);
 
-      // Build set of favorited exercise IDs
-      const favIds = new Set(favoritesResponse.data.map((fav) => fav.exerciseId));
-      setFavoriteIds(favIds);
+      // Try to load favorites, but don't fail if backend is unavailable
+      try {
+        const favoritesResponse = await favoritesApi.getFavoriteExercises();
+        const favIds = new Set(favoritesResponse.data.map((fav) => fav.exerciseId));
+        setFavoriteIds(favIds);
+      } catch (favError) {
+        console.warn('Failed to load favorites (backend unavailable):', favError);
+        // Continue without favorites - this is not critical
+        setFavoriteIds(new Set());
+      }
     } catch (error) {
       console.error('Failed to load exercises:', error);
     } finally {
@@ -149,8 +155,8 @@ const ExercisesListScreen = () => {
         await favoritesApi.addExercise(exerciseId);
       }
     } catch (error) {
-      // Revert on error
-      console.error('Failed to toggle favorite:', error);
+      // Revert on error (backend unavailable)
+      console.warn('Failed to toggle favorite (backend unavailable):', error);
       setFavoriteIds(favoriteIds);
     }
   };
