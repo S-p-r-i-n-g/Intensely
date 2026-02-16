@@ -1,4 +1,5 @@
 import { apiClient } from './client';
+import { supabase } from '../config/supabase';
 import { ApiResponse, Exercise } from '../types/api';
 
 /**
@@ -20,7 +21,37 @@ export const exercisesApi = {
     page?: number;
     limit?: number;
   }): Promise<ApiResponse<{ exercises: Exercise[]; total: number; page: number; totalPages: number }>> => {
-    return apiClient.get('/exercises', { params });
+    // Use Supabase directly instead of backend API
+    try {
+      let query = supabase.from('exercises').select('*', { count: 'exact' });
+
+      if (params?.category) query = query.eq('primaryCategory', params.category);
+      if (params?.difficulty) query = query.eq('difficulty', params.difficulty);
+      if (params?.smallSpace !== undefined) query = query.eq('smallSpace', params.smallSpace);
+      if (params?.quiet !== undefined) query = query.eq('quiet', params.quiet);
+      if (params?.search) query = query.ilike('name', `%${params.search}%`);
+
+      const { data, error, count } = await query;
+
+      if (error) throw error;
+
+      return {
+        data: {
+          exercises: data || [],
+          total: count || 0,
+          page: params?.page || 1,
+          totalPages: Math.ceil((count || 0) / (params?.limit || 50))
+        },
+        status: 200,
+        message: 'Success'
+      };
+    } catch (error: any) {
+      return {
+        data: { exercises: [], total: 0, page: 1, totalPages: 0 },
+        status: 500,
+        message: error.message
+      };
+    }
   },
 
   /**

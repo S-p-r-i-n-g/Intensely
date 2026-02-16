@@ -3,10 +3,10 @@
  * Update these values for your environment
  */
 
-// Backend API URL
+// Backend API URL (currently not deployed, using Supabase directly)
 export const API_URL = __DEV__
   ? 'http://localhost:3000/api'  // Development
-  : 'https://your-production-api.com/api';  // Production
+  : 'https://your-production-api.com/api';  // Production (placeholder - not deployed yet)
 
 // Supabase Configuration
 export const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
