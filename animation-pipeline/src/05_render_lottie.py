@@ -196,7 +196,7 @@ def create_lottie_animation(
         Lottie JSON dictionary
     """
     T, num_joints, _ = projected_data.shape
-    canvas_size = config["rendering"]["canvas_size"]
+    canvas_size = config.get("canvas", {}).get("width", 400)
     bone_color = hex_to_rgb_normalized(config["rendering"]["bone_color"])
     joint_color = hex_to_rgb_normalized(config["rendering"]["joint_color"])
     bone_width = config["rendering"]["bone_width"]
@@ -204,7 +204,7 @@ def create_lottie_animation(
     head_radius = config["rendering"]["head_radius"]
 
     # Skeleton structure
-    skeleton = config["skeleton"]
+    skeleton = config.get("smpl_h_skeleton", {}).get("bones", {})
 
     # Lottie frame rate and duration
     duration_frames = T
@@ -444,7 +444,7 @@ def render_lottie_animation(
     )
 
     # Create Lottie animation
-    fps = config["rendering"]["target_fps"]
+    fps = config["rendering"].get("target_fps", config["rendering"].get("fps", 15))
     lottie_json = create_lottie_animation(
         projected_data,
         keyframe_map,

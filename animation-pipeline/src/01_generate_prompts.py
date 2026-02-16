@@ -43,10 +43,10 @@ def generate_prompt(row):
     Uses exercise name, description, primary muscles, and instructions
     to create a descriptive prompt suitable for text-to-motion AI.
     """
-    name = row.get("name", "").strip()
-    description = row.get("description", "").strip()
-    instructions = row.get("instructions", "")
-    primary_muscles = row.get("primaryMuscles", "")
+    name = str(row.get("name", "")).strip() if pd.notna(row.get("name")) else ""
+    description = str(row.get("description", "")).strip() if pd.notna(row.get("description")) else ""
+    instructions = row.get("instructions", "") if pd.notna(row.get("instructions")) else ""
+    primary_muscles = row.get("primaryMuscles", "") if pd.notna(row.get("primaryMuscles")) else ""
 
     # Parse instructions if it's a JSON array string
     if isinstance(instructions, str) and instructions.startswith("["):
