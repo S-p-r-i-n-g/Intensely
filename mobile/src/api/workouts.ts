@@ -113,6 +113,7 @@ export const workoutsApi = {
       );
 
       // Create workout
+      const now = new Date().toISOString();
       const { data: workout, error: workoutError } = await supabase
         .from('workouts')
         .insert({
@@ -127,6 +128,7 @@ export const workoutsApi = {
           sets_per_circuit: data.sets,
           estimated_duration_minutes: estimatedDurationMinutes,
           equipment_required: ['bodyweight'], // Default, could be calculated from exercises
+          updated_at: now,
         })
         .select()
         .single();
@@ -195,7 +197,9 @@ export const workoutsApi = {
         throw new Error('User not authenticated');
       }
 
-      const updateData: any = {};
+      const updateData: any = {
+        updated_at: new Date().toISOString(),
+      };
       if (data.name) updateData.name = data.name;
       if (data.difficulty) updateData.difficulty_level = data.difficulty;
       if (data.durationMinutes) updateData.estimated_duration_minutes = data.durationMinutes;
