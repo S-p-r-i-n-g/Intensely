@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Data files
+motion_data/*.npy
+projected/*.npy
+videos/*.mp4
+videos/*.mov
+output/webp/*.webp
+data/*.csv
+prompts/*.txt
+prompts.json
+manifest.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Checkpoints
+.prompt_enrichment_checkpoint.json
+prompts.json.backup
+
+# Generated helper files
+missing_exercises.txt
+reprocess_missing.sh

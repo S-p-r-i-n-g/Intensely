@@ -1,0 +1,383 @@
+// Intensely HICT Workout App - Database Schema
+// Based on research/database-schema.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  passwordHash String? @map("password_hash")
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+
+  // Authentication
+  authProvider   String  @default("email") @map("auth_provider")
+  authProviderId String? @map("auth_provider_id")
+  emailVerified  Boolean @default(false) @map("email_verified")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+
+  // Profile
+  avatarUrl    String?   @map("avatar_url")
+  dateOfBirth  DateTime? @map("date_of_birth") @db.Date
+  gender       String?
+
+  // Fitness Profile
+  fitnessLevel String  @default("beginner") @map("fitness_level")
+  heightCm     Int?    @map("height_cm")
+  weightKg     Decimal? @map("weight_kg") @db.Decimal(5, 2)
+
+  // Settings
+  metricSystem Boolean @default(true) @map("metric_system")
+  notificationPreferences Json @default("{}") @map("notification_preferences")
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  lastLoginAt DateTime? @map("last_login_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // Relations
+  preferences        UserPreference?
+  workouts           Workout[]
+  workoutHistory     WorkoutHistory[]
+  exerciseProgress   UserExerciseProgress[]
+  favoriteExercises  FavoriteExercise[]
+  favoriteWorkouts   FavoriteWorkout[]
+  createdExercises   Exercise[]
+
+  @@index([email])
+  @@index([authProvider, authProviderId])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model UserPreference {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Default Workout Structure
+  defaultCircuits              Int @default(3) @map("default_circuits")
+  defaultSets                  Int @default(3) @map("default_sets")
+  defaultIntervalSeconds       Int @default(30) @map("default_interval_seconds")
+  defaultRestSeconds           Int @default(60) @map("default_rest_seconds")
+  defaultWarmUpSeconds         Int @default(0) @map("default_warm_up_seconds")
+  defaultCoolDownSeconds       Int @default(0) @map("default_cool_down_seconds")
+
+  // Workout Settings
+  soundEnabled      Boolean @default(true) @map("sound_enabled")
+  vibrationEnabled  Boolean @default(true) @map("vibration_enabled")
+  voiceCoaching     Boolean @default(false) @map("voice_coaching")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("user_preferences")
+}
+
+// ============================================================================
+// EXERCISE TAXONOMY
+// ============================================================================
+
+model ExerciseFamily {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  exercises Exercise[]
+
+  @@index([slug])
+  @@map("exercise_families")
+}
+
+model Exercise {
+  id       String  @id @default(uuid())
+  name     String
+  slug     String  @unique
+  familyId String? @map("family_id")
+  family   ExerciseFamily? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  // Taxonomy
+  primaryCategory String @map("primary_category")
+  difficulty      String
+  primaryMuscles  Json   @map("primary_muscles")
+  secondaryMuscles Json  @default("[]") @map("secondary_muscles")
+
+  // Movement Classification
+  movementPattern String? @map("movement_pattern")
+  forceType       String? @map("force_type")
+  mechanic        String?
+
+  // Equipment
+  equipment Json @default("[\"bodyweight\"]")
+
+  // Tags
+  hictSuitable      Boolean @default(true) @map("hict_suitable")
+  smallSpace        Boolean @default(true) @map("small_space")
+  quiet             Boolean @default(true)
+  cardioIntensive   Boolean @default(false) @map("cardio_intensive")
+  strengthFocus     Boolean @default(false) @map("strength_focus")
+  mobilityFocus     Boolean @default(false) @map("mobility_focus")
+  beginnerFriendly  Boolean @default(false) @map("beginner_friendly")
+  minimalTransition Boolean @default(true) @map("minimal_transition")
+
+  // Content
+  description     String?
+  instructions    Json
+  tips            Json    @default("[]")
+  commonMistakes  Json    @default("[]") @map("common_mistakes")
+  breathing       String?
+
+  // Media
+  thumbnailUrl String? @map("thumbnail_url")
+  gifUrl       String? @map("gif_url")
+  videoUrl     String? @map("video_url")
+  images       Json    @default("[]")
+
+  // Metrics
+  defaultReps            Int?     @map("default_reps")
+  defaultDurationSeconds Int?     @map("default_duration_seconds")
+  caloriesPerMinute      Decimal? @map("calories_per_minute") @db.Decimal(5, 2)
+  metValue               Decimal? @map("met_value") @db.Decimal(4, 2)
+
+  // Metadata
+  createdBy      String?  @map("created_by")
+  creator        User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  isVerified     Boolean  @default(false) @map("is_verified")
+  popularityScore Int     @default(0) @map("popularity_score")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  circuitExercises     CircuitExercise[]
+  userProgress         UserExerciseProgress[]
+  favoritedBy          FavoriteExercise[]
+
+  @@index([slug])
+  @@index([primaryCategory])
+  @@index([difficulty])
+  @@index([familyId])
+  @@index([createdBy])
+  @@index([isVerified])
+  @@index([deletedAt])
+  @@map("exercises")
+}
+
+// ============================================================================
+// WORKOUTS
+// ============================================================================
+
+model Workout {
+  id   String  @id @default(uuid())
+  name String
+  slug String?
+
+  // Ownership
+  createdBy  String?  @map("created_by")
+  creator    User?    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  isPublic   Boolean  @default(false) @map("is_public")
+  isTemplate Boolean  @default(false) @map("is_template")
+
+  // Workout Structure
+  totalCircuits        Int @map("total_circuits")
+  exercisesPerCircuit  Int @map("exercises_per_circuit")
+  intervalSeconds      Int @map("interval_seconds")
+  restSeconds          Int @map("rest_seconds")
+  setsPerCircuit       Int @map("sets_per_circuit")
+
+  // Computed fields
+  estimatedDurationMinutes Int?     @map("estimated_duration_minutes")
+  estimatedCalories        Decimal? @map("estimated_calories") @db.Decimal(6, 2)
+  difficultyLevel          String?  @map("difficulty_level")
+
+  // Tags
+  equipmentRequired Json @default("[\"bodyweight\"]") @map("equipment_required")
+
+  // Metrics
+  timesCompleted Int      @default(0) @map("times_completed")
+  averageRating  Decimal? @map("average_rating") @db.Decimal(3, 2)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  // Relations
+  circuits    Circuit[]
+  history     WorkoutHistory[]
+  favoritedBy FavoriteWorkout[]
+
+  @@unique([name, createdBy], name: "unique_workout_name_per_user")
+  @@index([createdBy])
+  @@index([isTemplate])
+  @@index([isPublic])
+  @@index([difficultyLevel])
+  @@index([deletedAt])
+  @@map("workouts")
+}
+
+model Circuit {
+  id            String @id @default(uuid())
+  workoutId     String @map("workout_id")
+  workout       Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  circuitOrder  Int    @map("circuit_order")
+
+  // Optional circuit-specific overrides
+  intervalSeconds Int? @map("interval_seconds")
+  restSeconds     Int? @map("rest_seconds")
+  sets            Int?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  exercises CircuitExercise[]
+
+  @@unique([workoutId, circuitOrder])
+  @@index([workoutId])
+  @@index([circuitOrder])
+  @@map("circuits")
+}
+
+model CircuitExercise {
+  id             String   @id @default(uuid())
+  circuitId      String   @map("circuit_id")
+  circuit        Circuit  @relation(fields: [circuitId], references: [id], onDelete: Cascade)
+  exerciseId     String   @map("exercise_id")
+  exercise       Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  exerciseOrder  Int      @map("exercise_order")
+
+  // Optional exercise-specific overrides
+  reps            Int?
+  durationSeconds Int? @map("duration_seconds")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([circuitId, exerciseOrder])
+  @@index([circuitId])
+  @@index([exerciseId])
+  @@map("circuit_exercises")
+}
+
+model WorkoutHistory {
+  id        String @id @default(uuid())
+  userId    String @map("user_id")
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutId String? @map("workout_id")
+  workout   Workout? @relation(fields: [workoutId], references: [id], onDelete: SetNull)
+
+  // Workout Snapshot
+  workoutSnapshot Json @map("workout_snapshot")
+
+  // Completion Details
+  startedAt   DateTime  @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  durationSeconds Int?  @map("duration_seconds")
+
+  // Performance
+  circuitsCompleted        Int?     @map("circuits_completed")
+  totalExercisesCompleted  Int?     @map("total_exercises_completed")
+  completionPercentage     Decimal? @map("completion_percentage") @db.Decimal(5, 2)
+
+  // Metrics
+  estimatedCaloriesBurned Decimal? @map("estimated_calories_burned") @db.Decimal(6, 2)
+  averageHeartRate        Int?     @map("average_heart_rate")
+  maxHeartRate            Int?     @map("max_heart_rate")
+
+  // User Feedback
+  perceivedDifficulty Int?    @map("perceived_difficulty")
+  userRating          Int?    @map("user_rating")
+  notes               String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([workoutId])
+  @@index([completedAt])
+  @@index([startedAt])
+  @@map("workout_history")
+}
+
+// ============================================================================
+// USER FEATURES
+// ============================================================================
+
+model UserExerciseProgress {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String   @map("exercise_id")
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  // Personal Bests
+  maxReps            Int?     @map("max_reps")
+  maxDurationSeconds Int?     @map("max_duration_seconds")
+  maxWeightKg        Decimal? @map("max_weight_kg") @db.Decimal(5, 2)
+
+  // Last Performance
+  lastPerformedAt    DateTime? @map("last_performed_at")
+  lastReps           Int?      @map("last_reps")
+  lastDurationSeconds Int?     @map("last_duration_seconds")
+
+  // Statistics
+  timesPerformed Int @default(0) @map("times_performed")
+
+  // User Notes
+  notes            String?
+  difficultyRating Int?    @map("difficulty_rating")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@index([exerciseId])
+  @@map("user_exercise_progress")
+}
+
+model FavoriteExercise {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String   @map("exercise_id")
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@index([exerciseId])
+  @@map("favorite_exercises")
+}
+
+model FavoriteWorkout {
+  id        String  @id @default(uuid())
+  userId    String  @map("user_id")
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutId String  @map("workout_id")
+  workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, workoutId])
+  @@index([userId])
+  @@index([workoutId])
+  @@map("favorite_workouts")
+}

@@ -1,0 +1,1 @@
+- When generating UI, always reference design.md to ensure visual consistency.

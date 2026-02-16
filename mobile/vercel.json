@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "intensely-mobile",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "web-build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "env": {
+    "EXPO_PUBLIC_CDN_BASE_URL": "@expo_public_cdn_base_url"
+  }
+}

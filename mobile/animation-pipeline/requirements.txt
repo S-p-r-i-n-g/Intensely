@@ -1,0 +1,25 @@
+# Core dependencies
+numpy>=1.24.0
+pillow>=10.0.0
+pandas>=2.0.0
+
+# API & AI
+anthropic>=0.18.0
+
+# Deep learning
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Video processing (for GVHMR fallback path)
+opencv-python>=4.8.0
+ultralytics>=8.0.0  # YOLOv8
+tqdm>=4.65.0
+
+# GVHMR dependencies (installed separately on GPU instance)
+# - GVHMR: https://github.com/zju3dv/GVHMR
+# - ViTPose: https://github.com/ViTAE-Transformer/ViTPose
+# Note: These are installed via runpod_setup.sh --gvhmr
+
+# Optional: for development
+pytest>=7.4.0
+black>=23.0.0

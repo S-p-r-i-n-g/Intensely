@@ -1,0 +1,66 @@
+{
+  "canvas": {
+    "width": 400,
+    "height": 400,
+    "background": "transparent"
+  },
+  "rendering": {
+    "fps": 15,
+    "source_fps": 30,
+    "bone_color": "#374151",
+    "bone_width": 4,
+    "joint_color": "#3B82F6",
+    "joint_radius": 6,
+    "head_radius": 14
+  },
+  "camera_angles": {
+    "push": 90,
+    "anti-extension": 90,
+    "squat": 45,
+    "hip-hinge": 45,
+    "lunge": 90,
+    "pull": 135,
+    "rotation": 0,
+    "anti-rotation": 0,
+    "locomotion": 90,
+    "default": 45
+  },
+  "smpl_h_skeleton": {
+    "joints": {
+      "0": "pelvis",
+      "1": "left_hip",
+      "2": "right_hip",
+      "3": "spine1",
+      "4": "left_knee",
+      "5": "right_knee",
+      "6": "spine2",
+      "7": "left_ankle",
+      "8": "right_ankle",
+      "9": "spine3",
+      "10": "left_foot",
+      "11": "right_foot",
+      "12": "neck",
+      "13": "left_collar",
+      "14": "right_collar",
+      "15": "head",
+      "16": "left_shoulder",
+      "17": "right_shoulder",
+      "18": "left_elbow",
+      "19": "right_elbow",
+      "20": "left_wrist",
+      "21": "right_wrist"
+    },
+    "bones": {
+      "spine": [[0, 3], [3, 6], [6, 9], [9, 12], [12, 15]],
+      "left_arm": [[9, 13], [13, 16], [16, 18], [18, 20]],
+      "right_arm": [[9, 14], [14, 17], [17, 19], [19, 21]],
+      "left_leg": [[0, 1], [1, 4], [4, 7], [7, 10]],
+      "right_leg": [[0, 2], [2, 5], [5, 8], [8, 11]]
+    }
+  },
+  "projection": {
+    "use_global_bounding_box": true,
+    "fixed_y_baseline": true,
+    "center_character": true
+  }
+}

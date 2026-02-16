@@ -1,0 +1,77 @@
+import React from 'react';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Dimensions, TouchableOpacity } from 'react-native';
+import { DrawerParamList } from './types';
+import { CustomDrawerContent } from '../components/navigation/CustomDrawerContent';
+import { ProfileIcon } from '../components/navigation/ProfileIcon';
+import { Bars3Icon } from 'react-native-heroicons/outline';
+
+// Stack navigators
+import { HomeStackNavigator } from './HomeStackNavigator';
+import { WorkoutsStackNavigator } from './WorkoutsStackNavigator';
+import { ExercisesStackNavigator } from './ExercisesStackNavigator';
+import { ProfileStackNavigator } from './ProfileStackNavigator';
+
+const Drawer = createDrawerNavigator<DrawerParamList>();
+const { width } = Dimensions.get('window');
+
+export const DrawerNavigator = () => {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} />}
+      screenOptions={({ navigation }) => ({
+        headerShown: true,
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => navigation.openDrawer()}
+            style={{ marginLeft: 16, padding: 8 }}
+          >
+            <Bars3Icon size={28} color="#000000" />
+          </TouchableOpacity>
+        ),
+        headerRight: () => <ProfileIcon />,
+        headerTitle: '',
+        headerStyle: {
+          elevation: 0,
+          shadowOpacity: 0,
+          borderBottomWidth: 0,
+        },
+        drawerType: 'slide',
+        drawerStyle: {
+          width: width * 0.75, // 75% of screen width
+        },
+        scrimColor: 'rgba(0, 0, 0, 0.4)', // 40% opacity overlay
+        overlayColor: 'rgba(0, 0, 0, 0.4)',
+      })}
+    >
+      <Drawer.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={{
+          title: 'Home',
+        }}
+      />
+      <Drawer.Screen
+        name="Workouts"
+        component={WorkoutsStackNavigator}
+        options={{
+          title: 'My Workouts',
+        }}
+      />
+      <Drawer.Screen
+        name="Exercises"
+        component={ExercisesStackNavigator}
+        options={{
+          title: 'Exercise Library',
+        }}
+      />
+      <Drawer.Screen
+        name="Profile"
+        component={ProfileStackNavigator}
+        options={{
+          title: 'Profile',
+        }}
+      />
+    </Drawer.Navigator>
+  );
+};
