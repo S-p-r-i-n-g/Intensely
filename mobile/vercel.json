@@ -19,8 +19,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "EXPO_PUBLIC_CDN_BASE_URL": "@expo_public_cdn_base_url"
-  }
+  ]
 }
