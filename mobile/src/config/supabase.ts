@@ -40,13 +40,27 @@ const getStorage = () => {
   return AsyncStorage as any;
 };
 
+/**
+ * Only enable detectSessionInUrl when the URL actually contains auth callback
+ * parameters (e.g., ?code=... from PKCE email confirmation/password reset).
+ * On normal page refreshes, this MUST be false -- otherwise Supabase's
+ * _initialize() attempts URL processing that delays or blocks session
+ * restoration from localStorage, causing session loss and 5-10s load times.
+ */
+const shouldDetectSessionInUrl = (): boolean => {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  // PKCE flow uses ?code=...&, implicit flow uses #access_token=...
+  return params.has('code') || window.location.hash.includes('access_token');
+};
+
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: getStorage(),
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: Platform.OS === 'web', // Must be true on web for PKCE email confirmation
-    flowType: 'pkce', // Use PKCE flow for better web compatibility
+    detectSessionInUrl: shouldDetectSessionInUrl(),
+    flowType: 'pkce',
     storageKey: `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`,
     // Disable lock on web to prevent AbortError warnings
     lock: Platform.OS === 'web' ? false : undefined,

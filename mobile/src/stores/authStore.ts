@@ -48,7 +48,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         existingListener.subscription?.unsubscribe();
       }
 
-      // Get current session
+      // Get current session -- this reads from localStorage (fast) on normal
+      // refreshes. Only slow when detectSessionInUrl triggers a code exchange.
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session) {
@@ -57,12 +58,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           session,
         });
 
-        // Sync profile with backend
-        await get().syncProfile();
+        // Sync profile in the background -- do NOT block initialization on it.
+        // The UI can render immediately with the user/session; profile data
+        // arrives shortly after. This eliminates the profile-sync delay from
+        // the critical loading path.
+        get().syncProfile().catch((err) => {
+          console.error('[AuthStore] Background profile sync failed:', err);
+        });
       }
 
       // Listen for auth changes (only set up once).
-      // Skip INITIAL_SESSION — getSession() above already handled it.
+      // Skip INITIAL_SESSION -- getSession() above already handled it.
       const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('[AuthStore] Auth state change event:', event, 'hasSession:', !!session);
 
