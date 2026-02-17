@@ -138,4 +138,36 @@ export const exercisesApi = {
   delete: async (id: string): Promise<ApiResponse<void>> => {
     return apiClient.delete(`/exercises/${id}`);
   },
+
+  /**
+   * Verify an exercise (admin only)
+   * Promotes a user-created exercise to the public library
+   */
+  verify: async (id: string): Promise<ApiResponse<Exercise>> => {
+    try {
+      const { data, error } = await supabase
+        .from('exercises')
+        .update({
+          is_verified: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        data: data as Exercise,
+        status: 200,
+        message: 'Exercise verified successfully'
+      };
+    } catch (error: any) {
+      return {
+        data: {} as Exercise,
+        status: 500,
+        message: error.message
+      };
+    }
+  },
 };

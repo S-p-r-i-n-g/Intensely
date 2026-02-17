@@ -164,6 +164,8 @@ const ExercisesListScreen = () => {
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => {
     const isFavorite = favoriteIds.has(item.id);
+    // Handle both snake_case and camelCase for isVerified
+    const isVerified = (item as any).is_verified ?? item.isVerified ?? true;
 
     return (
       <TouchableOpacity
@@ -218,7 +220,7 @@ const ExercisesListScreen = () => {
               ? capitalize(item.equipment[0])
               : 'Bodyweight'}
           </Text>
-          {!item.isVerified && (
+          {!isVerified && (
             <>
               <Text style={[styles.tagDot, { color: theme.text.tertiary }]}>•</Text>
               <Text style={[styles.customTag, { color: colors.primary[500] }]}>Custom</Text>

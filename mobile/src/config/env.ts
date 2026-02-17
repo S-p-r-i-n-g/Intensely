@@ -25,3 +25,14 @@ export const FEATURES = {
   enableDebugMode: __DEV__,
   enableAnalytics: !__DEV__,
 };
+
+// Admin Configuration
+export const ADMIN_USER_IDS = [
+  '78a1424f-d85d-4898-81c3-3704d53c1cfb', // Your admin user ID
+];
+
+// Helper function to check if a user is an admin
+export const isAdmin = (userId?: string | null): boolean => {
+  if (!userId) return false;
+  return ADMIN_USER_IDS.includes(userId);
+};

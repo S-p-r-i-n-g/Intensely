@@ -19,10 +19,11 @@ import type { Exercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
-import { HeartIcon, PlayCircleIcon, PencilSquareIcon, TrashIcon } from 'react-native-heroicons/outline';
+import { HeartIcon, PlayCircleIcon, PencilSquareIcon, TrashIcon, CheckBadgeIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores/authStore';
+import { isAdmin } from '../../config/env';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExerciseDetail'>;
 type RoutePropType = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
@@ -78,7 +79,10 @@ const ExerciseDetailScreen = () => {
   const checkIfFavorite = async (exerciseId: string) => {
     try {
       const response = await favoritesApi.getFavoriteExercises();
-      const isFav = response.data.some((fav: any) => fav.exerciseId === exerciseId);
+      // Handle both snake_case and camelCase
+      const isFav = response.data.some((fav: any) =>
+        fav.exercise_id === exerciseId || fav.exerciseId === exerciseId
+      );
       setIsFavorite(isFav);
     } catch (error) {
       console.error('Failed to check favorite status:', error);
@@ -142,6 +146,35 @@ const ExerciseDetailScreen = () => {
     setShowDeleteModal(false);
   };
 
+  const handleVerify = async () => {
+    if (!exercise) return;
+
+    Alert.alert(
+      'Verify Exercise',
+      'This will promote this exercise to the public library. Everyone will be able to see and use it.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Verify',
+          style: 'default',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              await exercisesApi.verify(exercise.id);
+              Alert.alert('Success', 'Exercise verified successfully!');
+              loadExercise(); // Reload to show updated state
+            } catch (error) {
+              console.error('Failed to verify exercise:', error);
+              Alert.alert('Error', 'Failed to verify exercise.');
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (isLoading || !exercise) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
@@ -159,8 +192,14 @@ const ExerciseDetailScreen = () => {
   const tips = Array.isArray(exercise.tips) ? exercise.tips : [];
   const commonMistakes = Array.isArray(exercise.commonMistakes) ? exercise.commonMistakes : [];
 
-  // Check if current user owns this exercise
-  const isOwner = user && exercise.createdBy === user.id;
+  // Check permissions - handle both snake_case and camelCase
+  const exerciseCreatedBy = (exercise as any).created_by || exercise.createdBy;
+  const isOwner = user && exerciseCreatedBy === user.id;
+  const isUserAdmin = user && isAdmin(user.id);
+  const canEdit = isOwner || isUserAdmin;
+
+  // Check if exercise is verified - handle both snake_case and camelCase
+  const exerciseIsVerified = (exercise as any).is_verified ?? exercise.isVerified ?? true;
 
   return (
     <>
@@ -175,8 +214,15 @@ const ExerciseDetailScreen = () => {
             <Text style={[styles.title, { color: theme.text.primary }]}>{exercise.name}</Text>
 
             <View style={styles.actionButtons}>
-              {/* Edit/Delete Actions for Owner */}
-              {isOwner && (
+              {/* Verify Button - Admin only, for unverified exercises */}
+              {isUserAdmin && !exerciseIsVerified && (
+                <TouchableOpacity onPress={handleVerify} style={styles.iconButton}>
+                  <CheckBadgeIcon size={24} color={colors.success[500]} />
+                </TouchableOpacity>
+              )}
+
+              {/* Edit/Delete Actions for Owner or Admin */}
+              {canEdit && (
                 <>
                   <TouchableOpacity onPress={handleEdit} style={styles.iconButton}>
                     <PencilSquareIcon size={24} color={theme.text.secondary} />
@@ -217,7 +263,7 @@ const ExerciseDetailScreen = () => {
                 {formatCategory(exercise.primaryCategory || 'full_body')}
               </Text>
             </View>
-            {!exercise.isVerified && (
+            {!exerciseIsVerified && (
               <View style={[styles.customBadge, { backgroundColor: colors.primary[50] }]}>
                 <Text style={[styles.customBadgeText, { color: colors.primary[500] }]}>Custom</Text>
               </View>
