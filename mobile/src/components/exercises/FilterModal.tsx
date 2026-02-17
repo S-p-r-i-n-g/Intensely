@@ -16,6 +16,7 @@ import { spacing, borderRadius, colors } from '../../tokens';
 // Filter interface matching API parameters
 export interface ExerciseFilters {
   // Primary categorization
+  familyName?: string;
   primaryCategory?: string;
   difficulty?: string;
   primaryMuscles?: string[];
@@ -39,6 +40,18 @@ export interface ExerciseFilters {
 }
 
 // Filter options constants
+const FAMILY_OPTIONS: PillOption[] = [
+  { value: 'Crunch', label: 'Crunch' },
+  { value: 'Push-Up', label: 'Push-Up' },
+  { value: 'Squat', label: 'Squat' },
+  { value: 'Lunge', label: 'Lunge' },
+  { value: 'Plank', label: 'Plank' },
+  { value: 'Glute Bridge', label: 'Glute Bridge' },
+  { value: 'Jump', label: 'Jump' },
+  { value: 'Pull-Up', label: 'Pull-Up' },
+  { value: 'Burpee', label: 'Burpee' },
+];
+
 const BODY_REGION_OPTIONS: PillOption[] = [
   { value: 'upper_body', label: 'Upper Body' },
   { value: 'lower_body', label: 'Lower Body' },
@@ -170,6 +183,9 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
   const getPrimarySummary = () => {
     const parts = [];
+    if (localFilters.familyName) {
+      parts.push(localFilters.familyName);
+    }
     if (localFilters.primaryCategory) {
       const label = BODY_REGION_OPTIONS.find(o => o.value === localFilters.primaryCategory)?.label;
       if (label) parts.push(label);
@@ -248,6 +264,17 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             isOpen={isPrimaryOpen}
             onToggle={() => setIsPrimaryOpen(!isPrimaryOpen)}
           >
+            <View style={styles.section}>
+              <Text style={[styles.sectionLabel, { color: theme.text.primary }]}>Exercise Family</Text>
+              <MultiPillSelector
+                options={FAMILY_OPTIONS}
+                selected={localFilters.familyName || ''}
+                onToggle={(value) =>
+                  updateFilter('familyName', value === localFilters.familyName ? undefined : value)
+                }
+              />
+            </View>
+
             <View style={styles.section}>
               <Text style={[styles.sectionLabel, { color: theme.text.primary }]}>Body Region</Text>
               <MultiPillSelector

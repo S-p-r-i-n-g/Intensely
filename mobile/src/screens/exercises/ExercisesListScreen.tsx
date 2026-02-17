@@ -58,11 +58,6 @@ const ExercisesListScreen = () => {
   // Filter state
   const [filters, setFilters] = useState<ExerciseFilters>({});
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [quickFilters, setQuickFilters] = useState({
-    bodyweightOnly: false,
-    apartmentFriendly: false,
-    verifiedOnly: false,
-  });
 
   const loadData = async () => {
     try {
@@ -70,6 +65,7 @@ const ExercisesListScreen = () => {
       const params: any = {};
 
       // Apply full filters
+      if (filters.familyName) params.familyName = filters.familyName;
       if (filters.primaryCategory) params.category = filters.primaryCategory;
       if (filters.difficulty) params.difficulty = filters.difficulty;
       if (filters.primaryMuscles?.length) params.primaryMuscles = filters.primaryMuscles.join(',');
@@ -84,18 +80,6 @@ const ExercisesListScreen = () => {
       if (filters.smallSpace) params.smallSpace = true;
       if (filters.quiet) params.quiet = true;
       if (filters.isVerified) params.isVerified = true;
-
-      // Apply quick filter overrides
-      if (quickFilters.bodyweightOnly) {
-        params.equipment = 'bodyweight';
-      }
-      if (quickFilters.apartmentFriendly) {
-        params.smallSpace = true;
-        params.quiet = true;
-      }
-      if (quickFilters.verifiedOnly) {
-        params.isVerified = true;
-      }
 
       // Load exercises with filters
       const exercisesResponse = await exercisesApi.getAll(params);
@@ -127,7 +111,7 @@ const ExercisesListScreen = () => {
 
   useEffect(() => {
     loadData();
-  }, [filters, quickFilters]);
+  }, [filters]);
 
   // Reload when screen gains focus (e.g., after creating an exercise)
   useFocusEffect(
@@ -206,25 +190,48 @@ const ExercisesListScreen = () => {
 
   // Filter handlers
   const toggleQuickFilter = (filterName: 'bodyweightOnly' | 'apartmentFriendly' | 'verifiedOnly') => {
-    setQuickFilters((prev) => ({
-      ...prev,
-      [filterName]: !prev[filterName],
-    }));
+    setFilters((prev) => {
+      const newFilters = { ...prev };
+
+      if (filterName === 'bodyweightOnly') {
+        // Toggle bodyweight in equipment array
+        const currentEquipment = prev.equipment || [];
+        if (currentEquipment.includes('bodyweight')) {
+          newFilters.equipment = currentEquipment.filter(e => e !== 'bodyweight');
+          if (newFilters.equipment.length === 0) delete newFilters.equipment;
+        } else {
+          newFilters.equipment = [...currentEquipment, 'bodyweight'];
+        }
+      } else if (filterName === 'apartmentFriendly') {
+        // Toggle both smallSpace and quiet
+        const isActive = prev.smallSpace && prev.quiet;
+        if (isActive) {
+          delete newFilters.smallSpace;
+          delete newFilters.quiet;
+        } else {
+          newFilters.smallSpace = true;
+          newFilters.quiet = true;
+        }
+      } else if (filterName === 'verifiedOnly') {
+        // Toggle isVerified
+        if (prev.isVerified) {
+          delete newFilters.isVerified;
+        } else {
+          newFilters.isVerified = true;
+        }
+      }
+
+      return newFilters;
+    });
   };
 
   const handleApplyFilters = (newFilters: ExerciseFilters) => {
     setFilters(newFilters);
-    // Clear quick filters when full filters are applied
-    setQuickFilters({
-      bodyweightOnly: false,
-      apartmentFriendly: false,
-      verifiedOnly: false,
-    });
   };
 
   const getActiveFilterCount = () => {
     let count = 0;
-    // Count full filters
+    if (filters.familyName) count++;
     if (filters.primaryCategory) count++;
     if (filters.difficulty) count++;
     if (filters.primaryMuscles?.length) count++;
@@ -239,10 +246,6 @@ const ExercisesListScreen = () => {
     if (filters.smallSpace) count++;
     if (filters.quiet) count++;
     if (filters.isVerified) count++;
-    // Count quick filters
-    if (quickFilters.bodyweightOnly) count++;
-    if (quickFilters.apartmentFriendly) count++;
-    if (quickFilters.verifiedOnly) count++;
     return count;
   };
 
@@ -395,10 +398,10 @@ const ExercisesListScreen = () => {
           style={[
             styles.quickFilterChip,
             {
-              backgroundColor: quickFilters.bodyweightOnly
+              backgroundColor: filters.equipment?.includes('bodyweight')
                 ? colors.primary[500]
                 : theme.background.secondary,
-              borderColor: quickFilters.bodyweightOnly ? colors.primary[500] : theme.border.medium,
+              borderColor: filters.equipment?.includes('bodyweight') ? colors.primary[500] : theme.border.medium,
             },
           ]}
           onPress={() => toggleQuickFilter('bodyweightOnly')}
@@ -406,7 +409,7 @@ const ExercisesListScreen = () => {
           <Text
             style={[
               styles.quickFilterText,
-              { color: quickFilters.bodyweightOnly ? '#FFFFFF' : theme.text.secondary },
+              { color: filters.equipment?.includes('bodyweight') ? '#FFFFFF' : theme.text.secondary },
             ]}
           >
             Bodyweight Only
@@ -417,10 +420,10 @@ const ExercisesListScreen = () => {
           style={[
             styles.quickFilterChip,
             {
-              backgroundColor: quickFilters.apartmentFriendly
+              backgroundColor: (filters.smallSpace && filters.quiet)
                 ? colors.primary[500]
                 : theme.background.secondary,
-              borderColor: quickFilters.apartmentFriendly ? colors.primary[500] : theme.border.medium,
+              borderColor: (filters.smallSpace && filters.quiet) ? colors.primary[500] : theme.border.medium,
             },
           ]}
           onPress={() => toggleQuickFilter('apartmentFriendly')}
@@ -428,7 +431,7 @@ const ExercisesListScreen = () => {
           <Text
             style={[
               styles.quickFilterText,
-              { color: quickFilters.apartmentFriendly ? '#FFFFFF' : theme.text.secondary },
+              { color: (filters.smallSpace && filters.quiet) ? '#FFFFFF' : theme.text.secondary },
             ]}
           >
             Apartment Friendly
@@ -439,10 +442,10 @@ const ExercisesListScreen = () => {
           style={[
             styles.quickFilterChip,
             {
-              backgroundColor: quickFilters.verifiedOnly
+              backgroundColor: filters.isVerified
                 ? colors.primary[500]
                 : theme.background.secondary,
-              borderColor: quickFilters.verifiedOnly ? colors.primary[500] : theme.border.medium,
+              borderColor: filters.isVerified ? colors.primary[500] : theme.border.medium,
             },
           ]}
           onPress={() => toggleQuickFilter('verifiedOnly')}
@@ -450,7 +453,7 @@ const ExercisesListScreen = () => {
           <Text
             style={[
               styles.quickFilterText,
-              { color: quickFilters.verifiedOnly ? '#FFFFFF' : theme.text.secondary },
+              { color: filters.isVerified ? '#FFFFFF' : theme.text.secondary },
             ]}
           >
             Verified Only
@@ -612,10 +615,10 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   quickFiltersScroll: {
-    paddingHorizontal: spacing[5],
     marginBottom: spacing[2],
   },
   quickFiltersContent: {
+    paddingHorizontal: spacing[5],
     gap: spacing[2],
   },
   quickFilterChip: {

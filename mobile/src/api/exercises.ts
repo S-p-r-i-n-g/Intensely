@@ -12,6 +12,7 @@ export const exercisesApi = {
    * Get all exercises with optional filters
    */
   getAll: async (params?: {
+    familyName?: string;
     category?: string;
     difficulty?: string;
     equipment?: string;
@@ -32,9 +33,10 @@ export const exercisesApi = {
   }): Promise<ApiResponse<{ exercises: Exercise[]; total: number; page: number; totalPages: number }>> => {
     // Use Supabase directly instead of backend API
     try {
-      let query = supabase.from('exercises').select('*', { count: 'exact' });
+      let query = supabase.from('exercises').select('*, family:exercise_families!inner(name)', { count: 'exact' });
 
       // Basic filters
+      if (params?.familyName) query = query.eq('family.name', params.familyName);
       if (params?.category) query = query.eq('primaryCategory', params.category);
       if (params?.difficulty) query = query.eq('difficulty', params.difficulty);
       if (params?.smallSpace !== undefined) query = query.eq('smallSpace', params.smallSpace);
@@ -53,15 +55,15 @@ export const exercisesApi = {
       if (params?.movementPattern) query = query.eq('movementPattern', params.movementPattern);
       if (params?.mechanic) query = query.eq('mechanic', params.mechanic);
 
-      // Array filters using contains
+      // Array filters using contains (stringify for JSONB columns)
       if (params?.equipment) {
         const equipmentList = params.equipment.split(',').map(e => e.trim());
-        query = query.contains('equipment', equipmentList);
+        query = query.contains('equipment', JSON.stringify(equipmentList));
       }
 
       if (params?.primaryMuscles) {
         const musclesList = params.primaryMuscles.split(',').map(m => m.trim());
-        query = query.contains('primaryMuscles', musclesList);
+        query = query.contains('primaryMuscles', JSON.stringify(musclesList));
       }
 
       const { data, error, count } = await query;
