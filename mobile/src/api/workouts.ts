@@ -104,6 +104,31 @@ export const workoutsApi = {
         throw new Error('User not authenticated');
       }
 
+      // Ensure user exists in public.users table
+      const { data: existingUser, error: userCheckError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingUser) {
+        // Create user in public.users table
+        const { error: userCreateError } = await supabase
+          .from('users')
+          .insert({
+            id: user.id,
+            email: user.email || '',
+            auth_provider: 'email',
+            email_verified: !!user.email_confirmed_at,
+            updated_at: new Date().toISOString(),
+          });
+
+        if (userCreateError) {
+          console.error('Failed to create user:', userCreateError);
+          throw new Error('User profile not found. Please sign out and sign in again.');
+        }
+      }
+
       // Calculate workout metadata
       const totalCircuits = data.circuits.length;
       const exercisesPerCircuit = data.circuits[0]?.exercises.length || 0;

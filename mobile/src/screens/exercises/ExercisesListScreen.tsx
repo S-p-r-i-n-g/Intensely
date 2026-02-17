@@ -67,7 +67,8 @@ const ExercisesListScreen = () => {
       // Try to load favorites, but don't fail if backend is unavailable
       try {
         const favoritesResponse = await favoritesApi.getFavoriteExercises();
-        const favIds = new Set(favoritesResponse.data.map((fav) => fav.exerciseId));
+        // Supabase returns snake_case, handle both formats
+        const favIds = new Set(favoritesResponse.data.map((fav: any) => fav.exercise_id || fav.exerciseId).filter(Boolean));
         setFavoriteIds(favIds);
       } catch (favError) {
         console.warn('Failed to load favorites (backend unavailable):', favError);
