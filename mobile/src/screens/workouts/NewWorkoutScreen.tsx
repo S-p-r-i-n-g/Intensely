@@ -357,10 +357,20 @@ const NewWorkoutScreen = () => {
       }
     } catch (error: any) {
       console.error('Failed to save workout:', error);
-      Alert.alert(
-        'Save Failed',
-        error.response?.data?.message || 'Could not save workout. Please try again.'
-      );
+
+      // Check for duplicate workout name error
+      const errorData = error.data || error;
+      if (errorData.code === '23505' || errorData.message?.includes('duplicate key')) {
+        Alert.alert(
+          'Duplicate Workout Name',
+          `You already have a workout named "${trimmedName}". Please choose a different name.`
+        );
+      } else {
+        Alert.alert(
+          'Save Failed',
+          errorData.message || error.response?.data?.message || 'Could not save workout. Please try again.'
+        );
+      }
     } finally {
       setIsLoading(false);
     }
