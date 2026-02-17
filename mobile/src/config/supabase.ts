@@ -45,7 +45,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     storage: getStorage(),
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: Platform.OS === 'web', // Must be true on web for PKCE email confirmation
     flowType: 'pkce', // Use PKCE flow for better web compatibility
     storageKey: `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`,
     // Disable lock on web to prevent AbortError warnings

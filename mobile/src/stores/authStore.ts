@@ -61,9 +61,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await get().syncProfile();
       }
 
-      // Listen for auth changes (only set up once)
+      // Listen for auth changes (only set up once).
+      // Skip INITIAL_SESSION — getSession() above already handled it.
       const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('[AuthStore] Auth state change event:', event, 'hasSession:', !!session);
+
+        if (event === 'INITIAL_SESSION') return;
+
         set({
           user: session?.user ?? null,
           session,

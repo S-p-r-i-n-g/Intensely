@@ -13,7 +13,8 @@ export const usersApi = {
    */
   sync: async (): Promise<ApiResponse<User>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('Not authenticated');
       }
@@ -74,7 +75,8 @@ export const usersApi = {
    */
   getProfile: async (): Promise<ApiResponse<User>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('Not authenticated');
       }
@@ -106,7 +108,8 @@ export const usersApi = {
    */
   updateProfile: async (data: Partial<User>): Promise<ApiResponse<User>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('Not authenticated');
       }
@@ -140,7 +143,8 @@ export const usersApi = {
    */
   getPreferences: async (): Promise<ApiResponse<UserPreference>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('Not authenticated');
       }
@@ -172,7 +176,8 @@ export const usersApi = {
    */
   updatePreferences: async (data: Partial<UserPreference>): Promise<ApiResponse<UserPreference>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('Not authenticated');
       }
