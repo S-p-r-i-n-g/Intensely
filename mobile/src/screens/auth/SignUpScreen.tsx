@@ -28,6 +28,7 @@ const SignUpScreen = () => {
   const [lastName, setLastName] = useState('');
   const [authError, setAuthError] = useState('');
   const [userExists, setUserExists] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const [errors, setErrors] = useState({
     firstName: '',
     lastName: '',
@@ -72,10 +73,12 @@ const SignUpScreen = () => {
     // Reset error states
     setAuthError('');
     setUserExists(false);
+    setSignupSuccess(false);
 
     try {
       await signUp(email, password, { firstName, lastName });
-      // Navigation handled automatically by RootNavigator
+      // Show success message - user needs to verify email
+      setSignupSuccess(true);
     } catch (error: any) {
       console.error('Sign up error:', error);
 
@@ -115,6 +118,24 @@ const SignUpScreen = () => {
         <Text variant="body" color="secondary" style={styles.subtitle}>
           Start your fitness journey today
         </Text>
+
+        {/* Success Message */}
+        {signupSuccess ? (
+          <View style={[styles.successBanner, { backgroundColor: colors.success[50], borderColor: colors.success[500] }]}>
+            <Text style={[styles.successTitle, { color: colors.success[700] }]}>Check your email!</Text>
+            <Text style={{ color: colors.success[700], marginTop: spacing[2] }}>
+              We sent a confirmation link to {email}. Click the link to verify your account and get started.
+            </Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Login')}
+              style={styles.backToLoginLink}
+            >
+              <Text style={[styles.linkText, { color: colors.primary[600] }]}>
+                Back to Sign In →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
 
         {/* Auth Error Message */}
         {authError ? (
@@ -232,6 +253,16 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginBottom: spacing[8],
+  },
+  successBanner: {
+    padding: spacing[4],
+    borderRadius: 8,
+    borderWidth: 2,
+    marginBottom: spacing[4],
+  },
+  successTitle: {
+    fontSize: 18,
+    fontWeight: '700',
   },
   errorBanner: {
     padding: spacing[3],
