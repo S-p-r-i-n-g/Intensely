@@ -217,6 +217,12 @@ export const workoutsApi = {
         if (exerciseError) throw exerciseError;
       }
 
+      console.log('[Workouts] Workout created successfully!', {
+        id: workout.id,
+        name: workout.name,
+        circuits: data.circuits.length,
+      });
+
       return {
         data: workout as Workout,
         status: 201,
