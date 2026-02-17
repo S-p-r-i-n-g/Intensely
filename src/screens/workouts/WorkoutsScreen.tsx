@@ -16,7 +16,8 @@ import { workoutsApi } from '../../api';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
-import { PlayIcon, PlusIcon } from 'react-native-heroicons/outline';
+import { PlayIcon } from 'react-native-heroicons/outline';
+import { EmptyState } from '../../components/EmptyState';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
 
 // Helper to get difficulty color (matches design.md v1.3)
@@ -255,22 +256,12 @@ const WorkoutsScreen = () => {
 
   if (workouts.length === 0) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
-        <Text style={styles.emptyIcon}>💪</Text>
-        <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>No Workouts Yet</Text>
-        <Text style={[styles.emptySubtitle, { color: theme.text.secondary }]}>
-          You haven't created any workouts.{'\n'}Let's fix that!
-        </Text>
-        <TouchableOpacity
-          style={styles.createWorkoutButton}
-          onPress={handleCreateWorkout}
-        >
-          <PlusIcon size={20} color="#FFFFFF" />
-          <Text style={styles.createWorkoutButtonText}>
-            Create Your First Workout
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <EmptyState
+        title="Start Your Fitness Journey"
+        description="Create your first workout plan to start tracking your progress and reaching your goals."
+        buttonText="Create Workout"
+        onPress={handleCreateWorkout}
+      />
     );
   }
 
@@ -366,19 +357,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     fontSize: 11,
   },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing[4],
-  },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing[2],
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-  },
   startButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -391,22 +369,6 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '600',
-  },
-  createWorkoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#000000',
-    paddingHorizontal: spacing[6],
-    paddingVertical: spacing[4],
-    borderRadius: 100,
-    marginTop: spacing[6],
-    gap: spacing[2],
-  },
-  createWorkoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
     fontWeight: '600',
   },
 });
