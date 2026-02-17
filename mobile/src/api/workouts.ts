@@ -145,9 +145,12 @@ export const workoutsApi = {
 
       // Create workout
       const now = new Date().toISOString();
+      const workoutId = crypto.randomUUID();
+
       const { data: workout, error: workoutError } = await supabase
         .from('workouts')
         .insert({
+          id: workoutId,
           name: data.name,
           created_by: user.id,
           is_public: false,
@@ -181,10 +184,12 @@ export const workoutsApi = {
       // Create circuits
       for (let i = 0; i < data.circuits.length; i++) {
         const circuit = data.circuits[i];
+        const circuitId = crypto.randomUUID();
 
         const { data: circuitData, error: circuitError } = await supabase
           .from('circuits')
           .insert({
+            id: circuitId,
             workout_id: workout.id,
             circuit_order: i,
             interval_seconds: circuit.intervalSeconds || data.intervalSeconds,
@@ -198,6 +203,7 @@ export const workoutsApi = {
 
         // Create circuit exercises
         const exerciseInserts = circuit.exercises.map((exerciseId, idx) => ({
+          id: crypto.randomUUID(),
           circuit_id: circuitData.id,
           exercise_id: exerciseId,
           exercise_order: idx,
