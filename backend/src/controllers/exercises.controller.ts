@@ -105,17 +105,34 @@ export class ExercisesController {
       // Equipment filtering at database level using JSON array contains
       if (equipment) {
         const equipmentList = (equipment as string).split(',').map(e => e.trim());
-        where.equipment = {
-          hasSome: equipmentList
-        };
+        // For JSONB arrays, we need to check if ANY of the equipment items match
+        // Using OR logic to check each equipment value
+        where.OR = equipmentList.map(eq => ({
+          equipment: {
+            array_contains: [eq]
+          }
+        }));
       }
 
       // Primary muscles filtering at database level using JSON array contains
       if (primaryMuscles) {
         const musclesList = (primaryMuscles as string).split(',').map(m => m.trim());
-        where.primaryMuscles = {
-          hasSome: musclesList
-        };
+        // For JSONB arrays, check if ANY of the muscle values match
+        const muscleFilters = musclesList.map(muscle => ({
+          primaryMuscles: {
+            array_contains: [muscle]
+          }
+        }));
+        // Combine with existing OR filters if equipment is also specified
+        if (where.OR) {
+          where.AND = [
+            { OR: where.OR },
+            { OR: muscleFilters }
+          ];
+          delete where.OR;
+        } else {
+          where.OR = muscleFilters;
+        }
       }
 
       // Family name filtering via ExerciseFamily relation
