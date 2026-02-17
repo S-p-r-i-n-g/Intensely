@@ -79,6 +79,12 @@ const SignUpScreen = () => {
     } catch (error: any) {
       console.error('Sign up error:', error);
 
+      // Check for rate limit
+      if (error.code === 'over_email_send_rate_limit') {
+        setAuthError('Please wait a few seconds before trying again. This is a security measure.');
+        return;
+      }
+
       // Check if user already exists
       const errorMessage = error.message || '';
       if (errorMessage.includes('already') || errorMessage.includes('exists') || error.code === '23505') {
