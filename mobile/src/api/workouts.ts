@@ -165,13 +165,16 @@ export const workoutsApi = {
         .single();
 
       if (workoutError) {
-        console.error('[Workouts] Failed to create workout:', workoutError);
-        console.error('[Workouts] Workout data:', {
+        console.error('[Workouts] Failed to create workout:', JSON.stringify(workoutError, null, 2));
+        console.error('[Workouts] Workout data:', JSON.stringify({
           name: data.name,
           created_by: user.id,
           total_circuits: totalCircuits,
           exercises_per_circuit: exercisesPerCircuit,
-        });
+          interval_seconds: data.intervalSeconds,
+          rest_seconds: data.restSeconds,
+          sets_per_circuit: data.sets,
+        }, null, 2));
         throw workoutError;
       }
 
@@ -214,11 +217,14 @@ export const workoutsApi = {
         message: 'Workout created successfully'
       };
     } catch (error: any) {
-      console.error('[Workouts] Create workout error:', error);
+      console.error('[Workouts] Create workout error:', JSON.stringify(error, null, 2));
+      console.error('[Workouts] Error message:', error.message);
+      console.error('[Workouts] Error details:', error.details);
+      console.error('[Workouts] Error hint:', error.hint);
       return {
         data: {} as Workout,
         status: 500,
-        message: error.message || 'Failed to create workout'
+        message: error.message || error.hint || 'Failed to create workout'
       };
     }
   },
