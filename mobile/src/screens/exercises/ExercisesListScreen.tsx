@@ -7,6 +7,7 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,9 +18,10 @@ import type { Exercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
-import { MagnifyingGlassIcon, PlusIcon, HeartIcon } from 'react-native-heroicons/outline';
+import { MagnifyingGlassIcon, PlusIcon, HeartIcon, FunnelIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+import { FilterModal, ExerciseFilters } from '../../components/exercises';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExercisesList'>;
 
@@ -53,15 +55,55 @@ const ExercisesListScreen = () => {
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
+  // Filter state
+  const [filters, setFilters] = useState<ExerciseFilters>({});
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [quickFilters, setQuickFilters] = useState({
+    bodyweightOnly: false,
+    apartmentFriendly: false,
+    verifiedOnly: false,
+  });
+
   const loadData = async () => {
     try {
-      // Load exercises - this is the critical data
-      const exercisesResponse = await exercisesApi.getAll();
+      // Build API params from filters
+      const params: any = {};
+
+      // Apply full filters
+      if (filters.primaryCategory) params.category = filters.primaryCategory;
+      if (filters.difficulty) params.difficulty = filters.difficulty;
+      if (filters.primaryMuscles?.length) params.primaryMuscles = filters.primaryMuscles.join(',');
+      if (filters.equipment?.length) params.equipment = filters.equipment.join(',');
+      if (filters.cardioIntensive) params.cardioIntensive = true;
+      if (filters.strengthFocus) params.strengthFocus = true;
+      if (filters.mobilityFocus) params.mobilityFocus = true;
+      if (filters.hictSuitable) params.hictSuitable = true;
+      if (filters.minimalTransition) params.minimalTransition = true;
+      if (filters.movementPattern) params.movementPattern = filters.movementPattern;
+      if (filters.mechanic) params.mechanic = filters.mechanic;
+      if (filters.smallSpace) params.smallSpace = true;
+      if (filters.quiet) params.quiet = true;
+      if (filters.isVerified) params.isVerified = true;
+
+      // Apply quick filter overrides
+      if (quickFilters.bodyweightOnly) {
+        params.equipment = 'bodyweight';
+      }
+      if (quickFilters.apartmentFriendly) {
+        params.smallSpace = true;
+        params.quiet = true;
+      }
+      if (quickFilters.verifiedOnly) {
+        params.isVerified = true;
+      }
+
+      // Load exercises with filters
+      const exercisesResponse = await exercisesApi.getAll(params);
 
       // Handle both response formats: direct array or nested data
       const data = Array.isArray(exercisesResponse.data)
         ? exercisesResponse.data
-        : exercisesResponse.data?.exercises || exercisesResponse.data?.data || [];
+        : exercisesResponse.data?.exercises || [];
       setExercises(data);
 
       // Try to load favorites, but don't fail if backend is unavailable
@@ -85,7 +127,7 @@ const ExercisesListScreen = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filters, quickFilters]);
 
   // Reload when screen gains focus (e.g., after creating an exercise)
   useFocusEffect(
@@ -160,6 +202,48 @@ const ExercisesListScreen = () => {
       console.warn('Failed to toggle favorite (backend unavailable):', error);
       setFavoriteIds(favoriteIds);
     }
+  };
+
+  // Filter handlers
+  const toggleQuickFilter = (filterName: 'bodyweightOnly' | 'apartmentFriendly' | 'verifiedOnly') => {
+    setQuickFilters((prev) => ({
+      ...prev,
+      [filterName]: !prev[filterName],
+    }));
+  };
+
+  const handleApplyFilters = (newFilters: ExerciseFilters) => {
+    setFilters(newFilters);
+    // Clear quick filters when full filters are applied
+    setQuickFilters({
+      bodyweightOnly: false,
+      apartmentFriendly: false,
+      verifiedOnly: false,
+    });
+  };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    // Count full filters
+    if (filters.primaryCategory) count++;
+    if (filters.difficulty) count++;
+    if (filters.primaryMuscles?.length) count++;
+    if (filters.equipment?.length) count++;
+    if (filters.cardioIntensive) count++;
+    if (filters.strengthFocus) count++;
+    if (filters.mobilityFocus) count++;
+    if (filters.hictSuitable) count++;
+    if (filters.minimalTransition) count++;
+    if (filters.movementPattern) count++;
+    if (filters.mechanic) count++;
+    if (filters.smallSpace) count++;
+    if (filters.quiet) count++;
+    if (filters.isVerified) count++;
+    // Count quick filters
+    if (quickFilters.bodyweightOnly) count++;
+    if (quickFilters.apartmentFriendly) count++;
+    if (quickFilters.verifiedOnly) count++;
+    return count;
   };
 
   const renderExerciseCard = ({ item }: { item: Exercise }) => {
@@ -266,7 +350,7 @@ const ExercisesListScreen = () => {
         </Text>
       </View>
 
-      {/* Search Bar */}
+      {/* Search Bar with Filter Button */}
       <View style={styles.searchRow}>
         <View style={[styles.searchBar, { backgroundColor: theme.background.secondary }]}>
           <MagnifyingGlassIcon size={20} color={theme.text.tertiary} />
@@ -278,7 +362,101 @@ const ExercisesListScreen = () => {
             onChangeText={handleSearch}
           />
         </View>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            {
+              borderColor: getActiveFilterCount() > 0 ? colors.primary[500] : theme.border.medium,
+              backgroundColor: theme.background.elevated,
+            },
+          ]}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <FunnelIcon
+            size={20}
+            color={getActiveFilterCount() > 0 ? colors.primary[500] : theme.text.secondary}
+          />
+          {getActiveFilterCount() > 0 && (
+            <View style={styles.filterBadge}>
+              <Text style={styles.filterBadgeText}>{getActiveFilterCount()}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
+
+      {/* Quick Filter Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.quickFiltersScroll}
+        contentContainerStyle={styles.quickFiltersContent}
+      >
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.bodyweightOnly
+                ? colors.primary[500]
+                : theme.background.secondary,
+              borderColor: quickFilters.bodyweightOnly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('bodyweightOnly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.bodyweightOnly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Bodyweight Only
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.apartmentFriendly
+                ? colors.primary[500]
+                : theme.background.secondary,
+              borderColor: quickFilters.apartmentFriendly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('apartmentFriendly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.apartmentFriendly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Apartment Friendly
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.verifiedOnly
+                ? colors.primary[500]
+                : theme.background.secondary,
+              borderColor: quickFilters.verifiedOnly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('verifiedOnly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.verifiedOnly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Verified Only
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
 
       {/* Filter Row */}
       <View style={styles.filterRow}>
@@ -358,6 +536,14 @@ const ExercisesListScreen = () => {
       >
         <PlusIcon size={28} color="#FFFFFF" />
       </TouchableOpacity>
+
+      {/* Filter Modal */}
+      <FilterModal
+        visible={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        filters={filters}
+        onApply={handleApplyFilters}
+      />
     </View>
   );
 };
@@ -380,10 +566,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing[2],
   },
   searchRow: {
+    flexDirection: 'row',
     paddingHorizontal: spacing[5],
     paddingVertical: spacing[3],
+    gap: spacing[3],
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing[4],
@@ -395,6 +584,51 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     height: '100%',
+  },
+  filterButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  filterBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: colors.primary[500],
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  filterBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  quickFiltersScroll: {
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[2],
+  },
+  quickFiltersContent: {
+    gap: spacing[2],
+  },
+  quickFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 100,
+    borderWidth: 1,
+  },
+  quickFilterText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   filterRow: {
     flexDirection: 'row',

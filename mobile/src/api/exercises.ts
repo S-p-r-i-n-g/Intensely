@@ -18,6 +18,15 @@ export const exercisesApi = {
     smallSpace?: boolean;
     quiet?: boolean;
     search?: string;
+    isVerified?: boolean;
+    primaryMuscles?: string;
+    hictSuitable?: boolean;
+    cardioIntensive?: boolean;
+    strengthFocus?: boolean;
+    mobilityFocus?: boolean;
+    minimalTransition?: boolean;
+    movementPattern?: string;
+    mechanic?: string;
     page?: number;
     limit?: number;
   }): Promise<ApiResponse<{ exercises: Exercise[]; total: number; page: number; totalPages: number }>> => {
@@ -25,11 +34,35 @@ export const exercisesApi = {
     try {
       let query = supabase.from('exercises').select('*', { count: 'exact' });
 
+      // Basic filters
       if (params?.category) query = query.eq('primaryCategory', params.category);
       if (params?.difficulty) query = query.eq('difficulty', params.difficulty);
       if (params?.smallSpace !== undefined) query = query.eq('smallSpace', params.smallSpace);
       if (params?.quiet !== undefined) query = query.eq('quiet', params.quiet);
       if (params?.search) query = query.ilike('name', `%${params.search}%`);
+
+      // New boolean filters
+      if (params?.isVerified !== undefined) query = query.eq('isVerified', params.isVerified);
+      if (params?.hictSuitable !== undefined) query = query.eq('hictSuitable', params.hictSuitable);
+      if (params?.cardioIntensive !== undefined) query = query.eq('cardioIntensive', params.cardioIntensive);
+      if (params?.strengthFocus !== undefined) query = query.eq('strengthFocus', params.strengthFocus);
+      if (params?.mobilityFocus !== undefined) query = query.eq('mobilityFocus', params.mobilityFocus);
+      if (params?.minimalTransition !== undefined) query = query.eq('minimalTransition', params.minimalTransition);
+
+      // String filters
+      if (params?.movementPattern) query = query.eq('movementPattern', params.movementPattern);
+      if (params?.mechanic) query = query.eq('mechanic', params.mechanic);
+
+      // Array filters using contains
+      if (params?.equipment) {
+        const equipmentList = params.equipment.split(',').map(e => e.trim());
+        query = query.contains('equipment', equipmentList);
+      }
+
+      if (params?.primaryMuscles) {
+        const musclesList = params.primaryMuscles.split(',').map(m => m.trim());
+        query = query.contains('primaryMuscles', musclesList);
+      }
 
       const { data, error, count } = await query;
 

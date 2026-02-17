@@ -42,7 +42,12 @@ export interface Exercise {
   quiet: boolean;
   cardioIntensive: boolean;
   strengthFocus: boolean;
+  mobilityFocus: boolean;
+  minimalTransition: boolean;
   beginnerFriendly: boolean;
+  isVerified: boolean;
+  movementPattern?: string;
+  mechanic?: string;
   description?: string;
   instructions: string[];
   tips: string[];
@@ -197,8 +202,9 @@ export interface WorkoutHistory {
 
 // API Response Types
 export interface ApiResponse<T> {
-  success: boolean;
+  success?: boolean;
   data: T;
+  status?: number;
   message?: string;
 }
 

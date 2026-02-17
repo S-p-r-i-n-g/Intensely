@@ -12,8 +12,11 @@ export { ProgressBar } from './ProgressBar';
 export { SkeletonLoader } from './SkeletonLoader';
 export { PillSelector } from './PillSelector';
 export { Stepper } from './Stepper';
+export { Accordion } from './Accordion';
+export { MultiPillSelector } from './MultiPillSelector';
 
 // Type exports
 export type { ButtonVariant, ButtonSize } from './Button';
 export type { CardVariant } from './Card';
 export type { TextVariant, TextColor } from './Text';
+export type { PillOption } from './MultiPillSelector';

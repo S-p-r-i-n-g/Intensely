@@ -12,10 +12,9 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme';
-import { Text } from '../../components/ui';
+import { Text, Accordion, MultiPillSelector } from '../../components/ui';
 import { exercisesApi } from '../../api';
 import { spacing, borderRadius, colors } from '../../tokens';
-import { ChevronDownIcon, ChevronUpIcon } from 'react-native-heroicons/outline';
 
 type CreateScreenRouteProp = RouteProp<ExercisesStackParamList, 'CreateExercise'>;
 
@@ -60,84 +59,6 @@ const EQUIPMENT_OPTIONS = [
   { value: 'dumbbell', label: 'Dumbbell' },
   { value: 'kettlebell', label: 'Kettlebell' },
 ];
-
-// Accordion component
-const Accordion = ({
-  title,
-  summary,
-  isOpen,
-  onToggle,
-  children,
-  theme,
-}: {
-  title: string;
-  summary: string;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  theme: any;
-}) => (
-  <View style={[styles.accordion, { backgroundColor: theme.background.elevated }]}>
-    <TouchableOpacity style={styles.accordionHeader} onPress={onToggle}>
-      <View>
-        <Text style={[styles.accordionTitle, { color: theme.text.primary }]}>{title}</Text>
-        {!isOpen && (
-          <Text style={[styles.accordionSummary, { color: theme.text.secondary }]}>{summary}</Text>
-        )}
-      </View>
-      {isOpen ? (
-        <ChevronUpIcon size={20} color={theme.text.secondary} />
-      ) : (
-        <ChevronDownIcon size={20} color={theme.text.secondary} />
-      )}
-    </TouchableOpacity>
-    {isOpen && <View style={styles.accordionContent}>{children}</View>}
-  </View>
-);
-
-// Multi-select pill component
-const PillSelector = ({
-  options,
-  selected,
-  onToggle,
-  multiSelect = false,
-  theme,
-}: {
-  options: { value: string; label: string }[];
-  selected: string | string[];
-  onToggle: (value: string) => void;
-  multiSelect?: boolean;
-  theme: any;
-}) => {
-  const isSelected = (value: string) =>
-    multiSelect ? (selected as string[]).includes(value) : selected === value;
-
-  return (
-    <View style={styles.pillContainer}>
-      {options.map((opt) => (
-        <TouchableOpacity
-          key={opt.value}
-          style={[
-            styles.pill,
-            { borderColor: theme.border.medium, backgroundColor: theme.background.primary },
-            isSelected(opt.value) && styles.pillActive,
-          ]}
-          onPress={() => onToggle(opt.value)}
-        >
-          <Text
-            style={[
-              styles.pillText,
-              { color: theme.text.secondary },
-              isSelected(opt.value) && styles.pillTextActive,
-            ]}
-          >
-            {opt.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-};
 
 const CreateExerciseScreen = () => {
   const navigation = useNavigation();
@@ -251,7 +172,6 @@ const CreateExerciseScreen = () => {
           summary={detailsSummary}
           isOpen={isDetailsOpen}
           onToggle={() => setIsDetailsOpen(!isDetailsOpen)}
-          theme={theme}
         >
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Name *</Text>
@@ -299,7 +219,6 @@ const CreateExerciseScreen = () => {
           summary={`${instructionsText.split('\n').filter(l => l.trim()).length} steps`}
           isOpen={isInstructionsOpen}
           onToggle={() => setIsInstructionsOpen(!isInstructionsOpen)}
-          theme={theme}
         >
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Step-by-step instructions</Text>
@@ -332,47 +251,42 @@ const CreateExerciseScreen = () => {
           summary={attributesSummary}
           isOpen={isAttributesOpen}
           onToggle={() => setIsAttributesOpen(!isAttributesOpen)}
-          theme={theme}
         >
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Category *</Text>
-            <PillSelector
+            <MultiPillSelector
               options={CATEGORY_OPTIONS}
               selected={category}
               onToggle={setCategory}
-              theme={theme}
             />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Difficulty *</Text>
-            <PillSelector
+            <MultiPillSelector
               options={DIFFICULTY_OPTIONS}
               selected={difficulty}
               onToggle={setDifficulty}
-              theme={theme}
             />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Target Muscles *</Text>
-            <PillSelector
+            <MultiPillSelector
               options={MUSCLE_OPTIONS}
               selected={primaryMuscles}
               onToggle={toggleMuscle}
               multiSelect
-              theme={theme}
             />
           </View>
 
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.text.primary }]}>Equipment</Text>
-            <PillSelector
+            <MultiPillSelector
               options={EQUIPMENT_OPTIONS}
               selected={equipment}
               onToggle={toggleEquipment}
               multiSelect
-              theme={theme}
             />
           </View>
         </Accordion>
@@ -400,29 +314,6 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     paddingBottom: 100,
   },
-  accordion: {
-    borderRadius: 16,
-    marginBottom: spacing[3],
-    overflow: 'hidden',
-  },
-  accordionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing[4],
-  },
-  accordionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  accordionSummary: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  accordionContent: {
-    paddingHorizontal: spacing[4],
-    paddingBottom: spacing[4],
-  },
   formGroup: {
     marginBottom: spacing[4],
   },
@@ -448,29 +339,6 @@ const styles = StyleSheet.create({
   textAreaLarge: {
     minHeight: 120,
     textAlignVertical: 'top',
-  },
-  pillContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing[2],
-  },
-  pill: {
-    borderWidth: 1,
-    borderRadius: 100,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  pillActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  pillText: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  pillTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
   },
   saveButton: {
     backgroundColor: colors.primary[500],

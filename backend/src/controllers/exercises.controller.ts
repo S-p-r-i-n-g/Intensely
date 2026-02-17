@@ -14,6 +14,15 @@ export class ExercisesController {
    * - quiet: Filter for quiet exercises (true/false)
    * - equipment: Filter by equipment (comma-separated: bodyweight,dumbbell,etc.)
    * - search: Search by exercise name
+   * - isVerified: Filter for verified exercises (true/false)
+   * - primaryMuscles: Filter by primary muscles (comma-separated: chest,triceps,etc.)
+   * - familyName: Filter by exercise family name
+   * - cardioIntensive: Filter for cardio intensive exercises (true/false)
+   * - strengthFocus: Filter for strength focus exercises (true/false)
+   * - mobilityFocus: Filter for mobility focus exercises (true/false)
+   * - minimalTransition: Filter for minimal transition exercises (true/false)
+   * - movementPattern: Filter by movement pattern (push, pull, squat, hinge, etc.)
+   * - mechanic: Filter by mechanic (compound, isolation)
    * - limit: Number of results (default 50, max 100)
    * - offset: Offset for pagination (default 0)
    */
@@ -27,6 +36,15 @@ export class ExercisesController {
         quiet,
         equipment,
         search,
+        isVerified,
+        primaryMuscles,
+        familyName,
+        cardioIntensive,
+        strengthFocus,
+        mobilityFocus,
+        minimalTransition,
+        movementPattern,
+        mechanic,
         limit = '50',
         offset = '0'
       } = req.query;
@@ -56,10 +74,55 @@ export class ExercisesController {
         where.quiet = quiet === 'true';
       }
 
+      if (isVerified !== undefined) {
+        where.isVerified = isVerified === 'true';
+      }
+
+      if (cardioIntensive !== undefined) {
+        where.cardioIntensive = cardioIntensive === 'true';
+      }
+
+      if (strengthFocus !== undefined) {
+        where.strengthFocus = strengthFocus === 'true';
+      }
+
+      if (mobilityFocus !== undefined) {
+        where.mobilityFocus = mobilityFocus === 'true';
+      }
+
+      if (minimalTransition !== undefined) {
+        where.minimalTransition = minimalTransition === 'true';
+      }
+
+      if (movementPattern) {
+        where.movementPattern = movementPattern;
+      }
+
+      if (mechanic) {
+        where.mechanic = mechanic;
+      }
+
+      // Equipment filtering at database level using JSON array contains
       if (equipment) {
-        // Equipment is stored as JSON array, need to filter
-        // For now, we'll fetch all and filter in memory
-        // In production, consider using raw SQL for JSON array queries
+        const equipmentList = (equipment as string).split(',').map(e => e.trim());
+        where.equipment = {
+          hasSome: equipmentList
+        };
+      }
+
+      // Primary muscles filtering at database level using JSON array contains
+      if (primaryMuscles) {
+        const musclesList = (primaryMuscles as string).split(',').map(m => m.trim());
+        where.primaryMuscles = {
+          hasSome: musclesList
+        };
+      }
+
+      // Family name filtering via ExerciseFamily relation
+      if (familyName) {
+        where.family = {
+          name: familyName
+        };
       }
 
       if (search) {
@@ -79,23 +142,16 @@ export class ExercisesController {
           where,
           take: limitNum,
           skip: offsetNum,
-          orderBy: { name: 'asc' }
+          orderBy: { name: 'asc' },
+          include: {
+            family: true // Include exercise family for familyName filtering and display
+          }
         }),
         prisma.exercise.count({ where })
       ]);
 
-      // Filter by equipment if specified (post-query filter)
-      let filteredExercises = exercises;
-      if (equipment) {
-        const equipmentList = (equipment as string).split(',').map(e => e.trim());
-        filteredExercises = exercises.filter(ex => {
-          const exEquipment = ex.equipment as string[];
-          return equipmentList.some(eq => exEquipment.includes(eq));
-        });
-      }
-
       res.json({
-        data: filteredExercises,
+        data: exercises,
         pagination: {
           total,
           limit: limitNum,
