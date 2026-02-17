@@ -105,14 +105,16 @@ export const workoutsApi = {
       }
 
       // Ensure user exists in public.users table
-      const { data: existingUser, error: userCheckError } = await supabase
+      const { data: existingUser } = await supabase
         .from('users')
         .select('id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid error when no rows found
 
       if (!existingUser) {
-        // Create user in public.users table
+        console.log('[Workouts] Creating user in public.users table:', user.id);
+        // Create user in public.users table with all required fields
+        const now = new Date().toISOString();
         const { error: userCreateError } = await supabase
           .from('users')
           .insert({
@@ -120,13 +122,17 @@ export const workoutsApi = {
             email: user.email || '',
             auth_provider: 'email',
             email_verified: !!user.email_confirmed_at,
-            updated_at: new Date().toISOString(),
+            fitness_level: 'beginner', // Required field with default
+            metric_system: true, // Required field with default
+            notification_preferences: {}, // Required field with default
+            updated_at: now,
           });
 
         if (userCreateError) {
-          console.error('Failed to create user:', userCreateError);
-          throw new Error('User profile not found. Please sign out and sign in again.');
+          console.error('[Workouts] Failed to create user:', userCreateError);
+          throw new Error(`Failed to create user profile: ${userCreateError.message}`);
         }
+        console.log('[Workouts] User created successfully');
       }
 
       // Calculate workout metadata
@@ -158,7 +164,16 @@ export const workoutsApi = {
         .select()
         .single();
 
-      if (workoutError) throw workoutError;
+      if (workoutError) {
+        console.error('[Workouts] Failed to create workout:', workoutError);
+        console.error('[Workouts] Workout data:', {
+          name: data.name,
+          created_by: user.id,
+          total_circuits: totalCircuits,
+          exercises_per_circuit: exercisesPerCircuit,
+        });
+        throw workoutError;
+      }
 
       // Create circuits
       for (let i = 0; i < data.circuits.length; i++) {
@@ -199,10 +214,11 @@ export const workoutsApi = {
         message: 'Workout created successfully'
       };
     } catch (error: any) {
+      console.error('[Workouts] Create workout error:', error);
       return {
         data: {} as Workout,
         status: 500,
-        message: error.message
+        message: error.message || 'Failed to create workout'
       };
     }
   },
