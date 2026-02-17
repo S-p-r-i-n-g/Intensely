@@ -459,6 +459,9 @@ const ExercisesListScreen = () => {
             Verified Only
           </Text>
         </TouchableOpacity>
+
+        {/* Dummy spacer to ensure right padding works on all devices */}
+        <View style={{ width: spacing[1] }} />
       </ScrollView>
 
       {/* Filter Row */}
@@ -619,6 +622,7 @@ const styles = StyleSheet.create({
   },
   quickFiltersContent: {
     paddingHorizontal: spacing[5],
+    paddingVertical: 4,
     gap: spacing[2],
   },
   quickFilterChip: {
