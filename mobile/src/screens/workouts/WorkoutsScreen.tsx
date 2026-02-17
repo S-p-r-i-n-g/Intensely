@@ -198,10 +198,13 @@ const WorkoutsScreen = () => {
     try {
       // Fetch all workouts - the backend will filter by authenticated user
       const response = await workoutsApi.getAll({});
+      console.log('[WorkoutsScreen] Loaded workouts:', response.data.length);
       // Filter client-side to only show user's workouts
+      // Handle both snake_case and camelCase
       const userWorkouts = response.data.filter(
-        (w: any) => w.createdBy === user.id
+        (w: any) => (w.created_by || w.createdBy) === user.id
       );
+      console.log('[WorkoutsScreen] User workouts after filter:', userWorkouts.length);
       setWorkouts(userWorkouts);
     } catch (error) {
       console.error('Failed to load workouts:', error);
