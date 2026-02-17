@@ -15,6 +15,7 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   isInitialized: boolean;
+  authListener: any; // Store the listener for cleanup
 
   // Actions
   initialize: () => Promise<void>;
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   isLoading: false,
   isInitialized: false,
+  authListener: null,
 
   /**
    * Initialize auth state
@@ -38,6 +40,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialize: async () => {
     try {
       set({ isLoading: true });
+
+      // Clean up existing listener if any
+      const existingListener = get().authListener;
+      if (existingListener) {
+        console.log('[AuthStore] Removing existing auth listener');
+        existingListener.subscription?.unsubscribe();
+      }
 
       // Get current session
       const { data: { session } } = await supabase.auth.getSession();
@@ -52,8 +61,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await get().syncProfile();
       }
 
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange(async (event, session) => {
+      // Listen for auth changes (only set up once)
+      const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
         console.log('[AuthStore] Auth state change event:', event, 'hasSession:', !!session);
         set({
           user: session?.user ?? null,
@@ -68,6 +77,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ profile: null });
         }
       });
+
+      // Store the listener for cleanup
+      set({ authListener: listener });
     } catch (error) {
       console.error('Failed to initialize auth:', error);
     } finally {
