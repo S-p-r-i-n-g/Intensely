@@ -624,14 +624,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[5],
     paddingVertical: 4,
     gap: spacing[2],
+    flexGrow: 0,
   },
   quickFilterChip: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 6,
     borderRadius: 100,
     borderWidth: 1,
+    gap: 6,
   },
   quickFilterText: {
     fontSize: 13,
