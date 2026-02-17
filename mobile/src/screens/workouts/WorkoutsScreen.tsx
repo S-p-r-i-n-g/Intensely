@@ -117,6 +117,16 @@ interface WorkoutCardProps {
 const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => {
   const exerciseLines = renderExercisePreview(workout.circuits);
 
+  // Handle both snake_case and camelCase field names
+  const w = workout as any;
+  const duration = w.estimated_duration_minutes ?? w.estimatedDurationMinutes ?? 0;
+  const calories = w.estimated_calories ?? w.estimatedCalories;
+  const difficulty = w.difficulty_level ?? w.difficultyLevel ?? 'intermediate';
+  const totalCircuits = w.total_circuits ?? w.totalCircuits ?? 0;
+  const setsPerCircuit = w.sets_per_circuit ?? w.setsPerCircuit ?? 0;
+  const intervalSeconds = w.interval_seconds ?? w.intervalSeconds ?? 0;
+  const restSeconds = w.rest_seconds ?? w.restSeconds ?? 0;
+
   return (
     <TouchableOpacity
       style={[styles.workoutCard, { backgroundColor: theme.background.elevated }]}
@@ -138,19 +148,19 @@ const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => 
       {/* Metrics Row: Duration, Calories, Difficulty */}
       <View style={styles.metricsRow}>
         <Text style={[styles.metricText, { color: theme.text.secondary }]}>
-          {workout.estimatedDurationMinutes} min
+          {duration} min
         </Text>
-        {workout.estimatedCalories && (
+        {calories && (
           <>
             <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
             <Text style={[styles.metricText, { color: theme.text.secondary }]}>
-              {Math.round(workout.estimatedCalories)} cal
+              {Math.round(calories)} cal
             </Text>
           </>
         )}
         <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
-        <Text style={[styles.metricText, { color: getDifficultyColor(workout.difficultyLevel), fontWeight: '600' }]}>
-          {capitalize(workout.difficultyLevel)}
+        <Text style={[styles.metricText, { color: getDifficultyColor(difficulty), fontWeight: '600' }]}>
+          {capitalize(difficulty)}
         </Text>
       </View>
 
@@ -171,14 +181,14 @@ const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => 
 
       {/* Metric Chips: Row 1 - Structure */}
       <View style={styles.chipRow}>
-        <MetricChip value={String(workout.totalCircuits)} label="Circuits" theme={theme} />
-        <MetricChip value={String(workout.setsPerCircuit)} label="Sets" theme={theme} />
+        <MetricChip value={String(totalCircuits)} label="Circuits" theme={theme} />
+        <MetricChip value={String(setsPerCircuit)} label="Sets" theme={theme} />
       </View>
 
       {/* Metric Chips: Row 2 - Timing */}
       <View style={[styles.chipRow, { marginBottom: 0 }]}>
-        <MetricChip value={`${workout.intervalSeconds}s`} label="Work" theme={theme} />
-        <MetricChip value={`${workout.restSeconds}s`} label="Rest" theme={theme} />
+        <MetricChip value={`${intervalSeconds}s`} label="Work" theme={theme} />
+        <MetricChip value={`${restSeconds}s`} label="Rest" theme={theme} />
       </View>
     </TouchableOpacity>
   );
