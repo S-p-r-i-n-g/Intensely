@@ -24,7 +24,7 @@ module.exports = {
       predictiveBackGestureEnabled: false
     },
     web: {
-      favicon: "./assets/favicon.svg",
+      favicon: "./assets/favicon.png",
     },
     extra: {
       // These will be available via expo-constants

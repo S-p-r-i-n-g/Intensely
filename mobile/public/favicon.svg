@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Intensely favicon — Option B "Abstract I"
+       Brand initial 'i' where the dot is an elongated pill (progress bar metaphor).
+       Primary #D92D20 on secondary-900 #0F172A background. -->
+
+  <!-- Background: deep navy, browser-tab-friendly rounding -->
+  <rect width="32" height="32" rx="7" fill="#0F172A"/>
+
+  <!-- Pill dot: tall capsule (elongated dot of the 'i', doubles as a progress bar) -->
+  <rect x="12" y="5" width="8" height="10" rx="4" fill="#D92D20"/>
+
+  <!-- Stem: the vertical bar of the 'i' -->
+  <rect x="12" y="17" width="8" height="10" rx="3" fill="#D92D20"/>
+</svg>
