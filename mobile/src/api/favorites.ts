@@ -15,7 +15,8 @@ export const favoritesApi = {
   addExercise: async (exerciseId: string): Promise<ApiResponse<FavoriteExercise>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -68,7 +69,8 @@ export const favoritesApi = {
   removeExercise: async (exerciseId: string): Promise<ApiResponse<void>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -101,7 +103,8 @@ export const favoritesApi = {
   getFavoriteExercises: async (): Promise<ApiResponse<FavoriteExercise[]>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         // Return empty array if not authenticated
         return {
@@ -139,7 +142,8 @@ export const favoritesApi = {
   addWorkout: async (workoutId: string): Promise<ApiResponse<FavoriteWorkout>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -192,7 +196,8 @@ export const favoritesApi = {
   removeWorkout: async (workoutId: string): Promise<ApiResponse<void>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -225,7 +230,8 @@ export const favoritesApi = {
   getFavoriteWorkouts: async (): Promise<ApiResponse<FavoriteWorkout[]>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         // Return empty array if not authenticated
         return {

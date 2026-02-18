@@ -8,20 +8,27 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
-import { exercisesApi } from '../../api';
+import { exercisesApi, favoritesApi } from '../../api';
 import type { Exercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { HeartIcon } from 'react-native-heroicons/outline';
+import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'ExerciseSelection'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'ExerciseSelection'>;
 
-interface ExerciseSelectionScreenProps {}
+interface QuickFilters {
+  bodyweightOnly: boolean;
+  apartmentFriendly: boolean;
+  verifiedOnly: boolean;
+}
 
 const ExerciseSelectionScreen = () => {
   const navigation = useNavigation<NavigationProp>();
@@ -33,14 +40,21 @@ const ExerciseSelectionScreen = () => {
   const [selectedIds, setSelectedIds] = useState<string[]>(route.params?.selectedIds || []);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [quickFilters, setQuickFilters] = useState<QuickFilters>({
+    bodyweightOnly: false,
+    apartmentFriendly: false,
+    verifiedOnly: false,
+  });
 
   useEffect(() => {
     loadExercises();
   }, []);
 
   useEffect(() => {
-    applySearch();
-  }, [exercises, searchQuery]);
+    applyFilters(searchQuery, showFavoritesOnly, quickFilters);
+  }, [exercises, favoriteIds, showFavoritesOnly, searchQuery, quickFilters]);
 
   const loadExercises = async () => {
     try {
@@ -51,7 +65,19 @@ const ExerciseSelectionScreen = () => {
         ? response.data
         : response.data?.exercises || response.data?.data || [];
       setExercises(data);
-      setFilteredExercises(data);
+
+      // Load favorites (non-critical)
+      try {
+        const favoritesResponse = await favoritesApi.getFavoriteExercises();
+        const favIds = new Set(
+          favoritesResponse.data
+            .map((fav: any) => fav.exercise_id || fav.exerciseId)
+            .filter(Boolean)
+        );
+        setFavoriteIds(favIds);
+      } catch {
+        setFavoriteIds(new Set());
+      }
     } catch (error: any) {
       console.error('Failed to load exercises:', error);
       Alert.alert('Error', 'Could not load exercises. Please try again.');
@@ -60,20 +86,72 @@ const ExerciseSelectionScreen = () => {
     }
   };
 
-  const applySearch = () => {
-    if (!searchQuery.trim()) {
-      setFilteredExercises(exercises);
-      return;
+  const applyFilters = (
+    text: string,
+    favoritesOnly: boolean,
+    qf: QuickFilters
+  ) => {
+    let filtered = exercises;
+
+    // Favorites filter
+    if (favoritesOnly) {
+      filtered = filtered.filter((ex) => favoriteIds.has(ex.id));
     }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = exercises.filter(
-      (ex) =>
-        ex.name.toLowerCase().includes(query) ||
-        ex.description?.toLowerCase().includes(query) ||
-        ex.targetMuscleGroups?.some((muscle) => muscle.toLowerCase().includes(query))
-    );
+    // Bodyweight Only
+    if (qf.bodyweightOnly) {
+      filtered = filtered.filter((ex) => {
+        const equipment = (ex as any).equipment;
+        return !equipment || equipment.length === 0 || equipment.includes('bodyweight');
+      });
+    }
+
+    // Apartment Friendly (small space + quiet)
+    if (qf.apartmentFriendly) {
+      filtered = filtered.filter((ex) => {
+        const e = ex as any;
+        return (e.small_space ?? e.smallSpace) && (e.quiet ?? e.quiet);
+      });
+    }
+
+    // Verified Only
+    if (qf.verifiedOnly) {
+      filtered = filtered.filter((ex) => {
+        const e = ex as any;
+        return e.is_verified ?? e.isVerified ?? true;
+      });
+    }
+
+    // Search filter
+    if (text.trim()) {
+      const query = text.toLowerCase();
+      filtered = filtered.filter(
+        (ex) =>
+          ex.name.toLowerCase().includes(query) ||
+          ex.description?.toLowerCase().includes(query) ||
+          (ex as any).primaryMuscles?.some((m: string) => m.toLowerCase().includes(query)) ||
+          ex.targetMuscleGroups?.some((muscle) => muscle.toLowerCase().includes(query))
+      );
+    }
+
     setFilteredExercises(filtered);
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    applyFilters(text, showFavoritesOnly, quickFilters);
+  };
+
+  const toggleFavoritesFilter = () => {
+    const newValue = !showFavoritesOnly;
+    setShowFavoritesOnly(newValue);
+    applyFilters(searchQuery, newValue, quickFilters);
+  };
+
+  const toggleQuickFilter = (key: keyof QuickFilters) => {
+    const newFilters = { ...quickFilters, [key]: !quickFilters[key] };
+    setQuickFilters(newFilters);
+    applyFilters(searchQuery, showFavoritesOnly, newFilters);
   };
 
   const toggleExercise = (exerciseId: string) => {
@@ -156,6 +234,8 @@ const ExerciseSelectionScreen = () => {
     );
   }
 
+  const favoritesCount = favoriteIds.size;
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Search Bar */}
@@ -165,8 +245,110 @@ const ExerciseSelectionScreen = () => {
           placeholder="Search exercises..."
           placeholderTextColor={theme.text.tertiary}
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearch}
         />
+      </View>
+
+      {/* Quick Filter Chips */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.quickFiltersScroll}
+        contentContainerStyle={styles.quickFiltersContent}
+      >
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.bodyweightOnly ? colors.primary[500] : theme.background.secondary,
+              borderColor: quickFilters.bodyweightOnly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('bodyweightOnly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.bodyweightOnly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Bodyweight Only
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.apartmentFriendly ? colors.primary[500] : theme.background.secondary,
+              borderColor: quickFilters.apartmentFriendly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('apartmentFriendly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.apartmentFriendly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Apartment Friendly
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.quickFilterChip,
+            {
+              backgroundColor: quickFilters.verifiedOnly ? colors.primary[500] : theme.background.secondary,
+              borderColor: quickFilters.verifiedOnly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={() => toggleQuickFilter('verifiedOnly')}
+        >
+          <Text
+            style={[
+              styles.quickFilterText,
+              { color: quickFilters.verifiedOnly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Verified Only
+          </Text>
+        </TouchableOpacity>
+
+        <View style={{ width: spacing[1] }} />
+      </ScrollView>
+
+      {/* Filter Row: Favorites chip + results count */}
+      <View style={styles.filterRow}>
+        <TouchableOpacity
+          style={[
+            styles.filterChip,
+            {
+              backgroundColor: showFavoritesOnly ? colors.primary[500] : theme.background.secondary,
+              borderColor: showFavoritesOnly ? colors.primary[500] : theme.border.medium,
+            },
+          ]}
+          onPress={toggleFavoritesFilter}
+        >
+          {showFavoritesOnly ? (
+            <HeartIconSolid size={16} color="#FFFFFF" />
+          ) : (
+            <HeartIcon size={16} color={theme.text.secondary} />
+          )}
+          <Text
+            style={[
+              styles.filterChipText,
+              { color: showFavoritesOnly ? '#FFFFFF' : theme.text.secondary },
+            ]}
+          >
+            Favorites{favoritesCount > 0 ? ` (${favoritesCount})` : ''}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={[styles.resultsText, { color: theme.text.secondary }]}>
+          {filteredExercises.length} exercise{filteredExercises.length !== 1 ? 's' : ''}
+        </Text>
       </View>
 
       {/* Selection Count */}
@@ -189,7 +371,17 @@ const ExerciseSelectionScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No exercises found</Text>
+            {showFavoritesOnly ? (
+              <>
+                <HeartIcon size={48} color={theme.text.tertiary} />
+                <Text style={[styles.emptyTitle, { color: theme.text.primary }]}>No Favorites Yet</Text>
+                <Text style={[styles.emptyText, { color: theme.text.secondary }]}>
+                  Add favorites from the Exercise Library.
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.emptyText, { color: theme.text.secondary }]}>No exercises found</Text>
+            )}
           </View>
         }
       />
@@ -228,6 +420,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[3],
     fontSize: 16,
+  },
+  quickFiltersScroll: {
+    marginBottom: spacing[2],
+  },
+  quickFiltersContent: {
+    paddingHorizontal: spacing[5],
+    paddingVertical: 4,
+    gap: spacing[2],
+    flexGrow: 0,
+  },
+  quickFilterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+    borderWidth: 1,
+    gap: 6,
+  },
+  quickFilterText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing[5],
+    paddingBottom: spacing[3],
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+    borderWidth: 1,
+    gap: 6,
+  },
+  filterChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  resultsText: {
+    fontSize: 13,
   },
   selectionHeader: {
     flexDirection: 'row',
@@ -299,9 +536,17 @@ const styles = StyleSheet.create({
   emptyContainer: {
     paddingVertical: spacing[15],
     alignItems: 'center',
+    paddingHorizontal: spacing[8],
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: spacing[3],
+    marginBottom: spacing[2],
   },
   emptyText: {
     fontSize: 16,
+    textAlign: 'center',
   },
   footer: {
     position: 'absolute',

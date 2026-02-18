@@ -16,7 +16,8 @@ export const workoutsApi = {
     isPublic?: boolean;
   }): Promise<ApiResponse<Workout[]>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
 
       let query = supabase.from('workouts').select('*').is('deleted_at', null);
 
@@ -99,7 +100,8 @@ export const workoutsApi = {
   }): Promise<ApiResponse<Workout>> => {
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -251,7 +253,8 @@ export const workoutsApi = {
     isPublic?: boolean;
   }): Promise<ApiResponse<Workout>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
@@ -293,7 +296,8 @@ export const workoutsApi = {
    */
   delete: async (id: string): Promise<ApiResponse<void>> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) {
         throw new Error('User not authenticated');
       }
