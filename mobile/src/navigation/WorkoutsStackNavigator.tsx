@@ -1,6 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { WorkoutsStackParamList } from './types';
+import { useTheme } from '../theme';
 
 // Screens
 import WorkoutsScreen from '../screens/workouts/WorkoutsScreen';
@@ -11,13 +12,20 @@ import WorkoutCompleteScreen from '../screens/workouts/WorkoutCompleteScreen';
 const Stack = createNativeStackNavigator<WorkoutsStackParamList>();
 
 export const WorkoutsStackNavigator = () => {
+  const { theme } = useTheme();
+
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: true,
-        headerTintColor: '#FF6B35',
+        headerStyle: {
+          backgroundColor: theme.background.elevated,
+        },
+        headerTintColor: theme.text.primary,
+        headerShadowVisible: false,
         headerTitleStyle: {
-          fontWeight: 600,
+          fontWeight: '600',
+          color: theme.text.primary,
         },
       }}
     >

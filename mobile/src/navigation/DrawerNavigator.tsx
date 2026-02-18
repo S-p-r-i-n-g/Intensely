@@ -5,6 +5,7 @@ import { DrawerParamList } from './types';
 import { CustomDrawerContent } from '../components/navigation/CustomDrawerContent';
 import { ProfileIcon } from '../components/navigation/ProfileIcon';
 import { Bars3Icon } from 'react-native-heroicons/outline';
+import { useTheme } from '../theme';
 
 // Stack navigators
 import { HomeStackNavigator } from './HomeStackNavigator';
@@ -16,6 +17,8 @@ const Drawer = createDrawerNavigator<DrawerParamList>();
 const { width } = Dimensions.get('window');
 
 export const DrawerNavigator = () => {
+  const { theme } = useTheme();
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -26,12 +29,13 @@ export const DrawerNavigator = () => {
             onPress={() => navigation.openDrawer()}
             style={{ marginLeft: 16, padding: 8 }}
           >
-            <Bars3Icon size={28} color="#000000" />
+            <Bars3Icon size={28} color={theme.text.primary} />
           </TouchableOpacity>
         ),
         headerRight: () => <ProfileIcon />,
         headerTitle: '',
         headerStyle: {
+          backgroundColor: theme.background.elevated,
           elevation: 0,
           shadowOpacity: 0,
           borderBottomWidth: 0,
