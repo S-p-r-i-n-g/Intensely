@@ -12,8 +12,6 @@ interface FilterChipProps {
 
 /**
  * Reusable pill-shaped filter chip for exercise filter bars.
- * alignSelf: 'flex-start' is critical — it prevents vertical stretch
- * inside horizontal ScrollViews on web.
  */
 export const FilterChip = ({ label, active, onPress, icon }: FilterChipProps) => {
   const { theme } = useTheme();
@@ -40,7 +38,6 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 100,

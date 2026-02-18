@@ -8,7 +8,6 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  ScrollView,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -250,13 +249,8 @@ const ExerciseSelectionScreen = () => {
         />
       </View>
 
-      {/* Quick Filter Chips — all in one horizontal scroll row */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.quickFiltersScroll}
-        contentContainerStyle={styles.quickFiltersContent}
-      >
+      {/* Quick Filter Chips */}
+      <View style={styles.quickFiltersContainer}>
         <FilterChip
           label="Bodyweight Only"
           active={quickFilters.bodyweightOnly}
@@ -281,8 +275,7 @@ const ExerciseSelectionScreen = () => {
             : <HeartIcon size={16} color={theme.text.secondary} />
           }
         />
-        <View style={{ width: spacing[1] }} />
-      </ScrollView>
+      </View>
 
       {/* Results count */}
       <View style={styles.resultsRow}>
@@ -361,12 +354,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing[3],
     fontSize: 16,
   },
-  quickFiltersScroll: {
-    height: 44,
-    marginBottom: spacing[2],
-  },
-  quickFiltersContent: {
+  quickFiltersContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: spacing[5],
+    paddingBottom: spacing[3],
     gap: spacing[2],
   },
   resultsRow: {
