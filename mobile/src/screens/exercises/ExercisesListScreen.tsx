@@ -550,13 +550,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   quickFiltersScroll: {
+    height: 44,
     marginBottom: spacing[2],
   },
   quickFiltersContent: {
     paddingHorizontal: spacing[5],
-    paddingVertical: 4,
     gap: spacing[2],
-    flexGrow: 0,
   },
   resultsRow: {
     paddingHorizontal: spacing[5],
