@@ -1,10 +1,11 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Dimensions, TouchableOpacity } from 'react-native';
+import { TouchableOpacity, useWindowDimensions } from 'react-native';
 import { DrawerParamList } from './types';
 import { CustomDrawerContent } from '../components/navigation/CustomDrawerContent';
 import { ProfileIcon } from '../components/navigation/ProfileIcon';
 import { Bars3Icon } from 'react-native-heroicons/outline';
+import { useTheme } from '../theme';
 
 // Stack navigators
 import { HomeStackNavigator } from './HomeStackNavigator';
@@ -13,9 +14,11 @@ import { ExercisesStackNavigator } from './ExercisesStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
-const { width } = Dimensions.get('window');
 
 export const DrawerNavigator = () => {
+  const { theme } = useTheme();
+  const { width } = useWindowDimensions();
+
   return (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} />}
@@ -26,7 +29,7 @@ export const DrawerNavigator = () => {
             onPress={() => navigation.openDrawer()}
             style={{ marginLeft: 16, padding: 8 }}
           >
-            <Bars3Icon size={28} color="#000000" />
+            <Bars3Icon size={28} color={theme.text.primary} />
           </TouchableOpacity>
         ),
         headerRight: () => <ProfileIcon />,
@@ -36,7 +39,7 @@ export const DrawerNavigator = () => {
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        drawerType: 'slide',
+        drawerType: 'front',
         drawerStyle: {
           width: width * 0.75, // 75% of screen width
         },

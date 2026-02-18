@@ -41,7 +41,21 @@
       "Bash(gh auth login:*)",
       "Bash(brew install:*)",
       "Bash(gh auth:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(git status:*)",
+      "Bash(npm run build:*)",
+      "Bash(echo:*)",
+      "Bash(vercel:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo view:*)",
+      "Bash(node -e:*)",
+      "Bash(npx --yes sharp-cli:*)",
+      "Bash(npx:*)",
+      "Bash(playwright:*)",
+      "Bash(rsvg-convert:*)",
+      "Bash(__NEW_LINE_5d608b15d67eb91c__ cp /Users/dspring/Projects/CursorClaudeCode/mobile/web/manifest.json /Users/dspring/Projects/CursorClaudeCode/mobile/dist/)",
+      "Bash(gh run list:*)"
     ]
   }
 }

@@ -1,5 +1,5 @@
 # Intensely - Design System
-**Version 1.3 | Last Updated: 2026-01-28**
+**Version 1.4 | Last Updated: 2026-02-18**
 
 ## Design Philosophy
 
@@ -304,3 +304,135 @@ Final Score = Volume Score × Intensity Multiplier × Exercise Multiplier
 - Update in real-time as user modifies workout settings
 - Persist calculated difficulty when saving workout
 - Use consistent colors across Builder, Preview, and List screens
+
+---
+
+## 14. Mobile-Native Compliance & Architecture
+
+These are **hard rules**. No exceptions without explicit sign-off. They exist to prevent a class of bugs — layout explosions, dark-mode blindness, notch clipping, mis-taps during movement — that are expensive to fix after the fact.
+
+---
+
+### Rule 1 — Design System Enforcement: No Raw Primitives
+
+**Mandate:** Every piece of rendered text and every interactive element must use a component from `src/components/ui/`. Raw React Native primitives are banned from screen and component files.
+
+| ❌ Banned | ✅ Required |
+|-----------|------------|
+| `import { Text } from 'react-native'` | `import { Text } from '../../components/ui'` |
+| `import { TouchableOpacity } from 'react-native'` | `import { Button } from '../../components/ui'` |
+
+**Why:** Raw primitives bypass the design system's theme binding, accessibility props (`accessibilityRole="button"`), and touch-target enforcement. Every use of a raw primitive is a future dark-mode or contrast bug waiting to be filed.
+
+**Pattern:**
+```typescript
+// ❌ Never
+import { Text, TouchableOpacity } from 'react-native';
+<TouchableOpacity onPress={fn}>
+  <Text style={{ color: '#000' }}>Press me</Text>
+</TouchableOpacity>
+
+// ✅ Always
+import { Text, Button } from '../../components/ui';
+<Button variant="primary" onPress={fn}>Press me</Button>
+```
+
+---
+
+### Rule 2 — Accessibility & Touch Targets: Spacing for Motion
+
+**Mandate:** All interactive elements must meet a minimum touch target of **44×44pt** (iOS HIG / WCAG AAA). In screens that are used during physical activity (any workout execution screen), interactive controls must be separated by a minimum gap of **`spacing[5]` (20px)**, with high-risk destructive actions (Quit, Delete) requiring **`spacing[6]` (24px)**.
+
+```typescript
+import { spacing, touchTarget } from '../../tokens';
+
+// Minimum touch target — enforced by ui/Button automatically.
+// If building a custom tappable, enforce manually:
+style={{ minHeight: touchTarget.min }}    // 44pt
+style={{ minHeight: touchTarget.recommended }} // 48pt — preferred for primary CTAs
+
+// Control row gap during active workout (prevents mis-taps while moving):
+<View style={{ flexDirection: 'row', gap: spacing[5] }}>  // 20px minimum
+  <Button variant="secondary" style={{ flex: 1 }}>← Previous</Button>
+  <Button variant="primary"   style={{ flex: 1.5 }}>⏸ Pause</Button>
+  <Button variant="secondary" style={{ flex: 1 }}>Skip →</Button>
+</View>
+```
+
+**Reference spacing values:**
+
+| Token | Value | Use case |
+|-------|-------|----------|
+| `spacing[3]` | 12px | Static UI, no risk of mis-tap |
+| `spacing[4]` | 16px | Standard interactive lists |
+| `spacing[5]` | 20px | **Minimum for active-workout controls** |
+| `spacing[6]` | 24px | High-risk actions adjacent to safe actions |
+
+---
+
+### Rule 3 — Typography & Font Scaling: Cap Oversized Text
+
+**Mandate:** Any `Text` element with an effective rendered size **≥ 48px** must include `maxFontSizeMultiplier={1.2}`. This prevents iOS/Android Dynamic Type from expanding display-scale text (timers, hero numbers) into elements that overflow their containers or obscure adjacent UI.
+
+```typescript
+import { Text } from '../../components/ui';
+
+// Timer, score, or any display-scale number:
+<Text
+  style={styles.timerText}          // fontSize: 96
+  maxFontSizeMultiplier={1.2}        // cap at 115px — never larger
+>
+  {formatTime(timeRemaining)}
+</Text>
+
+// Standard body text — no cap needed; the system handles it gracefully:
+<Text variant="body" color="secondary">
+  {exercise.instructions}
+</Text>
+```
+
+**Threshold table:**
+
+| Rendered size | `maxFontSizeMultiplier` |
+|---------------|------------------------|
+| < 48px | Not required |
+| 48–72px | `1.3` |
+| > 72px | `1.2` |
+
+---
+
+### Rule 4 — Safe Area & Layout: Use `react-native-safe-area-context`
+
+**Mandate:** `SafeAreaView` must **always** be imported from `react-native-safe-area-context`. The built-in `SafeAreaView` from `react-native` does not correctly handle dynamic islands, punch-hole cameras, or Android gesture-navigation bars on modern OS versions.
+
+```typescript
+// ❌ Never
+import { SafeAreaView } from 'react-native';
+
+// ✅ Always
+import { SafeAreaView } from 'react-native-safe-area-context';
+```
+
+`react-native-safe-area-context` is already installed as a peer dependency of React Navigation and requires no additional setup.
+
+---
+
+### Rule 5 — Responsive Viewports: `useWindowDimensions` over `Dimensions.get`
+
+**Mandate:** Never read the window dimensions at module scope via `Dimensions.get('window')`. Dimensions must be read inside the component using the `useWindowDimensions()` hook so that the value reactively updates on rotation, split-screen, and foldable transitions.
+
+```typescript
+// ❌ Never — stale value, captured once at import time:
+import { Dimensions } from 'react-native';
+const { width } = Dimensions.get('window');
+
+// ✅ Always — live value, re-renders component on change:
+import { useWindowDimensions } from 'react-native';
+
+function MyComponent() {
+  const { width, height } = useWindowDimensions();
+  // ...
+}
+```
+
+**Corollary:** `Dimensions` from `react-native` may still be used for one-time setup values outside of components (e.g., in `StyleSheet.create` constants that are intentionally fixed). The restriction applies specifically to layout calculations used in render output.

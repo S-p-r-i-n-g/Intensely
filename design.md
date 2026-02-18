@@ -1,5 +1,5 @@
 # Intensely - Design System
-**Version 1.3 | Last Updated: 2026-01-28**
+**Version 1.4 | Last Updated: 2026-02-18**
 
 ## Design Philosophy
 
@@ -304,3 +304,156 @@ Final Score = Volume Score × Intensity Multiplier × Exercise Multiplier
 - Update in real-time as user modifies workout settings
 - Persist calculated difficulty when saving workout
 - Use consistent colors across Builder, Preview, and List screens
+
+---
+
+## 14. Cross-Platform UI/UX Compliance
+
+This project has a **dual-platform architecture**. Unless a task explicitly restricts scope to one platform, all UI/UX changes must be assessed and applied to both:
+
+| Codebase | Platform | Stack |
+|----------|----------|-------|
+| `mobile/src/` | iOS & Android | React Native / Expo |
+| `src/` | Web browser | React Web |
+
+Rules in this section are delineated by platform where they differ, and marked **Both** where they are identical requirements.
+
+---
+
+### Rule 1 — Design System Enforcement: No Raw Primitives *(Both)*
+
+Every piece of rendered text and every interactive element must use a component from the codebase's `components/ui/` directory. Raw primitives — whether HTML or React Native — are banned from screen and component files.
+
+**Mobile (`mobile/src/`):**
+```typescript
+// ❌ Never
+import { Text, TouchableOpacity } from 'react-native';
+
+// ✅ Always
+import { Text, Button } from '../../components/ui';
+```
+
+**Web (`src/`):**
+```tsx
+// ❌ Never
+<button onClick={fn}><p>Press me</p></button>
+
+// ✅ Always
+import { Text, Button } from '../../components/ui';
+<Button variant="primary" onPress={fn}>Press me</Button>
+```
+
+**Why:** Raw primitives bypass the design system's theme binding, dark-mode colour roles, and accessibility role annotations. Every raw primitive is a future contrast or UX regression waiting to be filed.
+
+---
+
+### Rule 2 — Accessibility & Touch Targets: Spacing for Motion *(Both)*
+
+All interactive elements must meet a minimum touch target of **44×44px/pt**. In screens used during physical activity, interactive controls must be separated by a minimum gap equivalent to `spacing[5]` (20px). High-risk/destructive actions adjacent to a primary action require `spacing[6]` (24px).
+
+**Mobile tokens:**
+```typescript
+import { spacing, touchTarget } from '../../tokens';
+style={{ minHeight: touchTarget.min }}        // 44pt
+style={{ minHeight: touchTarget.recommended }} // 48pt — primary CTAs
+```
+
+**Web CSS:**
+```css
+.button { min-height: 44px; min-width: 44px; }
+.controls { display: flex; gap: 20px; }      /* spacing[5] equivalent */
+.high-risk-row { gap: 24px; }               /* spacing[6] equivalent */
+```
+
+| Value | Mobile token | Web equivalent | Context |
+|-------|-------------|----------------|---------|
+| 12px | `spacing[3]` | `gap: 0.75rem` | Static UI |
+| 16px | `spacing[4]` | `gap: 1rem` | Standard interactive |
+| 20px | `spacing[5]` | `gap: 1.25rem` | **Active-workout controls minimum** |
+| 24px | `spacing[6]` | `gap: 1.5rem` | High-risk adjacent actions |
+
+---
+
+### Rule 3 — Typography & Font Scaling
+
+**Mobile (`mobile/src/`):** Any `Text` element with a rendered size ≥ 48px must include `maxFontSizeMultiplier` to prevent iOS Dynamic Type and Android font-scale settings from overflowing display-scale numbers.
+
+| Rendered size | Required prop |
+|---------------|---------------|
+| < 48px | Not required |
+| 48–72px | `maxFontSizeMultiplier={1.3}` |
+| > 72px | `maxFontSizeMultiplier={1.2}` |
+
+```typescript
+// 96px workout timer:
+<Text style={styles.timerText} maxFontSizeMultiplier={1.2}>
+  {formatTime(timeRemaining)}
+</Text>
+```
+
+**Web (`src/`):** All font sizes must use `rem` units (not `px`) so that browser zoom and user font-size preferences are respected. Display-scale text (timers, hero numbers) must use `clamp()` to remain readable without breaking the layout at 200% browser zoom.
+
+```css
+/* ❌ Fixed — breaks at browser zoom */
+.timer { font-size: 96px; }
+
+/* ✅ Fluid — scales with user preferences */
+.timer { font-size: clamp(3rem, 10vw, 6rem); }
+```
+
+---
+
+### Rule 4 — Safe Area & Responsive Layout
+
+**Mobile (`mobile/src/`):** `SafeAreaView` must always come from `react-native-safe-area-context` (not the built-in `react-native` version) to correctly handle Dynamic Island, punch-hole cameras, and Android gesture-navigation bars.
+
+```typescript
+// ✅ Mobile only
+import { SafeAreaView } from 'react-native-safe-area-context';
+```
+
+**Web (`src/`):** Use CSS Flexbox and Grid for all layouts. Apply `@media` queries for breakpoint-responsive behaviour. Never hardcode pixel widths for containers — use `max-width` with `width: 100%` or grid `fr` units instead.
+
+```css
+/* ❌ Hardcoded — breaks on small screens */
+.modal { width: 400px; }
+
+/* ✅ Responsive */
+.modal { width: min(90vw, 400px); }
+```
+
+---
+
+### Rule 5 — Responsive Viewports
+
+**Mobile (`mobile/src/`):** Never read layout dimensions at module scope via `Dimensions.get('window')`. Use the `useWindowDimensions()` hook inside the component so that values update on rotation and split-screen.
+
+```typescript
+// ✅ Mobile
+import { useWindowDimensions } from 'react-native';
+const { width } = useWindowDimensions();
+```
+
+**Web (`src/`):** Never hardcode viewport-derived pixel values in JavaScript. Use CSS `vw`/`vh` units, `@media` queries, or the `ResizeObserver` API for element-level responsive behaviour. Avoid `window.innerWidth` in render logic.
+
+```css
+/* ✅ Web — let CSS handle the viewport */
+.drawer { width: 75vw; max-width: 320px; }
+```
+
+---
+
+### Parity Checklist
+
+Any compliance rule applied to one platform's screen must be evaluated for parity on the other. Minimum requirements for each `WorkoutExecutionScreen`:
+
+| Requirement | Mobile (`mobile/src/`) | Web (`src/`) |
+|-------------|----------------------|-------------|
+| Design system `Text` | ✅ | ✅ |
+| Design system `Button` | ✅ | ✅ |
+| `SkeletonLoader` for fetch state | ✅ | ✅ |
+| Oversized text scaling guard | `maxFontSizeMultiplier={1.2}` | `clamp()` / `rem` units |
+| Safe area handling | `react-native-safe-area-context` | CSS `env(safe-area-inset-*)` |
+| Responsive layout | `useWindowDimensions()` | CSS Flexbox / `@media` |
+| Control row gap | `gap: spacing[5]` (20px) | `gap: 1.25rem` |
+| Profile in drawer | ✅ | ✅ |

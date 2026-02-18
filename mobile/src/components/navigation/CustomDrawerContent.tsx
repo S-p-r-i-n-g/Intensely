@@ -39,6 +39,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
   const drawerRouteItems = [
     { key: 'Workouts', label: 'My Workouts', route: 'Workouts' },
     { key: 'Exercises', label: 'Exercise Library', route: 'Exercises' },
+    { key: 'Profile', label: 'Profile', route: 'Profile' },
   ];
 
   return (

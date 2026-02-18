@@ -13,6 +13,7 @@ Comprehensive UX guidelines and implementation reference for the Intensely HICT 
 6. [Screen Wireframes](#screen-wireframes)
 7. [Implementation Checklist](#implementation-checklist)
 8. [Accessibility Guidelines](#accessibility-guidelines)
+9. [Cross-Platform UI/UX Compliance](#cross-platform-uiux-compliance)
 
 ---
 
@@ -333,6 +334,120 @@ spacing: {
 
 ---
 
+## Cross-Platform UI/UX Compliance
+
+This project has a **dual-platform architecture**. All UI/UX rules must be assessed and applied to both platforms unless a task explicitly restricts scope to one:
+
+| Codebase | Platform | Stack constraint |
+|----------|----------|-----------------|
+| `mobile/src/` | iOS & Android | React Native / Expo — no HTML/DOM |
+| `src/` | Web browser | React Web — no React Native primitives |
+
+> **Canonical reference:** Full rationale and code examples live in `design.md §14`.
+
+---
+
+### Rule 1 — Design System Enforcement: No Raw Primitives *(Both)*
+
+Every text element and every interactive element must use a component from the codebase's `components/ui/`. Raw primitives — HTML or React Native — are prohibited in screen and component files.
+
+**Mobile:**
+```typescript
+// ❌  import { Text, TouchableOpacity } from 'react-native';
+// ✅
+import { Text, Button } from '../../components/ui';
+```
+
+**Web:**
+```tsx
+// ❌  <button><p>Press me</p></button>
+// ✅
+import { Text, Button } from '../../components/ui';
+<Button variant="primary" onPress={fn}>Press me</Button>
+```
+
+---
+
+### Rule 2 — Accessibility & Touch Targets: Spacing for Motion *(Both)*
+
+- Minimum **44×44px/pt** touch target on all interactive elements.
+- Workout-execution control rows: minimum gap of **20px** (`spacing[5]` / `1.25rem`).
+- High-risk/destructive actions adjacent to primary actions: minimum **24px** (`spacing[6]` / `1.5rem`).
+
+**Mobile tokens:**
+```typescript
+import { spacing, touchTarget } from '../../tokens';
+// minHeight: touchTarget.min (44), gap: spacing[5] (20)
+```
+
+**Web CSS:**
+```css
+.controls { display: flex; gap: 1.25rem; }
+.high-risk-row { gap: 1.5rem; }
+button { min-height: 44px; min-width: 44px; }
+```
+
+---
+
+### Rule 3 — Typography & Font Scaling
+
+**Mobile:** Any `Text` element rendered ≥ 48px must include `maxFontSizeMultiplier` to prevent Dynamic Type from overflowing display-scale numbers.
+
+```typescript
+<Text style={styles.timerText} maxFontSizeMultiplier={1.2}>
+  {formatTime(timeRemaining)}
+</Text>
+```
+
+| Rendered size | Mobile prop |
+|---------------|-------------|
+| < 48px | Not required |
+| 48–72px | `maxFontSizeMultiplier={1.3}` |
+| > 72px | `maxFontSizeMultiplier={1.2}` |
+
+**Web:** All font sizes must use `rem` units. Display-scale text must use `clamp()` to survive 200% browser zoom without breaking layout.
+
+```css
+/* ❌  font-size: 96px; */
+/* ✅ */ .timer { font-size: clamp(3rem, 10vw, 6rem); }
+```
+
+---
+
+### Rule 4 — Safe Area & Responsive Layout
+
+**Mobile:** Import `SafeAreaView` exclusively from `react-native-safe-area-context` to handle Dynamic Island, punch-hole cameras, and Android gesture bars.
+
+```typescript
+import { SafeAreaView } from 'react-native-safe-area-context'; // ✅
+```
+
+**Web:** All layouts must use CSS Flexbox or Grid. Containers must never have hardcoded pixel widths — use `max-width` with `width: 100%`, `min()`, or grid `fr` units.
+
+```css
+/* ❌  width: 400px; */
+/* ✅ */ .modal { width: min(90vw, 400px); }
+```
+
+---
+
+### Rule 5 — Responsive Viewports
+
+**Mobile:** Use `useWindowDimensions()` inside the component — never `Dimensions.get('window')` at module scope.
+
+```typescript
+import { useWindowDimensions } from 'react-native';
+const { width } = useWindowDimensions(); // ✅ reactive
+```
+
+**Web:** Use CSS `vw`/`vh` and `@media` queries. Avoid `window.innerWidth` in render logic — use the `ResizeObserver` API or a CSS-first approach.
+
+```css
+.drawer { width: 75vw; max-width: 320px; } /* ✅ let CSS handle it */
+```
+
+---
+
 ## Animation Guidelines
 
 ### Duration
@@ -376,4 +491,4 @@ spacing: {
 ---
 
 *Consolidated from: UX_IMPROVEMENT_PLAN.md, UX_IMPLEMENTATION_TRACKER.md, UX_QUICK_REFERENCE.md*
-*Last Updated: 2026-01-20*
+*Last Updated: 2026-02-18*

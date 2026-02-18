@@ -1,15 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   SafeAreaView,
+  StyleSheet,
   Alert,
   Dimensions,
   Platform,
   Modal,
 } from 'react-native';
+import { Text, Button, SkeletonLoader, SkeletonText, SkeletonButton } from '../../components/ui';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -285,7 +284,15 @@ const WorkoutExecutionScreen = () => {
   if (!workout || !workout.circuits) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
-        <Text style={[styles.loadingText, { color: theme.text.secondary }]}>Loading workout...</Text>
+        <View style={styles.skeletonContainer}>
+          <SkeletonText lines={1} style={styles.skeletonTitle} />
+          <SkeletonLoader width="100%" height={120} style={styles.skeletonTimer} />
+          <View style={styles.skeletonControls}>
+            <SkeletonButton style={{ flex: 1 }} />
+            <SkeletonButton style={{ flex: 1.5 }} />
+            <SkeletonButton style={{ flex: 1 }} />
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
@@ -310,9 +317,14 @@ const WorkoutExecutionScreen = () => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleQuit} style={styles.quitButton}>
-          <Text style={styles.quitButtonText}>✕ Quit</Text>
-        </TouchableOpacity>
+        <Button
+          variant="ghost"
+          onPress={handleQuit}
+          style={styles.quitButton}
+          textStyle={styles.quitButtonText}
+        >
+          ✕ Quit
+        </Button>
         <Text style={[styles.elapsedTime, { color: theme.text.primary }]}>{formatTime(totalElapsedTime)}</Text>
       </View>
 
@@ -323,32 +335,32 @@ const WorkoutExecutionScreen = () => {
 
       {/* Circuit/Set/Exercise Info */}
       <View style={styles.infoContainer}>
-        <Text style={[styles.circuitInfo, { color: theme.text.secondary }]}>
+        <Text style={styles.circuitInfo} color="secondary">
           Circuit {currentCircuitIndex + 1} of {workout.totalCircuits} • Set {currentSetIndex + 1} of {workout.setsPerCircuit}
         </Text>
-        <Text style={[styles.exerciseCounter, { color: theme.text.tertiary }]}>
+        <Text style={styles.exerciseCounter} color="tertiary">
           Exercise {currentExerciseIndex + 1} of {totalExercisesInCircuit}
         </Text>
       </View>
 
       {/* Main Timer Display */}
       <View style={styles.timerContainer}>
-        <Text style={[styles.intervalLabel, { color: theme.text.tertiary }]}>
+        <Text style={styles.intervalLabel} color="tertiary">
           {intervalType === 'work' ? 'WORK' : intervalType === 'rest' ? 'REST' : 'CIRCUIT REST'}
         </Text>
-        <Text style={[
-          styles.timerText,
-          intervalType === 'work' ? styles.timerWork : styles.timerRest
-        ]}>
+        <Text
+          style={[styles.timerText, intervalType === 'work' ? styles.timerWork : styles.timerRest]}
+          maxFontSizeMultiplier={1.2}
+        >
           {formatTime(timeRemaining)}
         </Text>
       </View>
 
       {/* Exercise Display */}
       <View style={styles.exerciseContainer}>
-        <Text style={[styles.exerciseTitle, { color: theme.text.primary }]}>{currentExercise.exercise.name}</Text>
+        <Text style={styles.exerciseTitle} color="primary">{currentExercise.exercise.name}</Text>
         {currentExercise.exercise.instructions && (
-          <Text style={[styles.exerciseInstructions, { color: theme.text.secondary }]}>
+          <Text style={styles.exerciseInstructions} color="secondary">
             {currentExercise.exercise.instructions}
           </Text>
         )}
@@ -365,27 +377,30 @@ const WorkoutExecutionScreen = () => {
 
       {/* Controls */}
       <View style={styles.controlsContainer}>
-        <TouchableOpacity
-          style={[styles.controlButton, styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
+        <Button
+          variant="secondary"
           onPress={moveToPreviousExercise}
           disabled={currentCircuitIndex === 0 && currentSetIndex === 0 && currentExerciseIndex === 0}
+          style={{ flex: 1 }}
         >
-          <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>← Previous</Text>
-        </TouchableOpacity>
+          ← Previous
+        </Button>
 
-        <TouchableOpacity
-          style={[styles.controlButton, styles.primaryButton]}
+        <Button
+          variant="primary"
           onPress={togglePause}
+          style={{ flex: 1.5 }}
         >
-          <Text style={styles.primaryButtonText}>{isPaused ? '▶ Resume' : '⏸ Pause'}</Text>
-        </TouchableOpacity>
+          {isPaused ? '▶ Resume' : '⏸ Pause'}
+        </Button>
 
-        <TouchableOpacity
-          style={[styles.controlButton, styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
+        <Button
+          variant="secondary"
           onPress={moveToNextInterval}
+          style={{ flex: 1 }}
         >
-          <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>Skip →</Text>
-        </TouchableOpacity>
+          Skip →
+        </Button>
       </View>
 
       {/* Quit Confirmation Modal */}
@@ -397,23 +412,25 @@ const WorkoutExecutionScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
-            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Quit Workout?</Text>
-            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
+            <Text style={styles.modalTitle} color="primary">Quit Workout?</Text>
+            <Text style={styles.modalMessage} color="secondary">
               Are you sure you want to quit? Your progress will not be saved.
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.background.secondary }]}
+              <Button
+                variant="secondary"
                 onPress={cancelQuit}
+                style={styles.modalButton}
               >
-                <Text style={[styles.modalCancelButtonText, { color: theme.text.primary }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalQuitButton]}
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
                 onPress={confirmQuit}
+                style={[styles.modalButton, styles.modalQuitButton]}
               >
-                <Text style={styles.modalQuitButtonText}>Quit</Text>
-              </TouchableOpacity>
+                Quit
+              </Button>
             </View>
           </View>
         </View>
@@ -426,10 +443,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  loadingText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginTop: 40,
+  skeletonContainer: {
+    flex: 1,
+    paddingHorizontal: spacing[5],
+    paddingTop: spacing[8],
+    gap: spacing[6],
+  },
+  skeletonTitle: {
+    marginBottom: spacing[2],
+  },
+  skeletonTimer: {
+    borderRadius: borderRadius.md,
+  },
+  skeletonControls: {
+    flexDirection: 'row',
+    gap: spacing[5],
+    marginTop: 'auto',
+    paddingBottom: spacing[5],
   },
   header: {
     flexDirection: 'row',
@@ -537,30 +567,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: spacing[5],
     paddingBottom: spacing[5],
-    gap: spacing[3],
-  },
-  controlButton: {
-    flex: 1,
-    paddingVertical: spacing[4],
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButton: {
-    backgroundColor: colors.primary[500],
-    flex: 1.5,
-  },
-  secondaryButton: {
-    // backgroundColor applied dynamically via theme
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  secondaryButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    gap: spacing[5],
   },
   modalOverlay: {
     flex: 1,
@@ -597,25 +604,9 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCancelButton: {
-    // backgroundColor applied dynamically via theme
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   modalQuitButton: {
     backgroundColor: colors.error[500],
-  },
-  modalQuitButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
 });
 

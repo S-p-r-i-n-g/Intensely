@@ -1,6 +1,6 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Dimensions, TouchableOpacity } from 'react-native';
+import { TouchableOpacity, useWindowDimensions } from 'react-native';
 import { DrawerParamList } from './types';
 import { CustomDrawerContent } from '../components/navigation/CustomDrawerContent';
 import { ProfileIcon } from '../components/navigation/ProfileIcon';
@@ -14,10 +14,10 @@ import { ExercisesStackNavigator } from './ExercisesStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 
 const Drawer = createDrawerNavigator<DrawerParamList>();
-const { width } = Dimensions.get('window');
 
 export const DrawerNavigator = () => {
   const { theme } = useTheme();
+  const { width } = useWindowDimensions();
 
   return (
     <Drawer.Navigator
@@ -40,7 +40,7 @@ export const DrawerNavigator = () => {
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
-        drawerType: 'slide',
+        drawerType: 'front',
         drawerStyle: {
           width: width * 0.75, // 75% of screen width
         },
