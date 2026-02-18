@@ -64,7 +64,7 @@ const EditProfileScreen = () => {
       console.error('Failed to update profile:', error);
       Alert.alert(
         'Error',
-        error.response?.data?.message || 'Could not update profile. Please try again.'
+        error.message || 'Could not update profile. Please try again.'
       );
     } finally {
       setIsSaving(false);

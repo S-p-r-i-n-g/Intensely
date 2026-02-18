@@ -152,11 +152,8 @@ export const usersApi = {
         message: 'Profile updated'
       };
     } catch (error: any) {
-      return {
-        data: {} as User,
-        status: 500,
-        message: error.message
-      };
+      console.error('[UsersAPI] Update profile failed:', error);
+      throw error;
     }
   },
 
