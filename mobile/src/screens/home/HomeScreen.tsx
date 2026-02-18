@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { DrawerParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
+import { useWorkoutStore } from '../../stores/workoutStore';
 import { spacing, colors } from '../../tokens';
 import { useTheme } from '../../theme';
 import { Text } from '../../components/ui';
@@ -17,6 +18,7 @@ const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { theme } = useTheme();
   const { profile } = useAuthStore();
+  const { hasActiveDraft, draft } = useWorkoutStore();
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]} contentContainerStyle={styles.scrollContent}>
@@ -41,11 +43,12 @@ const HomeScreen = () => {
 
           {/* Secondary CTA - New Workout */}
           <ActionButton
-            title="New Workout"
+            title={hasActiveDraft ? 'Resume Workout' : 'New Workout'}
             variant="secondary"
             icon={<PlusIcon size={24} color="#000000" />}
             onPress={() => navigation.navigate('Home', {
               screen: 'NewWorkout',
+              params: hasActiveDraft && draft ? draft : undefined,
             })}
           />
 

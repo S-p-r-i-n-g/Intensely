@@ -7,21 +7,36 @@ import { Workout } from '../types/api';
  * Manages workout state
  */
 
+export interface WorkoutDraft {
+  workoutName?: string;
+  circuits?: number;
+  setsPerCircuit?: number;
+  workInterval?: number;
+  restInterval?: number;
+  exercisesJson?: string;
+}
+
 interface WorkoutState {
   workouts: Workout[];
   currentWorkout: Workout | null;
   isLoading: boolean;
+  draft: WorkoutDraft | null;
+  hasActiveDraft: boolean;
 
   // Actions
   loadWorkouts: () => Promise<void>;
   setCurrentWorkout: (workout: Workout | null) => void;
   getWorkoutById: (id: string) => Promise<Workout | null>;
+  saveDraft: (draft: WorkoutDraft) => void;
+  clearDraft: () => void;
 }
 
 export const useWorkoutStore = create<WorkoutState>((set, get) => ({
   workouts: [],
   currentWorkout: null,
   isLoading: false,
+  draft: null,
+  hasActiveDraft: false,
 
   /**
    * Load all workouts
@@ -57,5 +72,13 @@ export const useWorkoutStore = create<WorkoutState>((set, get) => ({
       console.error('Failed to get workout:', error);
       return null;
     }
+  },
+
+  saveDraft: (draft: WorkoutDraft) => {
+    set({ draft, hasActiveDraft: true });
+  },
+
+  clearDraft: () => {
+    set({ draft: null, hasActiveDraft: false });
   },
 }));

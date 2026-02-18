@@ -9,18 +9,37 @@ import {
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useTheme } from '../../theme';
 import { spacing } from '../../tokens';
+import { useWorkoutStore } from '../../stores/workoutStore';
 
 export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
   const { theme } = useTheme();
   const { state, navigation } = props;
+  const { hasActiveDraft, draft } = useWorkoutStore();
 
-  const menuItems = [
-    { key: 'Home', label: 'Home', route: 'Home' },
+  const activeRoute = state.routeNames[state.index];
+
+  // Detect if the active HomeStack screen is NewWorkout
+  const homeRoute = state.routes.find((r) => r.name === 'Home');
+  const homeStackState = homeRoute?.state as any;
+  const activeHomeScreen = homeStackState?.routes?.[homeStackState?.index ?? 0]?.name;
+  const isOnNewWorkout = activeRoute === 'Home' && activeHomeScreen === 'NewWorkout';
+
+  const handleNewWorkoutPress = () => {
+    navigation.closeDrawer();
+    if (hasActiveDraft && draft) {
+      navigation.navigate('Home', {
+        screen: 'NewWorkout',
+        params: draft,
+      });
+    } else {
+      navigation.navigate('Home', { screen: 'NewWorkout' });
+    }
+  };
+
+  const drawerRouteItems = [
     { key: 'Workouts', label: 'My Workouts', route: 'Workouts' },
     { key: 'Exercises', label: 'Exercise Library', route: 'Exercises' },
   ];
-
-  const activeRoute = state.routeNames[state.index];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
@@ -30,24 +49,42 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
         </View>
 
         <View style={styles.menuItems}>
-          {menuItems.map((item) => {
+          {/* Home — always navigates to HomeMain (Idempotent Home Pattern) */}
+          {(() => {
+            const isActive = activeRoute === 'Home' && !isOnNewWorkout;
+            return (
+              <TouchableOpacity
+                key="Home"
+                style={[styles.menuItem, isActive && { backgroundColor: theme.background.secondary }]}
+                onPress={() => navigation.navigate('Home', { screen: 'HomeMain' })}
+              >
+                <Text style={[styles.menuItemText, { color: theme.text.primary }, isActive && styles.menuItemTextActive]}>
+                  Home
+                </Text>
+              </TouchableOpacity>
+            );
+          })()}
+
+          {/* New Workout */}
+          <TouchableOpacity
+            style={[styles.menuItem, isOnNewWorkout && { backgroundColor: theme.background.secondary }]}
+            onPress={handleNewWorkoutPress}
+          >
+            <Text style={[styles.menuItemText, { color: theme.text.primary }, isOnNewWorkout && styles.menuItemTextActive]}>
+              {hasActiveDraft ? 'Resume Workout' : 'New Workout'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* My Workouts + Exercise Library */}
+          {drawerRouteItems.map((item) => {
             const isActive = activeRoute === item.route;
             return (
               <TouchableOpacity
                 key={item.key}
-                style={[
-                  styles.menuItem,
-                  isActive && { backgroundColor: theme.background.secondary },
-                ]}
+                style={[styles.menuItem, isActive && { backgroundColor: theme.background.secondary }]}
                 onPress={() => navigation.navigate(item.route)}
               >
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    { color: theme.text.primary },
-                    isActive && styles.menuItemTextActive,
-                  ]}
-                >
+                <Text style={[styles.menuItemText, { color: theme.text.primary }, isActive && styles.menuItemTextActive]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
