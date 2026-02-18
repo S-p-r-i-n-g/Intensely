@@ -7,6 +7,28 @@ import { ApiResponse, User, UserPreference } from '../types/api';
  * Queries Supabase directly
  */
 
+// Supabase returns snake_case columns; map to the camelCase User interface.
+const mapDbUser = (row: any): User => ({
+  id: row.id,
+  email: row.email,
+  firstName: row.first_name ?? row.firstName,
+  lastName: row.last_name ?? row.lastName,
+  avatarUrl: row.avatar_url ?? row.avatarUrl,
+  fitnessLevel: row.fitness_level ?? row.fitnessLevel ?? 'beginner',
+  createdAt: row.created_at ?? row.createdAt,
+  preferences: null,
+});
+
+// Convert camelCase User fields back to snake_case for DB writes.
+const mapUserToDb = (data: Partial<User>): Record<string, any> => {
+  const result: Record<string, any> = {};
+  if (data.firstName !== undefined) result.first_name = data.firstName;
+  if (data.lastName !== undefined) result.last_name = data.lastName;
+  if (data.avatarUrl !== undefined) result.avatar_url = data.avatarUrl;
+  if (data.fitnessLevel !== undefined) result.fitness_level = data.fitnessLevel;
+  return result;
+};
+
 export const usersApi = {
   /**
    * Sync user with Supabase (creates if doesn't exist)
@@ -28,7 +50,7 @@ export const usersApi = {
 
       if (existingUser) {
         return {
-          data: existingUser as User,
+          data: mapDbUser(existingUser),
           status: 200,
           message: 'User synced'
         };
@@ -56,7 +78,7 @@ export const usersApi = {
       if (error) throw error;
 
       return {
-        data: newUser as User,
+        data: mapDbUser(newUser),
         status: 201,
         message: 'User created'
       };
@@ -90,7 +112,7 @@ export const usersApi = {
       if (error) throw error;
 
       return {
-        data: data as User,
+        data: mapDbUser(data),
         status: 200,
         message: 'Success'
       };
@@ -114,7 +136,7 @@ export const usersApi = {
         throw new Error('Not authenticated');
       }
 
-      const updateData: any = { ...data, updated_at: new Date().toISOString() };
+      const updateData = { ...mapUserToDb(data), updated_at: new Date().toISOString() };
       const { data: updated, error } = await supabase
         .from('users')
         .update(updateData)
@@ -125,7 +147,7 @@ export const usersApi = {
       if (error) throw error;
 
       return {
-        data: updated as User,
+        data: mapDbUser(updated),
         status: 200,
         message: 'Profile updated'
       };

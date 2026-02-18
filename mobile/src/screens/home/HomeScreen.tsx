@@ -23,7 +23,7 @@ const HomeScreen = () => {
         {/* Greeting */}
         <View style={styles.header}>
           <Text variant="h1" style={styles.greeting}>
-            Hi{profile?.firstName ? `, ${profile.firstName}` : ' Daniel'}!
+            Hi{profile?.firstName ? `, ${profile.firstName}` : ' there'}!
           </Text>
         </View>
 
