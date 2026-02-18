@@ -23,6 +23,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { useWorkoutBuilder, DifficultyResult } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores';
+import { useWorkoutStore } from '../../stores/workoutStore';
 import { workoutsApi, exercisesApi } from '../../api';
 import type { Exercise } from '../../types/api';
 import { Text, Button, PillSelector, Stepper } from '../../components/ui';
@@ -94,6 +95,7 @@ const NewWorkoutScreen = () => {
   const { theme } = useTheme();
   const { profile } = useAuthStore();
   const preferences = profile?.preferences;
+  const { saveDraft, clearDraft } = useWorkoutStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrating, setIsHydrating] = useState(false);
@@ -132,6 +134,38 @@ const NewWorkoutScreen = () => {
       coolDown: preferences?.defaultCoolDownSeconds ?? 0,
     },
   });
+
+  // Keep a ref to the current builder state for use inside event listeners
+  // (avoids stale-closure issues with navigation.addListener callbacks).
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
+
+  // Save draft to store on screen blur so the drawer can show "Resume Workout".
+  // Only persists when exercises have been added; clears the draft otherwise
+  // so an empty new-workout screen never triggers the resume prompt.
+  // Skipped entirely in edit mode — drafts are for new workouts only.
+  useEffect(() => {
+    if (isEditMode) return;
+    const unsubscribe = navigation.addListener('blur', () => {
+      const s = stateRef.current;
+      const totalExercises = Object.values(s.exercises).reduce(
+        (sum, ids) => sum + ids.length, 0
+      );
+      if (totalExercises > 0) {
+        saveDraft({
+          workoutName: s.name,
+          circuits: s.settings.circuits,
+          setsPerCircuit: s.settings.sets,
+          workInterval: s.settings.work,
+          restInterval: s.settings.rest,
+          exercisesJson: JSON.stringify(s.exercises),
+        });
+      } else {
+        clearDraft();
+      }
+    });
+    return unsubscribe;
+  }, [navigation, isEditMode, saveDraft, clearDraft]);
 
   // Apply profile preferences as defaults if they arrive after initial render.
   // Only applies to new workouts — edit mode and exercise-selection returns
@@ -372,6 +406,8 @@ const NewWorkoutScreen = () => {
       const response = await workoutsApi.create(params);
       const newWorkoutId = (response as any).data?.id || (response as any).id;
 
+      clearDraft();
+
       if (startImmediately) {
         navigation.navigate('WorkoutExecution', { workoutId: newWorkoutId });
       } else if (isEditMode) {
@@ -404,7 +440,7 @@ const NewWorkoutScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [isEditMode, route.params?.workoutId, state, setName, getDifficulty, getAvgExerciseDifficulty, navigation]);
+  }, [isEditMode, route.params?.workoutId, state, setName, getDifficulty, getAvgExerciseDifficulty, navigation, clearDraft]);
 
   const handleSavePress = useCallback((startImmediately: boolean) => {
     const exercises = getCurrentExercises();
