@@ -4,7 +4,7 @@
  * Features: Settings accordion, Sync/Customize exercise mode, circuit tabs
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -132,6 +132,36 @@ const NewWorkoutScreen = () => {
       coolDown: preferences?.defaultCoolDownSeconds ?? 0,
     },
   });
+
+  // Apply profile preferences as defaults if they arrive after initial render.
+  // Only applies to new workouts — edit mode and exercise-selection returns
+  // restore their own state and must not be overwritten.
+  const preferencesApplied = useRef(false);
+  useEffect(() => {
+    if (
+      preferences &&
+      !preferencesApplied.current &&
+      !isEditMode &&
+      !route.params?.selectedExerciseIds
+    ) {
+      preferencesApplied.current = true;
+      loadWorkout({
+        settings: {
+          work: preferences.defaultIntervalSeconds ?? 30,
+          rest: preferences.defaultRestSeconds ?? 60,
+          circuits: preferences.defaultCircuits ?? 3,
+          sets: preferences.defaultSets ?? 3,
+          warmUp: preferences.defaultWarmUpSeconds ?? 0,
+          coolDown: preferences.defaultCoolDownSeconds ?? 0,
+        },
+      });
+    }
+  }, [preferences, isEditMode]);
+
+  const handleGoToPreferences = useCallback(() => {
+    // @ts-ignore — cross-stack drawer navigation
+    navigation.navigate('Profile', { screen: 'Preferences' });
+  }, [navigation]);
 
   // Hydrate workout state when editing an existing workout
   useEffect(() => {
@@ -537,6 +567,17 @@ const NewWorkoutScreen = () => {
             currentValue={state.settings.coolDown}
             onChange={(value) => setSetting('coolDown', value)}
           />
+
+          {/* Preferences hint */}
+          <TouchableOpacity onPress={handleGoToPreferences} style={[styles.prefsHint, { borderTopColor: theme.border.light }]} activeOpacity={0.7}>
+            <Text style={[styles.prefsHintText, { color: theme.text.tertiary }]}>
+              Default settings can be changed in your{' '}
+              <Text style={[styles.prefsHintLink, { color: colors.primary[500] }]}>
+                profile preferences
+              </Text>
+              .
+            </Text>
+          </TouchableOpacity>
         </SettingsAccordion>
       </View>
 
@@ -1017,6 +1058,19 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
+  },
+  prefsHint: {
+    marginTop: spacing[4],
+    paddingTop: spacing[3],
+    borderTopWidth: 1,
+  },
+  prefsHintText: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  prefsHintLink: {
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
 

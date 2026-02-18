@@ -199,7 +199,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   syncProfile: async () => {
     try {
       const response = await usersApi.sync();
-      set({ profile: response.data });
+      const profile = response.data;
+
+      // Also fetch preferences and merge into profile (best-effort)
+      try {
+        const prefsResponse = await usersApi.getPreferences();
+        if (prefsResponse.status === 200) {
+          profile.preferences = prefsResponse.data;
+        }
+      } catch {
+        // Preferences table may not have a row yet for new users — not critical
+      }
+
+      set({ profile });
     } catch (error) {
       console.error('Failed to sync profile with backend:', error);
       // Backend sync is optional - create a minimal profile from Supabase user
