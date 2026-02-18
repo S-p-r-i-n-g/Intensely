@@ -21,7 +21,7 @@ import { Text } from '../../components/ui';
 import { MagnifyingGlassIcon, PlusIcon, HeartIcon, FunnelIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
-import { FilterModal, ExerciseFilters } from '../../components/exercises';
+import { FilterModal, ExerciseFilters, FilterChip } from '../../components/exercises';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExercisesList'>;
 
@@ -387,110 +387,42 @@ const ExercisesListScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Quick Filter Chips */}
+      {/* Quick Filter Chips — all in one horizontal scroll row */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.quickFiltersScroll}
         contentContainerStyle={styles.quickFiltersContent}
       >
-        <TouchableOpacity
-          style={[
-            styles.quickFilterChip,
-            {
-              backgroundColor: filters.equipment?.includes('bodyweight')
-                ? colors.primary[500]
-                : theme.background.secondary,
-              borderColor: filters.equipment?.includes('bodyweight') ? colors.primary[500] : theme.border.medium,
-            },
-          ]}
+        <FilterChip
+          label="Bodyweight Only"
+          active={!!filters.equipment?.includes('bodyweight')}
           onPress={() => toggleQuickFilter('bodyweightOnly')}
-        >
-          <Text
-            style={[
-              styles.quickFilterText,
-              { color: filters.equipment?.includes('bodyweight') ? '#FFFFFF' : theme.text.secondary },
-            ]}
-          >
-            Bodyweight Only
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.quickFilterChip,
-            {
-              backgroundColor: (filters.smallSpace && filters.quiet)
-                ? colors.primary[500]
-                : theme.background.secondary,
-              borderColor: (filters.smallSpace && filters.quiet) ? colors.primary[500] : theme.border.medium,
-            },
-          ]}
+        />
+        <FilterChip
+          label="Apartment Friendly"
+          active={!!(filters.smallSpace && filters.quiet)}
           onPress={() => toggleQuickFilter('apartmentFriendly')}
-        >
-          <Text
-            style={[
-              styles.quickFilterText,
-              { color: (filters.smallSpace && filters.quiet) ? '#FFFFFF' : theme.text.secondary },
-            ]}
-          >
-            Apartment Friendly
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.quickFilterChip,
-            {
-              backgroundColor: filters.isVerified
-                ? colors.primary[500]
-                : theme.background.secondary,
-              borderColor: filters.isVerified ? colors.primary[500] : theme.border.medium,
-            },
-          ]}
+        />
+        <FilterChip
+          label="Verified Only"
+          active={!!filters.isVerified}
           onPress={() => toggleQuickFilter('verifiedOnly')}
-        >
-          <Text
-            style={[
-              styles.quickFilterText,
-              { color: filters.isVerified ? '#FFFFFF' : theme.text.secondary },
-            ]}
-          >
-            Verified Only
-          </Text>
-        </TouchableOpacity>
-
-        {/* Dummy spacer to ensure right padding works on all devices */}
+        />
+        <FilterChip
+          label={`Favorites${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
+          active={showFavoritesOnly}
+          onPress={toggleFavoritesFilter}
+          icon={showFavoritesOnly
+            ? <HeartIconSolid size={16} color="#FFFFFF" />
+            : <HeartIcon size={16} color={theme.text.secondary} />
+          }
+        />
         <View style={{ width: spacing[1] }} />
       </ScrollView>
 
-      {/* Filter Row */}
-      <View style={styles.filterRow}>
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            {
-              backgroundColor: showFavoritesOnly ? colors.primary[500] : theme.background.secondary,
-              borderColor: showFavoritesOnly ? colors.primary[500] : theme.border.medium,
-            },
-          ]}
-          onPress={toggleFavoritesFilter}
-        >
-          {showFavoritesOnly ? (
-            <HeartIconSolid size={16} color="#FFFFFF" />
-          ) : (
-            <HeartIcon size={16} color={theme.text.secondary} />
-          )}
-          <Text
-            style={[
-              styles.filterChipText,
-              { color: showFavoritesOnly ? '#FFFFFF' : theme.text.secondary },
-            ]}
-          >
-            Favorites{favoritesCount > 0 ? ` (${favoritesCount})` : ''}
-          </Text>
-        </TouchableOpacity>
-
+      {/* Results count */}
+      <View style={styles.resultsRow}>
         <Text style={[styles.resultsText, { color: theme.text.secondary }]}>
           {filteredExercises.length} exercise{filteredExercises.length !== 1 ? 's' : ''}
         </Text>
@@ -625,39 +557,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     gap: spacing[2],
     flexGrow: 0,
-  },
-  quickFilterChip: {
-    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 100,
-    borderWidth: 1,
-    gap: 6,
   },
-  quickFilterText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  resultsRow: {
     paddingHorizontal: spacing[5],
     paddingBottom: spacing[3],
-  },
-  filterChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 100,
-    borderWidth: 1,
-    gap: 6,
-  },
-  filterChipText: {
-    fontSize: 13,
-    fontWeight: '600',
   },
   resultsText: {
     fontSize: 13,
