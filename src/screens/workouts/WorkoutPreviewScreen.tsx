@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   ActivityIndicator,
@@ -18,6 +16,7 @@ import type { Workout } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+import { Text, Button, SkeletonText, SkeletonButton, SkeletonLoader } from '../../components/ui';
 
 // Helper to get difficulty color (matches design.md v1.3)
 const getDifficultyColor = (level?: string): string => {
@@ -101,8 +100,26 @@ const WorkoutPreviewScreen = () => {
 
   if (isLoading || !workout) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
-        <ActivityIndicator size="large" color={colors.primary[500]} />
+      <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+        <View style={styles.skeletonHeader}>
+          <SkeletonText lines={1} style={styles.skeletonTitle} />
+        </View>
+        <View style={styles.skeletonActionsRow}>
+          <SkeletonButton style={{ flex: 1 }} />
+          <SkeletonButton style={{ flex: 1 }} />
+        </View>
+        <View style={styles.skeletonStatsRow}>
+          <SkeletonLoader width="23%" height={56} />
+          <SkeletonLoader width="23%" height={56} />
+          <SkeletonLoader width="23%" height={56} />
+          <SkeletonLoader width="23%" height={56} />
+        </View>
+        <View style={styles.skeletonBody}>
+          <SkeletonText lines={4} />
+        </View>
+        <View style={styles.skeletonFooter}>
+          <SkeletonButton />
+        </View>
       </View>
     );
   }
@@ -111,56 +128,59 @@ const WorkoutPreviewScreen = () => {
     <>
       <ScrollView style={[styles.container, { backgroundColor: theme.background.primary }]}>
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text.primary }]}>{workout.name}</Text>
+          <Text style={styles.title} color="primary">{workout.name}</Text>
         </View>
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: theme.background.secondary }]}
+          <Button
+            variant="secondary"
             onPress={handleEdit}
+            style={styles.actionButton}
           >
-            <Text style={[styles.actionButtonText, { color: theme.text.primary }]}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
             onPress={handleDeletePress}
+            style={[styles.actionButton, styles.deleteButton]}
+            textStyle={styles.deleteButtonText}
           >
-            <Text style={[styles.actionButtonText, styles.deleteButtonText]}>Delete</Text>
-          </TouchableOpacity>
+            Delete
+          </Button>
         </View>
 
       <View style={styles.statsContainer}>
         <View style={[styles.statBox, { backgroundColor: theme.background.secondary }]}>
           <Text style={styles.statValue}>{workout.totalCircuits}</Text>
-          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Circuits</Text>
+          <Text style={styles.statLabel} color="secondary">Circuits</Text>
         </View>
         <View style={[styles.statBox, { backgroundColor: theme.background.secondary }]}>
           <Text style={styles.statValue}>{workout.setsPerCircuit}</Text>
-          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Sets</Text>
+          <Text style={styles.statLabel} color="secondary">Sets</Text>
         </View>
         <View style={[styles.statBox, { backgroundColor: theme.background.secondary }]}>
           <Text style={styles.statValue}>{workout.intervalSeconds}s</Text>
-          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Work</Text>
+          <Text style={styles.statLabel} color="secondary">Work</Text>
         </View>
         <View style={[styles.statBox, { backgroundColor: theme.background.secondary }]}>
           <Text style={styles.statValue}>{workout.restSeconds}s</Text>
-          <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Rest</Text>
+          <Text style={styles.statLabel} color="secondary">Rest</Text>
         </View>
       </View>
 
       <View style={styles.metricsRow}>
         <View style={[styles.metricCard, { backgroundColor: theme.background.secondary }]}>
-          <Text style={[styles.metricValue, { color: theme.text.primary }]}>
+          <Text style={styles.metricValue} color="primary">
             {workout.estimatedDurationMinutes} min
           </Text>
-          <Text style={[styles.metricLabel, { color: theme.text.secondary }]}>Duration</Text>
+          <Text style={styles.metricLabel} color="secondary">Duration</Text>
         </View>
         <View style={[styles.metricCard, { backgroundColor: theme.background.secondary }]}>
-          <Text style={[styles.metricValue, { color: theme.text.primary }]}>
+          <Text style={styles.metricValue} color="primary">
             {workout.estimatedCalories} cal
           </Text>
-          <Text style={[styles.metricLabel, { color: theme.text.secondary }]}>Est. Calories</Text>
+          <Text style={styles.metricLabel} color="secondary">Est. Calories</Text>
         </View>
         <View style={[styles.metricCard, { backgroundColor: theme.background.secondary }]}>
           <Text style={[styles.metricValue, { color: getDifficultyColor(workout.difficultyLevel) }]}>
@@ -171,20 +191,20 @@ const WorkoutPreviewScreen = () => {
       </View>
 
       <View style={styles.circuitsSection}>
-        <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Workout Breakdown</Text>
+        <Text style={styles.sectionTitle} color="primary">Workout Breakdown</Text>
         {workout.circuits?.map((circuit, circuitIndex) => (
           <View key={circuit.id} style={[styles.circuitCard, { backgroundColor: theme.background.secondary }]}>
-            <Text style={[styles.circuitTitle, { color: theme.text.primary }]}>
+            <Text style={styles.circuitTitle} color="primary">
               Circuit {circuitIndex + 1}
             </Text>
-            <Text style={[styles.circuitInfo, { color: theme.text.secondary }]}>
+            <Text style={styles.circuitInfo} color="secondary">
               {workout.setsPerCircuit} sets × {circuit.exercises.length} exercises
             </Text>
             <View style={styles.exercisesList}>
               {circuit.exercises.map((ex, exIndex) => (
                 <View key={ex.id} style={styles.exerciseItem}>
                   <Text style={styles.exerciseNumber}>{exIndex + 1}</Text>
-                  <Text style={[styles.exerciseName, { color: theme.text.primary }]}>{ex.exercise.name}</Text>
+                  <Text style={styles.exerciseName} color="primary">{ex.exercise.name}</Text>
                 </View>
               ))}
             </View>
@@ -193,15 +213,16 @@ const WorkoutPreviewScreen = () => {
       </View>
 
         <View style={styles.buttonContainer}>
-          <Text style={[styles.readyText, { color: theme.text.primary }]}>Ready to start?</Text>
-          <TouchableOpacity
-            style={styles.startButton}
+          <Text style={styles.readyText} color="primary">Ready to start?</Text>
+          <Button
+            variant="primary"
+            fullWidth
             onPress={() => {
               navigation.navigate('WorkoutExecution', { workoutId: workout.id });
             }}
           >
-            <Text style={styles.startButtonText}>Start Workout</Text>
-          </TouchableOpacity>
+            Start Workout
+          </Button>
         </View>
       </ScrollView>
 
@@ -214,29 +235,28 @@ const WorkoutPreviewScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: theme.background.elevated }]}>
-            <Text style={[styles.modalTitle, { color: theme.text.primary }]}>Delete Workout?</Text>
-            <Text style={[styles.modalMessage, { color: theme.text.secondary }]}>
+            <Text style={styles.modalTitle} color="primary">Delete Workout?</Text>
+            <Text style={styles.modalMessage} color="secondary">
               Are you sure you want to delete "{workout.name}"? This action cannot be undone.
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.background.secondary }]}
+              <Button
+                variant="secondary"
                 onPress={handleDeleteCancel}
                 disabled={isDeleting}
+                style={styles.modalButton}
               >
-                <Text style={[styles.modalCancelButtonText, { color: theme.text.primary }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalDeleteButton]}
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
                 onPress={handleDeleteConfirm}
+                loading={isDeleting}
                 disabled={isDeleting}
+                style={[styles.modalButton, styles.modalDeleteButton]}
               >
-                {isDeleting ? (
-                  <ActivityIndicator color="#FFFFFF" size="small" />
-                ) : (
-                  <Text style={styles.modalDeleteButtonText}>Delete</Text>
-                )}
-              </TouchableOpacity>
+                Delete
+              </Button>
             </View>
           </View>
         </View>
@@ -249,10 +269,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  skeletonHeader: {
+    padding: spacing[5],
+    paddingTop: spacing[8],
+  },
+  skeletonTitle: {
+    height: 36,
+    marginBottom: spacing[4],
+  },
+  skeletonActionsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[5],
+    gap: spacing[3],
+  },
+  skeletonStatsRow: {
+    flexDirection: 'row',
+    paddingHorizontal: spacing[5],
+    marginBottom: spacing[4],
+    gap: spacing[2],
+  },
+  skeletonBody: {
+    padding: spacing[5],
+  },
+  skeletonFooter: {
+    padding: spacing[5],
+    paddingBottom: 40,
   },
   header: {
     padding: spacing[5],
@@ -270,17 +312,9 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
   },
   deleteButton: {
     backgroundColor: colors.error[50],
-  },
-  actionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   deleteButtonText: {
     color: colors.error[500],
@@ -384,17 +418,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: spacing[4],
   },
-  startButton: {
-    backgroundColor: colors.primary[500],
-    padding: spacing[5],
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '700',
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -423,26 +446,9 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: borderRadius.sm,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  modalCancelButton: {
-    // backgroundColor applied dynamically via theme
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   modalDeleteButton: {
     backgroundColor: colors.error[500],
-  },
-  modalDeleteButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });
 

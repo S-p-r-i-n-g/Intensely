@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileStackParamList } from './types';
 
 // Screens
@@ -8,7 +8,7 @@ import EditProfileScreen from '../screens/profile/EditProfileScreen';
 import PreferencesScreen from '../screens/profile/PreferencesScreen';
 import AnimationTestScreen from '../screens/AnimationTestScreen';
 
-const Stack = createNativeStackNavigator<ProfileStackParamList>();
+const Stack = createStackNavigator<ProfileStackParamList>();
 
 export const ProfileStackNavigator = () => {
   return (

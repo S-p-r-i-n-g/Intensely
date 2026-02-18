@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   TextInput,
@@ -18,6 +16,7 @@ import { useAuthStore } from '../../stores';
 import { usersApi } from '../../api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { Text, Button } from '../../components/ui';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'EditProfile'>;
 
@@ -80,19 +79,19 @@ const EditProfileScreen = () => {
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>
+            <Text style={styles.avatarText} color="primary">
               {firstName?.charAt(0) || profile?.email?.charAt(0) || 'U'}
             </Text>
           </View>
-          <Text style={[styles.avatarHint, { color: theme.text.tertiary }]}>Tap to change avatar (coming soon)</Text>
+          <Text style={styles.avatarHint} color="tertiary">Tap to change avatar (coming soon)</Text>
         </View>
 
         {/* Form Section */}
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.text.primary }]}>Personal Information</Text>
+          <Text style={styles.sectionTitle} color="primary">Personal Information</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>First Name</Text>
+            <Text style={styles.inputLabel} color="primary">First Name</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
               value={firstName}
@@ -104,7 +103,7 @@ const EditProfileScreen = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Last Name</Text>
+            <Text style={styles.inputLabel} color="primary">Last Name</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.background.secondary, color: theme.text.primary }]}
               value={lastName}
@@ -116,28 +115,27 @@ const EditProfileScreen = () => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={[styles.inputLabel, { color: theme.text.primary }]}>Email</Text>
+            <Text style={styles.inputLabel} color="primary">Email</Text>
             <TextInput
               style={[styles.input, styles.inputDisabled, { backgroundColor: theme.background.elevated, color: theme.text.tertiary }]}
               value={profile?.email || ''}
               editable={false}
             />
-            <Text style={[styles.inputHelper, { color: theme.text.tertiary }]}>Email cannot be changed</Text>
+            <Text style={styles.inputHelper} color="tertiary">Email cannot be changed</Text>
           </View>
         </View>
 
         {/* Save Button */}
-        <TouchableOpacity
-          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+        <Button
+          variant="primary"
+          fullWidth
           onPress={handleSave}
+          loading={isSaving}
           disabled={isSaving}
+          style={styles.saveButton}
         >
-          {isSaving ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          )}
-        </TouchableOpacity>
+          Save Changes
+        </Button>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -207,18 +205,6 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginHorizontal: spacing[5],
-    backgroundColor: colors.primary[500],
-    paddingVertical: spacing[4],
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
   },
 });
 

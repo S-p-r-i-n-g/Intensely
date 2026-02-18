@@ -4,7 +4,6 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -98,12 +97,14 @@ const ForgotPasswordScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.inner}>
-        <TouchableOpacity
+        <Button
+          variant="ghost"
           onPress={() => navigation.goBack()}
           style={styles.backLink}
+          textStyle={{ color: theme.text.secondary }}
         >
-          <Text style={{ color: theme.text.secondary }}>← Back to Login</Text>
-        </TouchableOpacity>
+          ← Back to Login
+        </Button>
 
         <Text variant="h2" style={styles.title}>
           Forgot Password?

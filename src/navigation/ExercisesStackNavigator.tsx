@@ -1,5 +1,5 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createStackNavigator } from '@react-navigation/stack';
 import { ExercisesStackParamList } from './types';
 
 // Screens
@@ -7,7 +7,7 @@ import ExercisesListScreen from '../screens/exercises/ExercisesListScreen';
 import ExerciseDetailScreen from '../screens/exercises/ExerciseDetailScreen';
 import CreateExerciseScreen from '../screens/exercises/CreateExerciseScreen';
 
-const Stack = createNativeStackNavigator<ExercisesStackParamList>();
+const Stack = createStackNavigator<ExercisesStackParamList>();
 
 export const ExercisesStackNavigator = () => {
   return (

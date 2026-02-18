@@ -4,8 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
-  TouchableOpacity,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,15 +12,14 @@ import { ProfileStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
-import { Text } from '../../components/ui';
+import { Text, Button } from '../../components/ui';
 import { ActionButton } from '../../components/home';
 import { UserIcon, Cog6ToothIcon, ArrowRightOnRectangleIcon, PlayIcon } from 'react-native-heroicons/outline';
 
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileMain'>;
 
-const { width } = Dimensions.get('window');
-
 const ProfileMainScreen = () => {
+  const { width } = useWindowDimensions();
   const navigation = useNavigation<NavigationProp>();
   const { profile, signOut, isLoading } = useAuthStore();
   const { theme } = useTheme();
@@ -106,18 +104,20 @@ const ProfileMainScreen = () => {
               Are you sure you want to sign out?
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.background.secondary }]}
+              <Button
+                variant="secondary"
                 onPress={cancelSignOut}
+                style={styles.modalButton}
               >
-                <Text style={[styles.modalCancelButtonText, { color: theme.text.primary }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalSignOutButton]}
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
                 onPress={confirmSignOut}
+                style={[styles.modalButton, styles.modalSignOutButton]}
               >
-                <Text style={styles.modalSignOutButtonText}>Sign Out</Text>
-              </TouchableOpacity>
+                Sign Out
+              </Button>
             </View>
           </View>
         </View>
@@ -178,25 +178,9 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 100, // Pill shape
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCancelButton: {
-    // backgroundColor applied dynamically via theme
-  },
-  modalCancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
   },
   modalSignOutButton: {
     backgroundColor: colors.error[500],
-  },
-  modalSignOutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
 });
 

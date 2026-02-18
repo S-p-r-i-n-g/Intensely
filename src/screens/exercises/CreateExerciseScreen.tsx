@@ -12,7 +12,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme';
-import { Text } from '../../components/ui';
+import { Text, Button } from '../../components/ui';
 import { exercisesApi } from '../../api';
 import { spacing, borderRadius, colors } from '../../tokens';
 import { ChevronDownIcon, ChevronUpIcon } from 'react-native-heroicons/outline';
@@ -378,15 +378,16 @@ const CreateExerciseScreen = () => {
         </Accordion>
 
         {/* Save Button */}
-        <TouchableOpacity
-          style={[styles.saveButton, isLoading && styles.saveButtonDisabled]}
+        <Button
+          variant="primary"
+          fullWidth
           onPress={handleSave}
+          loading={isLoading}
           disabled={isLoading}
+          style={styles.saveButton}
         >
-          <Text style={styles.saveButtonText}>
-            {isLoading ? 'Saving...' : isEditMode ? 'Update Exercise' : 'Save Exercise'}
-          </Text>
-        </TouchableOpacity>
+          {isEditMode ? 'Update Exercise' : 'Save Exercise'}
+        </Button>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -473,19 +474,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   saveButton: {
-    backgroundColor: colors.primary[500],
-    borderRadius: 100,
-    paddingVertical: spacing[4],
-    alignItems: 'center',
     marginTop: spacing[4],
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 

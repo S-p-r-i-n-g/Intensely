@@ -4,7 +4,6 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  TouchableOpacity,
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -115,14 +114,14 @@ const LoginScreen = () => {
             />
 
             {/* Forgot Password Link */}
-            <TouchableOpacity
+            <Button
+              variant="ghost"
               onPress={() => navigation.navigate('ForgotPassword')}
               style={styles.forgotPasswordLink}
+              textStyle={[styles.linkText, { color: theme.text.secondary }]}
             >
-              <Text style={[styles.linkText, { color: theme.text.secondary }]}>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
+              Forgot Password?
+            </Button>
 
             <Button
               variant="primaryGradient"
@@ -137,14 +136,17 @@ const LoginScreen = () => {
 
             {/* Sign Up Link */}
             <View style={styles.signUpContainer}>
-              <Text style={{ color: theme.text.secondary }}>
+              <Text color="secondary">
                 Not signed up yet?{' '}
               </Text>
-              <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                <Text style={[styles.signUpLink, { color: colors.primary[500] }]}>
-                  Sign Up
-                </Text>
-              </TouchableOpacity>
+              <Button
+                variant="ghost"
+                onPress={() => navigation.navigate('SignUp')}
+                style={styles.signUpLinkButton}
+                textStyle={styles.signUpLink}
+              >
+                Sign Up
+              </Button>
             </View>
           </View>
         </View>
@@ -197,6 +199,7 @@ const styles = StyleSheet.create({
   forgotPasswordLink: {
     alignSelf: 'flex-end',
     marginBottom: spacing[4],
+    paddingHorizontal: 0,
   },
   linkText: {
     fontSize: 14,
@@ -210,9 +213,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing[6],
   },
+  signUpLinkButton: {
+    paddingHorizontal: 0,
+    minHeight: 0,
+  },
   signUpLink: {
     fontWeight: '600',
     fontSize: 14,
+    color: colors.primary[500],
   },
 });
 

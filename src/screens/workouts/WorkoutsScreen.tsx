@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +17,7 @@ import { colors, spacing, borderRadius } from '../../tokens';
 import { PlayIcon } from 'react-native-heroicons/outline';
 import { EmptyState } from '../../components/EmptyState';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
+import { Text } from '../../components/ui';
 
 // Helper to get difficulty color (matches design.md v1.3)
 const getDifficultyColor = (level?: string): string => {
@@ -98,10 +97,10 @@ interface Workout {
 // MetricChip component matching the Builder's style
 const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
   <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
-    <Text style={[styles.chipValue, { color: theme.text.primary }]}>
+    <Text style={styles.chipValue} color="primary">
       {value}
     </Text>
-    <Text style={[styles.chipLabel, { color: theme.text.secondary }]}>
+    <Text style={styles.chipLabel} color="secondary">
       {label}
     </Text>
   </View>
@@ -125,7 +124,7 @@ const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => 
     >
       {/* Header: Name + Start Button */}
       <View style={styles.workoutHeader}>
-        <Text style={[styles.workoutName, { color: theme.text.primary }]}>{workout.name}</Text>
+        <Text style={styles.workoutName} color="primary">{workout.name}</Text>
         <TouchableOpacity
           style={styles.startButton}
           onPress={onStart}
@@ -144,7 +143,7 @@ const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => 
         {workout.estimatedCalories && (
           <>
             <View style={[styles.metricDot, { backgroundColor: theme.text.tertiary }]} />
-            <Text style={[styles.metricText, { color: theme.text.secondary }]}>
+            <Text style={styles.metricText} color="secondary">
               {Math.round(workout.estimatedCalories)} cal
             </Text>
           </>
@@ -191,7 +190,6 @@ const WorkoutsScreen = () => {
   const { theme } = useTheme();
   const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   const loadWorkouts = async () => {
     if (!user) return;
@@ -208,7 +206,6 @@ const WorkoutsScreen = () => {
       console.error('Failed to load workouts:', error);
     } finally {
       setIsLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -221,20 +218,6 @@ const WorkoutsScreen = () => {
     useCallback(() => {
       loadWorkouts();
     }, [user])
-  );
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadWorkouts();
-  };
-
-  const renderWorkoutCard = ({ item }: { item: Workout }) => (
-    <WorkoutCard
-      workout={item}
-      theme={theme}
-      onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
-      onStart={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
-    />
   );
 
   if (isLoading) {
@@ -267,19 +250,17 @@ const WorkoutsScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      <FlatList
-        data={workouts}
-        renderItem={renderWorkoutCard}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary[500]}
+      <ScrollView contentContainerStyle={styles.listContent}>
+        {workouts.map((item) => (
+          <WorkoutCard
+            key={item.id}
+            workout={item}
+            theme={theme}
+            onPress={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
+            onStart={() => navigation.navigate('WorkoutPreview', { workoutId: item.id })}
           />
-        }
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 };

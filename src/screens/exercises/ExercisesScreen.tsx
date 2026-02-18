@@ -1,15 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme';
 import { spacing } from '../../tokens';
+import { Text } from '../../components/ui';
 
 const ExercisesScreen = () => {
   const { theme } = useTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
-      <Text style={[styles.title, { color: theme.text.primary }]}>Exercises</Text>
-      <Text style={[styles.subtitle, { color: theme.text.secondary }]}>Browse our exercise library</Text>
+      <Text variant="h2" color="primary">Exercises</Text>
+      <Text variant="body" color="secondary">Browse our exercise library</Text>
     </View>
   );
 };
@@ -19,15 +20,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.lg,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: 16,
+    padding: spacing[6],
   },
 });
 

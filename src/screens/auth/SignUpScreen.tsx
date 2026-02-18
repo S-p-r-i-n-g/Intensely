@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -96,12 +95,14 @@ const SignUpScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity
+        <Button
+          variant="ghost"
           onPress={() => navigation.navigate('Login')}
           style={styles.backLink}
+          textStyle={{ color: theme.text.secondary }}
         >
-          <Text style={{ color: theme.text.secondary }}>← Back to Login</Text>
-        </TouchableOpacity>
+          ← Back to Login
+        </Button>
 
         <Text variant="h1" style={styles.title}>
           Create Account
@@ -115,14 +116,14 @@ const SignUpScreen = () => {
           <View style={[styles.errorBanner, { backgroundColor: colors.error[50], borderColor: colors.error[200] }]}>
             <Text style={{ color: colors.error[700] }}>{authError}</Text>
             {userExists && (
-              <TouchableOpacity
+              <Button
+                variant="ghost"
                 onPress={() => navigation.navigate('Login')}
                 style={styles.backToLoginLink}
+                textStyle={[styles.linkText, { color: colors.primary[600] }]}
               >
-                <Text style={[styles.linkText, { color: colors.primary[600] }]}>
-                  Back to Sign In →
-                </Text>
-              </TouchableOpacity>
+                Back to Sign In →
+              </Button>
             )}
           </View>
         ) : null}

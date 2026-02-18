@@ -1,14 +1,13 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
-  TouchableOpacity,
   SafeAreaView,
 } from 'react-native';
 import { DrawerContentScrollView, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useTheme } from '../../theme';
 import { spacing } from '../../tokens';
+import { Text, Button } from '../../components/ui';
 
 export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
   const { theme } = useTheme();
@@ -27,31 +26,29 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <DrawerContentScrollView {...props} contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={[styles.headerText, { color: theme.text.primary }]}>Intensely</Text>
+          <Text style={styles.headerText} color="primary">Intensely</Text>
         </View>
 
         <View style={styles.menuItems}>
           {menuItems.map((item) => {
             const isActive = activeRoute === item.route;
             return (
-              <TouchableOpacity
+              <Button
                 key={item.key}
+                variant="ghost"
+                onPress={() => navigation.navigate(item.route)}
                 style={[
                   styles.menuItem,
                   isActive && { backgroundColor: theme.background.secondary },
                 ]}
-                onPress={() => navigation.navigate(item.route)}
+                textStyle={[
+                  styles.menuItemText,
+                  { color: theme.text.primary },
+                  isActive && styles.menuItemTextActive,
+                ]}
               >
-                <Text
-                  style={[
-                    styles.menuItemText,
-                    { color: theme.text.primary },
-                    isActive && styles.menuItemTextActive,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
+                {item.label}
+              </Button>
             );
           })}
         </View>
@@ -84,6 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: spacing[3],
     marginBottom: spacing[2],
+    justifyContent: 'flex-start',
   },
   menuItemText: {
     fontSize: 16,

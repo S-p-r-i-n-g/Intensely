@@ -2,11 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  RefreshControl,
+  ScrollView,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -48,7 +47,6 @@ const ExercisesListScreen = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
@@ -72,7 +70,6 @@ const ExercisesListScreen = () => {
       console.error('Failed to load exercises:', error);
     } finally {
       setIsLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -91,11 +88,6 @@ const ExercisesListScreen = () => {
   useEffect(() => {
     applyFilters(searchQuery, showFavoritesOnly);
   }, [exercises, favoriteIds, showFavoritesOnly, searchQuery]);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadData();
-  };
 
   const applyFilters = (text: string, favoritesOnly: boolean) => {
     let filtered = exercises;
@@ -160,6 +152,7 @@ const ExercisesListScreen = () => {
 
     return (
       <TouchableOpacity
+        key={item.id}
         style={[styles.card, { backgroundColor: theme.background.elevated }]}
         onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item.id })}
         activeOpacity={0.7}
@@ -304,19 +297,8 @@ const ExercisesListScreen = () => {
       </View>
 
       {/* Exercise List */}
-      <FlatList
-        data={filteredExercises}
-        renderItem={renderExerciseCard}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.primary[500]}
-          />
-        }
-        ListEmptyComponent={
+      <ScrollView contentContainerStyle={styles.listContent}>
+        {filteredExercises.length === 0 ? (
           <View style={styles.emptyState}>
             {showFavoritesOnly ? (
               <>
@@ -339,8 +321,10 @@ const ExercisesListScreen = () => {
               </>
             )}
           </View>
-        }
-      />
+        ) : (
+          filteredExercises.map((item) => renderExerciseCard({ item }))
+        )}
+      </ScrollView>
 
       {/* Floating Action Button */}
       <TouchableOpacity

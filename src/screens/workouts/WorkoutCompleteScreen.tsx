@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   SafeAreaView,
@@ -13,6 +11,7 @@ import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { Text, Button } from '../../components/ui';
 
 type NavigationProp = NativeStackNavigationProp<HomeStackParamList, 'WorkoutComplete'>;
 type RoutePropType = RouteProp<HomeStackParamList, 'WorkoutComplete'>;
@@ -39,8 +38,8 @@ const WorkoutCompleteScreen = () => {
         </View>
 
         {/* Congratulations Message */}
-        <Text style={[styles.title, { color: theme.text.primary }]}>Workout Complete!</Text>
-        <Text style={[styles.subtitle, { color: theme.text.secondary }]}>
+        <Text style={styles.title} color="primary">Workout Complete!</Text>
+        <Text style={styles.subtitle} color="secondary">
           Great job! You crushed it.
         </Text>
 
@@ -48,54 +47,52 @@ const WorkoutCompleteScreen = () => {
         <View style={styles.statsContainer}>
           <View style={[styles.statCard, { backgroundColor: theme.background.tertiary }]}>
             <Text style={styles.statValue}>{formatDuration(durationSeconds)}</Text>
-            <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Duration</Text>
+            <Text style={styles.statLabel} color="secondary">Duration</Text>
           </View>
 
           {caloriesBurned && (
             <View style={[styles.statCard, { backgroundColor: theme.background.tertiary }]}>
               <Text style={styles.statValue}>{caloriesBurned}</Text>
-              <Text style={[styles.statLabel, { color: theme.text.secondary }]}>Calories Burned</Text>
+              <Text style={styles.statLabel} color="secondary">Calories Burned</Text>
             </View>
           )}
         </View>
 
         {/* Motivational Message */}
         <View style={[styles.messageCard, { backgroundColor: theme.background.secondary }]}>
-          <Text style={[styles.messageText, { color: theme.text.primary }]}>
+          <Text style={styles.messageText} color="primary">
             Every workout counts. You're one step closer to your goals!
           </Text>
         </View>
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.secondaryButton, { backgroundColor: theme.background.secondary }]}
+          <Button
+            variant="secondary"
             onPress={() => navigation.navigate('HomeMain')}
+            style={styles.actionButton}
           >
-            <Text style={[styles.secondaryButtonText, { color: theme.text.primary }]}>Done</Text>
-          </TouchableOpacity>
+            Done
+          </Button>
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => {
-              // Navigate back to home and allow starting another workout
-              navigation.navigate('HomeMain');
-            }}
+          <Button
+            variant="primary"
+            onPress={() => navigation.navigate('HomeMain')}
+            style={styles.actionButton}
           >
-            <Text style={styles.primaryButtonText}>Start Another</Text>
-          </TouchableOpacity>
+            Start Another
+          </Button>
         </View>
 
         {/* Optional: View Progress Link */}
-        <TouchableOpacity
+        <Button
+          variant="ghost"
+          onPress={() => navigation.navigate('HomeMain')}
           style={styles.linkButton}
-          onPress={() => {
-            // TODO: Navigate to progress/history screen
-            navigation.navigate('HomeMain');
-          }}
+          textStyle={styles.linkText}
         >
-          <Text style={styles.linkText}>View Workout History →</Text>
-        </TouchableOpacity>
+          View Workout History →
+        </Button>
       </ScrollView>
     </SafeAreaView>
   );
@@ -167,27 +164,8 @@ const styles = StyleSheet.create({
     gap: spacing[3],
     marginBottom: spacing[4],
   },
-  primaryButton: {
+  actionButton: {
     flex: 1,
-    backgroundColor: colors.primary[500],
-    paddingVertical: spacing[4] + 2,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    flex: 1,
-    paddingVertical: spacing[4] + 2,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    fontSize: 18,
-    fontWeight: '600',
   },
   linkButton: {
     paddingVertical: spacing[3],

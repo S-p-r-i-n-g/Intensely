@@ -18,7 +18,7 @@ import { exercisesApi, favoritesApi } from '../../api';
 import type { Exercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
-import { Text } from '../../components/ui';
+import { Text, Button, SkeletonText, SkeletonButton, SkeletonLoader } from '../../components/ui';
 import { HeartIcon, PlayCircleIcon, PencilSquareIcon, TrashIcon } from 'react-native-heroicons/outline';
 import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
@@ -144,8 +144,13 @@ const ExerciseDetailScreen = () => {
 
   if (isLoading || !exercise) {
     return (
-      <View style={[styles.centerContainer, { backgroundColor: theme.background.primary }]}>
-        <ActivityIndicator size="large" color={colors.primary[500]} />
+      <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
+        <View style={styles.skeletonContent}>
+          <SkeletonLoader width="70%" height={32} style={{ marginBottom: spacing[2] }} />
+          <SkeletonText lines={2} style={{ marginBottom: spacing[4] }} />
+          <SkeletonButton style={{ marginBottom: spacing[3] }} />
+          <SkeletonText lines={5} />
+        </View>
       </View>
     );
   }
@@ -243,15 +248,14 @@ const ExerciseDetailScreen = () => {
 
       {/* Video Button */}
       {exercise.videoUrl && (
-        <TouchableOpacity
-          style={[styles.videoButton, { backgroundColor: theme.background.elevated }]}
+        <Button
+          variant="ghost"
           onPress={openVideo}
+          style={[styles.videoButton, { backgroundColor: theme.background.elevated }]}
+          textStyle={styles.videoButtonText}
         >
-          <PlayCircleIcon size={24} color={colors.primary[500]} />
-          <Text style={[styles.videoButtonText, { color: colors.primary[500] }]}>
-            Watch Tutorial Video
-          </Text>
-        </TouchableOpacity>
+          Watch Tutorial Video
+        </Button>
       )}
 
       {/* Target Muscles */}
@@ -337,18 +341,20 @@ const ExerciseDetailScreen = () => {
               Are you sure you want to delete this exercise? This cannot be undone.
             </Text>
             <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: theme.background.tertiary }]}
+              <Button
+                variant="secondary"
                 onPress={cancelDelete}
+                style={styles.modalButton}
               >
-                <Text style={[styles.modalButtonText, { color: theme.text.primary }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonDelete]}
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
                 onPress={confirmDelete}
+                style={[styles.modalButton, styles.modalButtonDelete]}
               >
-                <Text style={styles.modalButtonTextDelete}>Delete</Text>
-              </TouchableOpacity>
+                Delete
+              </Button>
             </View>
           </View>
         </View>
@@ -365,10 +371,9 @@ const styles = StyleSheet.create({
     padding: spacing[4],
     paddingBottom: 40,
   },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  skeletonContent: {
+    padding: spacing[4],
+    paddingTop: spacing[6],
   },
   headerCard: {
     borderRadius: 16,
@@ -452,17 +457,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   videoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: 16,
-    padding: spacing[4],
     marginBottom: spacing[3],
-    gap: spacing[2],
   },
   videoButtonText: {
     fontSize: 16,
     fontWeight: '600',
+    color: colors.primary[500],
   },
   section: {
     borderRadius: 16,
@@ -580,24 +581,9 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: spacing[3],
-    borderRadius: 100,
-    alignItems: 'center',
-  },
-  modalButtonCancel: {
-    // backgroundColor comes from theme
   },
   modalButtonDelete: {
     backgroundColor: colors.error[500],
-  },
-  modalButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  modalButtonTextDelete: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
 });
 

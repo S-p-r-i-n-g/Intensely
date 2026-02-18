@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import { Text, Button } from '../../components/ui';
 
 const ProfileScreen = () => {
   const { profile, signOut, isLoading } = useAuthStore();
@@ -32,35 +33,51 @@ const ProfileScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background.primary }]}>
       <View style={[styles.header, { borderBottomColor: theme.border.light }]}>
-        <Text style={[styles.name, { color: theme.text.primary }]}>
+        <Text variant="h2" color="primary">
           {profile?.firstName || profile?.lastName
             ? `${profile.firstName} ${profile.lastName}`.trim()
             : 'User'}
         </Text>
-        <Text style={[styles.email, { color: theme.text.secondary }]}>{profile?.email}</Text>
+        <Text variant="body" color="secondary">{profile?.email}</Text>
       </View>
 
       <View style={styles.section}>
-        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Edit Profile</Text>
-        </TouchableOpacity>
+        <Button
+          variant="ghost"
+          onPress={() => {}}
+          style={[styles.menuItem, { borderBottomColor: theme.border.light }]}
+          textStyle={[styles.menuItemText, { color: theme.text.primary }]}
+        >
+          Edit Profile
+        </Button>
 
-        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Workout Preferences</Text>
-        </TouchableOpacity>
+        <Button
+          variant="ghost"
+          onPress={() => {}}
+          style={[styles.menuItem, { borderBottomColor: theme.border.light }]}
+          textStyle={[styles.menuItemText, { color: theme.text.primary }]}
+        >
+          Workout Preferences
+        </Button>
 
-        <TouchableOpacity style={[styles.menuItem, { borderBottomColor: theme.border.light }]}>
-          <Text style={[styles.menuItemText, { color: theme.text.primary }]}>Settings</Text>
-        </TouchableOpacity>
+        <Button
+          variant="ghost"
+          onPress={() => {}}
+          style={[styles.menuItem, { borderBottomColor: theme.border.light }]}
+          textStyle={[styles.menuItemText, { color: theme.text.primary }]}
+        >
+          Settings
+        </Button>
       </View>
 
-      <TouchableOpacity
-        style={styles.signOutButton}
+      <Button
+        variant="primary"
         onPress={handleSignOut}
         disabled={isLoading}
+        style={styles.signOutButton}
       >
-        <Text style={styles.signOutButtonText}>Sign Out</Text>
-      </TouchableOpacity>
+        Sign Out
+      </Button>
     </View>
   );
 };
@@ -73,37 +90,24 @@ const styles = StyleSheet.create({
     padding: spacing[5],
     paddingTop: spacing[2],
     borderBottomWidth: 1,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: spacing[1],
-  },
-  email: {
-    fontSize: 16,
+    gap: spacing[1],
   },
   section: {
     marginTop: spacing[5],
   },
   menuItem: {
-    padding: spacing[4],
+    paddingVertical: spacing[4],
     paddingHorizontal: spacing[5],
     borderBottomWidth: 1,
+    borderRadius: 0,
+    justifyContent: 'flex-start',
+    minHeight: 0,
   },
   menuItemText: {
     fontSize: 16,
   },
   signOutButton: {
     margin: spacing[5],
-    padding: spacing[4],
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.primary[500],
-    alignItems: 'center',
-  },
-  signOutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
 });
 
