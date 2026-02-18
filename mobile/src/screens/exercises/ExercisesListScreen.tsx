@@ -557,7 +557,6 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     gap: spacing[2],
     flexGrow: 0,
-    alignItems: 'center',
   },
   resultsRow: {
     paddingHorizontal: spacing[5],
