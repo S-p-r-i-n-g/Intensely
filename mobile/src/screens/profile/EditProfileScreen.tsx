@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +29,7 @@ const EditProfileScreen = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -37,9 +38,16 @@ const EditProfileScreen = () => {
     }
   }, [profile]);
 
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
+
   const handleSave = async () => {
     if (!firstName.trim() && !lastName.trim()) {
-      Alert.alert('Invalid Input', 'Please enter at least a first or last name.');
+      setFeedback({ msg: 'Please enter at least a first or last name.', type: 'error' });
       return;
     }
 
@@ -54,18 +62,10 @@ const EditProfileScreen = () => {
       // Sync profile to update state
       await syncProfile();
 
-      Alert.alert('Success', 'Profile updated successfully!', [
-        {
-          text: 'OK',
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      setFeedback({ msg: 'Profile updated!', type: 'success' });
     } catch (error: any) {
       console.error('Failed to update profile:', error);
-      Alert.alert(
-        'Error',
-        error.message || 'Could not update profile. Please try again.'
-      );
+      setFeedback({ msg: error.message || 'Could not update profile. Please try again.', type: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -76,6 +76,16 @@ const EditProfileScreen = () => {
       style={[styles.container, { backgroundColor: theme.background.primary }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      {feedback && (
+        <Animated.View
+          style={[
+            styles.feedbackBanner,
+            { backgroundColor: feedback.type === 'success' ? colors.success[500] : colors.error[500] },
+          ]}
+        >
+          <Text style={styles.feedbackText}>{feedback.msg}</Text>
+        </Animated.View>
+      )}
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
@@ -219,6 +229,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
+  },
+  feedbackBanner: {
+    position: 'absolute',
+    top: 20,
+    left: spacing[5],
+    right: spacing[5],
+    zIndex: 100,
+    borderRadius: borderRadius.sm,
+    paddingVertical: spacing[3],
+    paddingHorizontal: spacing[4],
+  },
+  feedbackText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 
