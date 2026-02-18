@@ -43,7 +43,7 @@ const HomeScreen = () => {
 
           {/* Secondary CTA - New Workout */}
           <ActionButton
-            title={hasActiveDraft ? 'Resume Workout' : 'New Workout'}
+            title="New Workout"
             variant="secondary"
             icon={<PlusIcon size={24} color="#000000" />}
             onPress={() => navigation.navigate('Home', {

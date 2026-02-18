@@ -71,7 +71,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
             onPress={handleNewWorkoutPress}
           >
             <Text style={[styles.menuItemText, { color: theme.text.primary }, isOnNewWorkout && styles.menuItemTextActive]}>
-              {hasActiveDraft ? 'Resume Workout' : 'New Workout'}
+              New Workout
             </Text>
           </TouchableOpacity>
 
