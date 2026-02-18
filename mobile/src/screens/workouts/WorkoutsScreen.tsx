@@ -271,7 +271,7 @@ const WorkoutsScreen = () => {
     return (
       <EmptyState
         title="Start Your Fitness Journey"
-        description="Create your first workout plan to start tracking your progress and reaching your goals."
+        description="Create your first workout."
         buttonText="Create Workout"
         onPress={handleCreateWorkout}
       />
