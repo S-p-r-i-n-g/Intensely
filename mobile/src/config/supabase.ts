@@ -62,7 +62,13 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: shouldDetectSessionInUrl(),
     flowType: 'pkce',
     storageKey: `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`,
-    // Disable lock on web to prevent AbortError warnings
-    lock: Platform.OS === 'web' ? false : undefined,
+    // On web, pass a no-op lock function to bypass the Navigator LockManager.
+    // Setting lock: false is falsy and Supabase JS ignores it, falling through
+    // to navigator.locks (LockManager). Concurrent auth calls then compete for
+    // the same lock and the second times out after 10000ms, causing session loss.
+    // A no-op function executes the callback immediately with no locking.
+    lock: Platform.OS === 'web'
+      ? (_name: string, _timeout: number, fn: () => Promise<any>) => fn()
+      : undefined,
   },
 });
