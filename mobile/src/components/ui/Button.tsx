@@ -94,7 +94,7 @@ export const Button: React.FC<ButtonProps> = ({
     !isGradient && variant === 'accent' && styles.accent,
     isGradient && baseVariant === 'large' && styles.largeGradient,
     isGradient && baseVariant !== 'large' && styles.gradientBase,
-    styles[`${size}Size`],
+    !isGradient && styles[`${size}Size`],
     fullWidth && styles.fullWidth,
     style,
   ];
@@ -187,25 +187,21 @@ const styles = StyleSheet.create({
 
   // Gradient base styles
   gradientBase: {
-    paddingVertical: spacing[3],
-    paddingHorizontal: spacing[6],
     minHeight: touchTarget.min,
     ...shadows.md,
   },
   largeGradient: {
-    paddingVertical: spacing[4],
-    paddingHorizontal: spacing[8],
     borderRadius: borderRadius.lg,
     minHeight: 56,
     ...shadows.lg,
   },
   gradientInner: {
     width: '100%',
-    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing[3],
     paddingHorizontal: spacing[6],
+    minHeight: touchTarget.min,
   },
 
   // Solid color variants
