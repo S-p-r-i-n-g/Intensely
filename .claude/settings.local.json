@@ -54,9 +54,13 @@
       "Bash(npx:*)",
       "Bash(playwright:*)",
       "Bash(rsvg-convert:*)",
-      "Bash(__NEW_LINE_5d608b15d67eb91c__ cp /Users/dspring/Projects/CursorClaudeCode/mobile/web/manifest.json /Users/dspring/Projects/CursorClaudeCode/mobile/dist/)",
+      "Bash(__NEW_LINE_5d608b15d67eb91c__ cp /Users/dspring/Projects/Intensely/mobile/web/manifest.json /Users/dspring/Projects/Intensely/mobile/dist/)",
       "Bash(gh run list:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(xargs sed:*)",
+      "Bash(git -C /Users/dspring/Projects/Intensely add .claude/settings.local.json animation-pipeline/RUNPOD_SETUP.md docs/guides/GEMINI_WORKFLOW.md docs/guides/HOW_TO_TEST.md mobile/docs/guides/GEMINI_WORKFLOW.md mobile/docs/guides/HOW_TO_TEST.md)",
+      "Bash(git -C:*)",
+      "Bash(git -C /Users/dspring/Projects/Intensely push)"
     ]
   }
 }

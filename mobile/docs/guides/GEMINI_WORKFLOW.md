@@ -35,7 +35,7 @@ gemini "Hello, respond with 'working'"
 gemini
 
 # Or with a project context
-cd /Users/dspring/Projects/CursorClaudeCode
+cd /Users/dspring/Projects/Intensely
 gemini "Help me design UI for Intensely workout app"
 ```
 

@@ -4,7 +4,7 @@
 
 ### Method 1: Web Browser (FASTEST) 🌐
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npm run web
 ```
 - Opens in your default browser
@@ -13,7 +13,7 @@ npm run web
 
 ### Method 2: iOS Simulator (RECOMMENDED) 📱
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npm run ios
 ```
 - Requires macOS with Xcode
@@ -28,7 +28,7 @@ npm run ios
 
 **Step 2:** Start the dev server
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npm start
 ```
 
@@ -38,7 +38,7 @@ npm start
 
 ### Method 4: Android Emulator 🤖
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npm run android
 ```
 - Requires Android Studio + emulator
@@ -71,7 +71,7 @@ For full functionality, the backend API needs to be running:
 
 ```bash
 # In a separate terminal
-cd /Users/dspring/Projects/CursorClaudeCode/backend
+cd /Users/dspring/Projects/Intensely/backend
 npm run dev
 ```
 
@@ -111,7 +111,7 @@ Backend will run on `http://localhost:3000`
 
 ### Step 2: Update Environment Variables
 
-Edit `/Users/dspring/Projects/CursorClaudeCode/mobile/.env`:
+Edit `/Users/dspring/Projects/Intensely/mobile/.env`:
 
 ```env
 EXPO_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
@@ -123,7 +123,7 @@ Supabase Dashboard → Settings → API
 
 ### Step 3: Update Backend Config
 
-Edit `/Users/dspring/Projects/CursorClaudeCode/backend/.env`:
+Edit `/Users/dspring/Projects/Intensely/backend/.env`:
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
@@ -134,11 +134,11 @@ SUPABASE_SERVICE_KEY=your-service-role-key
 ### Step 4: Restart Both Servers
 ```bash
 # Terminal 1 - Backend
-cd /Users/dspring/Projects/CursorClaudeCode/backend
+cd /Users/dspring/Projects/Intensely/backend
 npm run dev
 
 # Terminal 2 - Mobile
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npm start
 ```
 
@@ -163,13 +163,13 @@ npm start
 
 ### TypeScript errors
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 npx tsc --noEmit
 ```
 
 ### Clear cache and restart
 ```bash
-cd /Users/dspring/Projects/CursorClaudeCode/mobile
+cd /Users/dspring/Projects/Intensely/mobile
 rm -rf node_modules
 npm install
 npm start -- --reset-cache
@@ -204,7 +204,7 @@ npm start -- --reset-cache
 
 1. **First Time:**
    ```bash
-   cd /Users/dspring/Projects/CursorClaudeCode/mobile
+   cd /Users/dspring/Projects/Intensely/mobile
    npm run web
    ```
    Just to see the UI and navigate around

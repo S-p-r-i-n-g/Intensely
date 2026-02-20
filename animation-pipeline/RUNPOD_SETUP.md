@@ -100,10 +100,10 @@ From your local machine:
 
 ```bash
 # Upload videos directory
-scp -P <runpod-port> -r /Users/dspring/Projects/CursorClaudeCode/animation-pipeline/videos root@<runpod-ip>:/workspace/
+scp -P <runpod-port> -r /Users/dspring/Projects/Intensely/animation-pipeline/videos root@<runpod-ip>:/workspace/
 
 # Upload processing script
-scp -P <runpod-port> /Users/dspring/Projects/CursorClaudeCode/animation-pipeline/src/08_video_to_motion.py root@<runpod-ip>:/workspace/
+scp -P <runpod-port> /Users/dspring/Projects/Intensely/animation-pipeline/src/08_video_to_motion.py root@<runpod-ip>:/workspace/
 ```
 
 ## Step 7: Process Videos
@@ -146,7 +146,7 @@ From your local machine:
 
 ```bash
 # Download all motion data
-scp -P <runpod-port> -r root@<runpod-ip>:/workspace/motion_data /Users/dspring/Projects/CursorClaudeCode/animation-pipeline/
+scp -P <runpod-port> -r root@<runpod-ip>:/workspace/motion_data /Users/dspring/Projects/Intensely/animation-pipeline/
 ```
 
 ## Step 9: Stop the Instance
