@@ -27,7 +27,8 @@ export const DrawerNavigator = () => {
         headerLeft: () => (
           <TouchableOpacity
             onPress={() => navigation.openDrawer()}
-            style={{ marginLeft: 16, padding: 8 }}
+            style={{ marginLeft: 16 }}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Bars3Icon size={28} color={theme.text.primary} />
           </TouchableOpacity>
