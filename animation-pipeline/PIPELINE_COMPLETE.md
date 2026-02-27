@@ -77,37 +77,67 @@ python src/02_prepare_batch.py
 
 ### Phase 2: Cloud GPU Processing (2-4 hours)
 
+**GPU requirement:** A100 40GB+ (recommended). RTX 4090 24GB is marginal for
+HY-Motion-1.0-Lite and may OOM. Do NOT use smaller GPUs.
+
 ```bash
-# 4. Setup RunPod instance
-scp scripts/runpod_setup.sh user@runpod:/workspace/
-ssh user@runpod
+# 4. Launch RunPod instance
+#    → https://www.runpod.io/console/gpu-cloud
+#    → GPU: A100 PCIe 40GB (on-demand ~$1.64/hr)
+#    → Template: RunPod PyTorch 2.x
+#    → Container disk: 80 GB  (model weights alone are ~30 GB)
+#    → Expose TCP port 22 for SSH
+
+# 5. Bootstrap the pod (run once per pod)
+scp -P <port> scripts/runpod_setup.sh root@<pod-ip>:/workspace/
+ssh -p <port> root@<pod-ip>
 cd /workspace
-./runpod_setup.sh --gvhmr  # Full setup
+bash runpod_setup.sh          # HY-Motion only (text-to-motion)
+# bash runpod_setup.sh --gvhmr  # Add GVHMR if you have videos for fallback
+# Setup time: ~15-20 min (model download is the bottleneck)
 
-# 5. Upload data from local machine
-./scripts/upload_to_runpod.sh user@runpod-instance.com
+# 6. Upload prompts from your local machine
+./scripts/upload_to_runpod.sh root@<pod-ip>:<port>
 
-# 6. Process on RunPod (text-to-motion)
-cd /workspace/HY-Motion
-source .venv/bin/activate
+# 7. Run batch processing on RunPod (both inference + conversion in one command)
 python /workspace/batch_process_hymotion.py \
-    --input /workspace/prompts \
-    --output /workspace/motion_data
-# Processes 219 prompts → .npy motion files
-# Time: ~2-4 hours on A100
+    --prompts /workspace/prompts \
+    --output  /workspace/motion_data \
+    --model   /workspace/HY-Motion-1.0/ckpts/tencent/HY-Motion-1.0-Lite
+# Step 1: HY-Motion text→motion → /workspace/hymotion_output/{slug}/seed_0_*.npz
+# Step 2: NPZ → (T, 22, 3) .npy → /workspace/motion_data/{slug}.npy
+# Time: ~2-4 hours on A100 for all 219 exercises
+# Script is resumable: re-running skips already-converted exercises
 
-# 7. [Optional] Process videos (video-to-motion fallback)
-# Use for exercises where text-to-motion failed or quality is poor
-cd /workspace
-python src/08_video_to_motion.py \
-    --input /workspace/videos \
+# 8. [Optional] Video fallback for exercises where HY-Motion quality is poor
+#    Upload videos: scp -P <port> videos/*.mp4 root@<pod-ip>:/workspace/videos/
+python /workspace/src/08_video_to_motion.py \
+    --input  /workspace/videos \
     --output /workspace/motion_data
-# Processes videos → .npy motion files (same format as HY-Motion)
-# Time: ~30-60 seconds per video on A100
+# Time: ~30-60 seconds per video
 
-# 8. Download results from local machine
-./scripts/download_results.sh user@runpod-instance.com
+# 9. Download .npy results to local machine
+./scripts/download_results.sh root@<pod-ip>:<port>
 # Verifies all 219 files, lists missing exercises
+# ⚠  STOP THE POD immediately after download to stop billing
+```
+
+**If batch_process_hymotion.py fails mid-run,** run the two steps manually:
+```bash
+# Step 1: HY-Motion inference only
+cd /workspace/HY-Motion-1.0
+python local_infer.py \
+    --model_path         ckpts/tencent/HY-Motion-1.0-Lite \
+    --input_text_dir     /workspace/prompts \
+    --output_dir         /workspace/hymotion_output \
+    --num_seeds 1 \
+    --disable_rewrite \
+    --disable_duration_est
+
+# Step 2: Convert NPZ → .npy
+python /workspace/convert_hymotion_to_npy.py \
+    --input  /workspace/hymotion_output \
+    --output /workspace/motion_data
 ```
 
 ### Phase 3: Local Rendering (10-20 minutes)
