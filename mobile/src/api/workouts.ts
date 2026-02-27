@@ -8,6 +8,46 @@ import { ApiResponse, Workout } from '../types/api';
  * Queries Supabase directly
  */
 
+interface DbWorkoutRow {
+  id: string;
+  name: string;
+  created_by?: string;
+  is_public: boolean;
+  is_template: boolean;
+  total_circuits: number;
+  exercises_per_circuit: number;
+  interval_seconds: number;
+  rest_seconds: number;
+  sets_per_circuit: number;
+  estimated_duration_minutes?: number;
+  estimated_calories?: number;
+  difficulty_level?: string;
+  equipment_required: string[];
+  average_rating?: number;
+  times_completed: number;
+  updated_at: string;
+}
+
+// Map snake_case DB fields to camelCase Workout interface
+const mapDbWorkout = (row: DbWorkoutRow): Workout => ({
+  id: row.id,
+  name: row.name,
+  createdBy: row.created_by,
+  isPublic: row.is_public,
+  isTemplate: row.is_template,
+  totalCircuits: row.total_circuits,
+  exercisesPerCircuit: row.exercises_per_circuit,
+  intervalSeconds: row.interval_seconds,
+  restSeconds: row.rest_seconds,
+  setsPerCircuit: row.sets_per_circuit,
+  estimatedDurationMinutes: row.estimated_duration_minutes,
+  estimatedCalories: row.estimated_calories,
+  difficultyLevel: row.difficulty_level,
+  equipmentRequired: row.equipment_required,
+  averageRating: row.average_rating,
+  timesCompleted: row.times_completed || 0,
+});
+
 export const workoutsApi = {
   /**
    * Get all workouts
@@ -43,7 +83,7 @@ export const workoutsApi = {
       if (error) throw error;
 
       return {
-        data: data || [],
+        data: (data || []).map(row => mapDbWorkout(row as unknown as DbWorkoutRow)),
         status: 200,
         message: 'Success'
       };
@@ -71,7 +111,7 @@ export const workoutsApi = {
       if (error) throw error;
 
       return {
-        data: data as Workout,
+        data: mapDbWorkout(data as unknown as DbWorkoutRow),
         status: 200,
         message: 'Success'
       };
@@ -227,7 +267,7 @@ export const workoutsApi = {
       });
 
       return {
-        data: workout as Workout,
+        data: mapDbWorkout(workout as unknown as DbWorkoutRow),
         status: 201,
         message: 'Workout created successfully'
       };

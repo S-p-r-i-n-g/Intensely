@@ -60,7 +60,12 @@
       "Bash(xargs sed:*)",
       "Bash(git -C /Users/dspring/Projects/Intensely add .claude/settings.local.json animation-pipeline/RUNPOD_SETUP.md docs/guides/GEMINI_WORKFLOW.md docs/guides/HOW_TO_TEST.md mobile/docs/guides/GEMINI_WORKFLOW.md mobile/docs/guides/HOW_TO_TEST.md)",
       "Bash(git -C:*)",
-      "Bash(git -C /Users/dspring/Projects/Intensely push)"
+      "Bash(git -C /Users/dspring/Projects/Intensely push)",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(npm run:)",
+      "Bash(npm run:*)"
     ]
   }
 }
