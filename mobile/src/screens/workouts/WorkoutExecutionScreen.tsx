@@ -13,6 +13,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
+import axios from 'axios';
 import { workoutsApi, sessionsApi } from '../../api';
 import type { Workout, Circuit, CircuitExercise } from '../../types/api';
 import { useTheme } from '../../theme';
@@ -93,31 +94,34 @@ const WorkoutExecutionScreen = () => {
   const loadWorkoutAndStartSession = async () => {
     try {
       shouldAutoProgressRef.current = false; // Prevent auto-start during load
-      const response = await workoutsApi.getById(route.params.workoutId);
+      const response = await workoutsApi.getByIdWithCircuits(route.params.workoutId);
       const workoutData = response.data;
       setWorkout(workoutData);
 
-      // Start session
-      console.log('Starting workout session for workout:', workoutData.id);
-      const sessionResponse = await sessionsApi.start(workoutData.id);
-      console.log('Session started:', sessionResponse.data);
-      setSessionId(sessionResponse.data.sessionId);
-
-      // Initialize first interval
+      // Initialize first interval before starting session so workout runs
+      // regardless of whether session tracking succeeds
       setTimeRemaining(workoutData.intervalSeconds);
       setIntervalType('work');
-
-      // Enable auto-progress and start timers
       shouldAutoProgressRef.current = true;
       startElapsedTimer();
+
+      // Start session tracking in the background — non-blocking
+      sessionsApi.start(workoutData.id)
+        .then((sessionResponse) => {
+          setSessionId(sessionResponse.data.sessionId);
+        })
+        .catch((sessionError: unknown) => {
+          // Session tracking failure is non-fatal; workout continues
+          console.warn('Session tracking unavailable:', sessionError instanceof Error ? sessionError.message : sessionError);
+        });
     } catch (error: unknown) {
-      console.error('Failed to load workout or start session:', error);
-      console.error('Error details:', error.response?.data || error.message);
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const serverMessage = axios.isAxiosError(error) ? error.response?.data?.message : undefined;
+      const errorMessage = status === 401
+        ? 'You must be signed in to start a workout.'
+        : serverMessage || 'Could not load workout. Please try again.';
 
-      const errorMessage = error.response?.status === 401
-        ? 'You must be signed in to start a workout session.'
-        : error.response?.data?.message || 'Could not load workout. Please try again.';
-
+      console.error('Failed to load workout:', error);
       Alert.alert('Error', errorMessage);
       navigation.goBack();
     }

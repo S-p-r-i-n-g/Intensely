@@ -28,6 +28,57 @@ interface DbWorkoutRow {
   updated_at: string;
 }
 
+interface DbCircuitExerciseRow {
+  id: string;
+  circuit_id: string;
+  exercise_id: string;
+  exercise_order: number;
+  reps?: number;
+  duration_seconds?: number;
+  exercises: {
+    id: string;
+    name: string;
+    slug: string;
+    primary_category: string;
+    difficulty: string;
+    primary_muscles: string[];
+    secondary_muscles: string[];
+    equipment: string[];
+    hict_suitable: boolean;
+    small_space: boolean;
+    quiet: boolean;
+    cardio_intensive: boolean;
+    strength_focus: boolean;
+    mobility_focus: boolean;
+    minimal_transition: boolean;
+    beginner_friendly: boolean;
+    is_verified: boolean;
+    movement_pattern?: string;
+    mechanic?: string;
+    description?: string;
+    instructions: string[];
+    tips: string[];
+    thumbnail_url?: string;
+    default_reps?: number;
+    default_duration_seconds?: number;
+    calories_per_minute?: number;
+  };
+}
+
+interface DbCircuitRow {
+  id: string;
+  workout_id: string;
+  circuit_order: number;
+  interval_seconds?: number;
+  rest_seconds?: number;
+  sets?: number;
+  circuit_exercises: DbCircuitExerciseRow[];
+}
+
+interface DbWorkoutWithCircuitsRow extends DbWorkoutRow {
+  circuits: DbCircuitRow[];
+}
+
 // Map snake_case DB fields to camelCase Workout interface
 const mapDbWorkout = (row: DbWorkoutRow): Workout => ({
   id: row.id,
@@ -120,6 +171,92 @@ export const workoutsApi = {
         data: {} as Workout,
         status: 404,
         message: getErrorMessage(error) || 'Workout not found'
+      };
+    }
+  },
+
+  /**
+   * Get a single workout by ID including nested circuits and exercises
+   * Used by WorkoutExecutionScreen which requires circuit data to run
+   */
+  getByIdWithCircuits: async (id: string): Promise<ApiResponse<Workout>> => {
+    try {
+      const { data, error } = await supabase
+        .from('workouts')
+        .select(`
+          *,
+          circuits (
+            *,
+            circuit_exercises (
+              *,
+              exercises (*)
+            )
+          )
+        `)
+        .eq('id', id)
+        .is('deleted_at', null)
+        .single();
+
+      if (error) throw error;
+
+      const row = data as unknown as DbWorkoutWithCircuitsRow;
+      const workout = mapDbWorkout(row);
+
+      workout.circuits = (row.circuits || [])
+        .sort((a, b) => a.circuit_order - b.circuit_order)
+        .map((circuit) => ({
+          id: circuit.id,
+          workoutId: circuit.workout_id,
+          circuitOrder: circuit.circuit_order,
+          intervalSeconds: circuit.interval_seconds,
+          restSeconds: circuit.rest_seconds,
+          sets: circuit.sets,
+          exercises: (circuit.circuit_exercises || [])
+            .sort((a, b) => a.exercise_order - b.exercise_order)
+            .map((ce) => ({
+              id: ce.id,
+              circuitId: ce.circuit_id,
+              exerciseId: ce.exercise_id,
+              exerciseOrder: ce.exercise_order,
+              reps: ce.reps,
+              durationSeconds: ce.duration_seconds,
+              exercise: {
+                id: ce.exercises.id,
+                name: ce.exercises.name,
+                slug: ce.exercises.slug,
+                primaryCategory: ce.exercises.primary_category,
+                difficulty: ce.exercises.difficulty,
+                primaryMuscles: ce.exercises.primary_muscles || [],
+                secondaryMuscles: ce.exercises.secondary_muscles || [],
+                equipment: ce.exercises.equipment || [],
+                hictSuitable: ce.exercises.hict_suitable,
+                smallSpace: ce.exercises.small_space,
+                quiet: ce.exercises.quiet,
+                cardioIntensive: ce.exercises.cardio_intensive,
+                strengthFocus: ce.exercises.strength_focus,
+                mobilityFocus: ce.exercises.mobility_focus,
+                minimalTransition: ce.exercises.minimal_transition,
+                beginnerFriendly: ce.exercises.beginner_friendly,
+                isVerified: ce.exercises.is_verified,
+                movementPattern: ce.exercises.movement_pattern,
+                mechanic: ce.exercises.mechanic,
+                description: ce.exercises.description,
+                instructions: ce.exercises.instructions || [],
+                tips: ce.exercises.tips || [],
+                thumbnailUrl: ce.exercises.thumbnail_url,
+                defaultReps: ce.exercises.default_reps,
+                defaultDurationSeconds: ce.exercises.default_duration_seconds,
+                caloriesPerMinute: ce.exercises.calories_per_minute,
+              },
+            })),
+        }));
+
+      return { data: workout, status: 200, message: 'Success' };
+    } catch (error: unknown) {
+      return {
+        data: {} as Workout,
+        status: 404,
+        message: getErrorMessage(error) || 'Workout not found',
       };
     }
   },
