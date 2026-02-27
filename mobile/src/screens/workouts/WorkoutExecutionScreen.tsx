@@ -110,7 +110,7 @@ const WorkoutExecutionScreen = () => {
       // Enable auto-progress and start timers
       shouldAutoProgressRef.current = true;
       startElapsedTimer();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load workout or start session:', error);
       console.error('Error details:', error.response?.data || error.message);
 
@@ -246,7 +246,7 @@ const WorkoutExecutionScreen = () => {
         durationSeconds: totalElapsedTime,
         caloriesBurned: workout?.estimatedCalories,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to complete workout:', error);
       Alert.alert('Error', 'Could not save workout completion');
     }

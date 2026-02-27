@@ -42,7 +42,7 @@ const LoginScreen = () => {
     try {
       await signIn(email, password);
       // Navigation handled automatically by RootNavigator
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Show secure error message that doesn't reveal too much information
       setErrors(prev => ({
         ...prev,

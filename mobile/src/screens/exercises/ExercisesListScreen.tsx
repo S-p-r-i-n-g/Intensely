@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { exercisesApi, favoritesApi } from '../../api';
-import type { Exercise } from '../../types/api';
+import type { Exercise, FavoriteExercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
@@ -61,7 +61,7 @@ const ExercisesListScreen = () => {
   const loadData = async () => {
     try {
       // Build API params from filters
-      const params: any = {};
+      const params: Record<string, unknown> = {};
 
       // Apply full filters
       if (filters.familyName) params.familyName = filters.familyName;
@@ -93,7 +93,7 @@ const ExercisesListScreen = () => {
       try {
         const favoritesResponse = await favoritesApi.getFavoriteExercises();
         // Supabase returns snake_case, handle both formats
-        const favIds = new Set(favoritesResponse.data.map((fav: any) => fav.exercise_id || fav.exerciseId).filter(Boolean));
+        const favIds = new Set(favoritesResponse.data.map((fav: FavoriteExercise) => fav.exerciseId).filter(Boolean));
         setFavoriteIds(favIds);
       } catch (favError) {
         console.warn('Failed to load favorites (backend unavailable):', favError);
@@ -251,7 +251,7 @@ const ExercisesListScreen = () => {
   const renderExerciseCard = ({ item }: { item: Exercise }) => {
     const isFavorite = favoriteIds.has(item.id);
     // Handle both snake_case and camelCase for isVerified
-    const isVerified = (item as any).is_verified ?? item.isVerified ?? true;
+    const isVerified = item.isVerified ?? true;
 
     return (
       <TouchableOpacity

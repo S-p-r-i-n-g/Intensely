@@ -49,7 +49,7 @@ const WorkoutPreviewScreen = () => {
       setIsLoading(true);
       const response = await workoutsApi.getById(route.params.workoutId);
       setWorkout(response.data);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load workout:', error);
       Alert.alert('Error', 'Could not load workout details');
       navigation.goBack();
@@ -84,7 +84,7 @@ const WorkoutPreviewScreen = () => {
       setShowDeleteModal(false);
       Alert.alert('Success', 'Workout deleted successfully');
       navigation.goBack();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to delete workout:', error);
       Alert.alert(
         'Error',

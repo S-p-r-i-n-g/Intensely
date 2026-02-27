@@ -1,5 +1,5 @@
 import 'react-native-url-polyfill/auto';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupportedStorage } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './env';
@@ -12,7 +12,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from './env';
  */
 
 // Create a web-compatible storage adapter
-const getStorage = () => {
+const getStorage = (): SupportedStorage => {
   if (Platform.OS === 'web') {
     // Use localStorage for web
     return {
@@ -36,8 +36,8 @@ const getStorage = () => {
       },
     };
   }
-  // Use AsyncStorage for iOS/Android
-  return AsyncStorage as any;
+  // Use AsyncStorage for iOS/Android — its API satisfies SupportedStorage
+  return AsyncStorage;
 };
 
 /**
@@ -68,7 +68,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     // the same lock and the second times out after 10000ms, causing session loss.
     // A no-op function executes the callback immediately with no locking.
     lock: Platform.OS === 'web'
-      ? (_name: string, _timeout: number, fn: () => Promise<any>) => fn()
+      ? (_name: string, _timeout: number, fn: () => Promise<unknown>) => fn()
       : undefined,
   },
 });

@@ -20,7 +20,7 @@ export const CustomDrawerContent = (props: DrawerContentComponentProps) => {
 
   // Detect if the active HomeStack screen is NewWorkout
   const homeRoute = state.routes.find((r) => r.name === 'Home');
-  const homeStackState = homeRoute?.state as any;
+  const homeStackState = homeRoute?.state as { routes: { name: string }[]; index: number } | undefined;
   const activeHomeScreen = homeStackState?.routes?.[homeStackState?.index ?? 0]?.name;
   const isOnNewWorkout = activeRoute === 'Home' && activeHomeScreen === 'NewWorkout';
 

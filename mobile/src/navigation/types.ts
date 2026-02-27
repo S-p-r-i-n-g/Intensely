@@ -4,6 +4,7 @@
  */
 
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { Exercise } from '../types/api';
 
 // Auth Stack
 export type AuthStackParamList = {
@@ -71,7 +72,7 @@ export type WorkoutsStackParamList = {
 export type ExercisesStackParamList = {
   ExercisesList: undefined;
   ExerciseDetail: { exerciseId: string };
-  CreateExercise: { exercise?: any } | undefined;
+  CreateExercise: { exercise?: Partial<Exercise> } | undefined;
 };
 
 // Profile Stack

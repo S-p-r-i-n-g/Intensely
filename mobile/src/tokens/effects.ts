@@ -7,12 +7,13 @@
  */
 
 import { Platform } from 'react-native';
+import type * as ExpoHaptics from 'expo-haptics';
 
 // Conditional import for expo-haptics (not available on web)
-let Haptics: any = null;
+let Haptics: typeof ExpoHaptics | null = null;
 if (Platform.OS !== 'web') {
   try {
-    Haptics = require('expo-haptics');
+    Haptics = require('expo-haptics') as typeof ExpoHaptics;
   } catch (e) {
     console.warn('expo-haptics not available:', e);
   }

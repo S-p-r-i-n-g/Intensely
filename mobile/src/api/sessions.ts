@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import { apiClient } from './client';
 import { ApiResponse, WorkoutSession, ActiveSession, WorkoutHistory } from '../types/api';
 
@@ -17,7 +18,7 @@ export const sessionsApi = {
   /**
    * Get session details
    */
-  getSession: async (sessionId: string): Promise<ApiResponse<any>> => {
+  getSession: async (sessionId: string): Promise<ApiResponse<WorkoutSession>> => {
     return apiClient.get(`/sessions/${sessionId}`);
   },
 
@@ -31,7 +32,7 @@ export const sessionsApi = {
       totalExercisesCompleted: number;
       completionPercentage: number;
     }
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<WorkoutSession>> => {
     return apiClient.patch(`/sessions/${sessionId}/progress`, data);
   },
 

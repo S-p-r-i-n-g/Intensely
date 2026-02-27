@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import { supabase } from '../config/supabase';
 import { ApiResponse, Workout } from '../types/api';
 
@@ -46,11 +47,11 @@ export const workoutsApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: [],
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -74,11 +75,11 @@ export const workoutsApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as Workout,
         status: 404,
-        message: error.message || 'Workout not found'
+        message: getErrorMessage(error) || 'Workout not found'
       };
     }
   },
@@ -230,15 +231,12 @@ export const workoutsApi = {
         status: 201,
         message: 'Workout created successfully'
       };
-    } catch (error: any) {
-      console.error('[Workouts] Create workout error:', JSON.stringify(error, null, 2));
-      console.error('[Workouts] Error message:', error.message);
-      console.error('[Workouts] Error details:', error.details);
-      console.error('[Workouts] Error hint:', error.hint);
+    } catch (error: unknown) {
+      console.error('[Workouts] Create workout error:', getErrorMessage(error));
       return {
         data: {} as Workout,
         status: 500,
-        message: error.message || error.hint || 'Failed to create workout'
+        message: getErrorMessage(error)
       };
     }
   },
@@ -259,7 +257,7 @@ export const workoutsApi = {
         throw new Error('User not authenticated');
       }
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
       if (data.name) updateData.name = data.name;
@@ -282,11 +280,11 @@ export const workoutsApi = {
         status: 200,
         message: 'Workout updated successfully'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as Workout,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -315,11 +313,11 @@ export const workoutsApi = {
         status: 200,
         message: 'Workout deleted successfully'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: undefined,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },

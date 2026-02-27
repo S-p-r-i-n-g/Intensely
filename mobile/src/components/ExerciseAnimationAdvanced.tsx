@@ -3,10 +3,11 @@ import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import { Image } from 'expo-image';
 
 // Optional: Lottie support (install: npm install lottie-react-native)
-let LottieView: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic optional dependency
+let LottieView: React.ComponentType<Record<string, unknown>> | null = null;
 try {
   LottieView = require('lottie-react-native').default;
-} catch (e) {
+} catch {
   // Lottie not installed, will fall back to WebP
 }
 
@@ -25,7 +26,7 @@ interface ExerciseAnimationAdvancedProps {
   label?: string;
   onLoadStart?: () => void;
   onLoadEnd?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 /**
@@ -114,7 +115,7 @@ export const ExerciseAnimationAdvanced: React.FC<ExerciseAnimationAdvancedProps>
     onLoadEnd?.();
   };
 
-  const handleError = (error: any) => {
+  const handleError = (error: unknown) => {
     console.error(`Failed to load ${currentFormat} animation for ${slug}:`, error);
 
     // Try fallback format

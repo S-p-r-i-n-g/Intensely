@@ -1,6 +1,7 @@
 import { apiClient } from './client';
 import { supabase } from '../config/supabase';
 import { ApiResponse, Exercise } from '../types/api';
+import { getErrorMessage } from '../utils/errors';
 
 /**
  * Exercise API Service
@@ -80,11 +81,11 @@ export const exercisesApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: { exercises: [], total: 0, page: 1, totalPages: 0 },
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -108,11 +109,11 @@ export const exercisesApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as Exercise,
         status: 404,
-        message: error.message || 'Exercise not found'
+        message: getErrorMessage(error) || 'Exercise not found'
       };
     }
   },
@@ -135,11 +136,11 @@ export const exercisesApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: [],
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -197,11 +198,11 @@ export const exercisesApi = {
         status: 200,
         message: 'Exercise verified successfully'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as Exercise,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },

@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { Session } from '@supabase/supabase-js';
 import { supabase } from '../config/supabase';
 import { API_URL } from '../config/env';
 
@@ -10,7 +11,7 @@ import { API_URL } from '../config/env';
 
 class ApiClient {
   private client: AxiosInstance;
-  private cachedSession: any = null;
+  private cachedSession: Session | null = null;
 
   constructor() {
     this.client = axios.create({
@@ -49,7 +50,6 @@ class ApiClient {
                 const parsed = JSON.parse(storedSession);
                 if (parsed?.access_token) {
                   config.headers.Authorization = `Bearer ${parsed.access_token}`;
-                  console.log('Using token from localStorage');
                 }
               }
             } catch (storageError) {
@@ -101,7 +101,6 @@ class ApiClient {
     // Listen for auth state changes to update cached session
     supabase.auth.onAuthStateChange((_event, session) => {
       this.cachedSession = session;
-      console.log('Session updated in API client:', session ? 'authenticated' : 'not authenticated');
     });
   }
 
@@ -110,17 +109,17 @@ class ApiClient {
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+  async post<T>(url: string, data?: Record<string, unknown>, config?: AxiosRequestConfig) {
     const response = await this.client.post<T>(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+  async put<T>(url: string, data?: Record<string, unknown>, config?: AxiosRequestConfig) {
     const response = await this.client.put<T>(url, data, config);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig) {
+  async patch<T>(url: string, data?: Record<string, unknown>, config?: AxiosRequestConfig) {
     const response = await this.client.patch<T>(url, data, config);
     return response.data;
   }

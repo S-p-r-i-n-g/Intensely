@@ -15,7 +15,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { ExercisesStackParamList } from '../../navigation/types';
 import { exercisesApi, favoritesApi } from '../../api';
-import type { Exercise } from '../../types/api';
+import type { Exercise, FavoriteExercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { Text } from '../../components/ui';
@@ -67,7 +67,7 @@ const ExerciseDetailScreen = () => {
       const response = await exercisesApi.getById(route.params.exerciseId);
       setExercise(response.data);
       checkIfFavorite(response.data.id);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load exercise:', error);
       Alert.alert('Error', 'Could not load exercise details.');
       navigation.goBack();
@@ -80,8 +80,8 @@ const ExerciseDetailScreen = () => {
     try {
       const response = await favoritesApi.getFavoriteExercises();
       // Handle both snake_case and camelCase
-      const isFav = response.data.some((fav: any) =>
-        fav.exercise_id === exerciseId || fav.exerciseId === exerciseId
+      const isFav = response.data.some((fav: FavoriteExercise) =>
+        fav.exerciseId === exerciseId
       );
       setIsFavorite(isFav);
     } catch (error) {
@@ -102,7 +102,7 @@ const ExerciseDetailScreen = () => {
         await favoritesApi.addExercise(exercise.id);
         setIsFavorite(true);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to toggle favorite:', error);
       Alert.alert('Error', 'Could not update favorite status.');
     } finally {
@@ -193,13 +193,12 @@ const ExerciseDetailScreen = () => {
   const commonMistakes = Array.isArray(exercise.commonMistakes) ? exercise.commonMistakes : [];
 
   // Check permissions - handle both snake_case and camelCase
-  const exerciseCreatedBy = (exercise as any).created_by || exercise.createdBy;
+  const exerciseCreatedBy = exercise.createdBy;
   const isOwner = user && exerciseCreatedBy === user.id;
   const isUserAdmin = user && isAdmin(user.id);
   const canEdit = isOwner || isUserAdmin;
 
-  // Check if exercise is verified - handle both snake_case and camelCase
-  const exerciseIsVerified = (exercise as any).is_verified ?? exercise.isVerified ?? true;
+  const exerciseIsVerified = exercise.isVerified ?? true;
 
   return (
     <>

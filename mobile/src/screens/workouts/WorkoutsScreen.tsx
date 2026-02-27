@@ -13,9 +13,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DrawerNavigationProp } from '@react-navigation/drawer';
 import { WorkoutsStackParamList, DrawerParamList } from '../../navigation/types';
 import { workoutsApi } from '../../api';
+import type { Workout } from '../../types/api';
 import { useAuthStore } from '../../stores';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
+import type { LightModeColors, DarkModeColors } from '../../tokens/colors';
 import { PlayIcon } from 'react-native-heroicons/outline';
 import { EmptyState } from '../../components/EmptyState';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
@@ -96,7 +98,7 @@ interface Workout {
 }
 
 // MetricChip component matching the Builder's style
-const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
+const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: LightModeColors | DarkModeColors }) => (
   <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
     <Text style={[styles.chipValue, { color: theme.text.primary }]}>
       {value}
@@ -110,7 +112,7 @@ const MetricChip = ({ value, label, theme }: { value: string; label: string; the
 // Dedicated WorkoutCard component
 interface WorkoutCardProps {
   workout: Workout;
-  theme: any;
+  theme: LightModeColors | DarkModeColors;
   onPress: () => void;
   onStart: () => void;
 }
@@ -118,15 +120,13 @@ interface WorkoutCardProps {
 const WorkoutCard = ({ workout, theme, onPress, onStart }: WorkoutCardProps) => {
   const exerciseLines = renderExercisePreview(workout.circuits);
 
-  // Handle both snake_case and camelCase field names
-  const w = workout as any;
-  const duration = w.estimated_duration_minutes ?? w.estimatedDurationMinutes ?? 0;
-  const calories = w.estimated_calories ?? w.estimatedCalories;
-  const difficulty = w.difficulty_level ?? w.difficultyLevel ?? 'intermediate';
-  const totalCircuits = w.total_circuits ?? w.totalCircuits ?? 0;
-  const setsPerCircuit = w.sets_per_circuit ?? w.setsPerCircuit ?? 0;
-  const intervalSeconds = w.interval_seconds ?? w.intervalSeconds ?? 0;
-  const restSeconds = w.rest_seconds ?? w.restSeconds ?? 0;
+  const duration = workout.estimatedDurationMinutes ?? 0;
+  const calories = workout.estimatedCalories;
+  const difficulty = workout.difficultyLevel ?? 'intermediate';
+  const totalCircuits = workout.totalCircuits ?? 0;
+  const setsPerCircuit = workout.setsPerCircuit ?? 0;
+  const intervalSeconds = workout.intervalSeconds ?? 0;
+  const restSeconds = workout.restSeconds ?? 0;
 
   return (
     <TouchableOpacity
@@ -213,7 +213,7 @@ const WorkoutsScreen = () => {
       // Filter client-side to only show user's workouts
       // Handle both snake_case and camelCase
       const userWorkouts = response.data.filter(
-        (w: any) => (w.created_by || w.createdBy) === user.id
+        (w: Workout) => w.createdBy === user.id
       );
       console.log('[WorkoutsScreen] User workouts after filter:', userWorkouts.length);
       setWorkouts(userWorkouts);

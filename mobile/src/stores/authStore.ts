@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '../config/supabase';
 import { usersApi } from '../api';
 import { User as ApiUser } from '../types/api';
-import { User, Session } from '@supabase/supabase-js';
+import { User, Session, Subscription } from '@supabase/supabase-js';
 
 /**
  * Authentication Store
@@ -15,7 +15,7 @@ interface AuthState {
   session: Session | null;
   isLoading: boolean;
   isInitialized: boolean;
-  authListener: any; // Store the listener for cleanup
+  authListener: { subscription: Subscription } | null;
 
   // Actions
   initialize: () => Promise<void>;
@@ -44,7 +44,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Clean up existing listener if any
       const existingListener = get().authListener;
       if (existingListener) {
-        console.log('[AuthStore] Removing existing auth listener');
         existingListener.subscription?.unsubscribe();
       }
 
@@ -70,8 +69,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Listen for auth changes (only set up once).
       // Skip INITIAL_SESSION -- getSession() above already handled it.
       const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('[AuthStore] Auth state change event:', event, 'hasSession:', !!session);
-
         if (event === 'INITIAL_SESSION') return;
 
         set({
@@ -80,10 +77,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         });
 
         if (session) {
-          console.log('[AuthStore] Session exists, syncing profile');
           await get().syncProfile();
         } else {
-          console.log('[AuthStore] No session, clearing profile');
           set({ profile: null });
         }
       });
@@ -167,29 +162,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    */
   signOut: async () => {
     try {
-      console.log('[AuthStore] Sign out started');
       set({ isLoading: true });
 
       const { error } = await supabase.auth.signOut();
 
-      if (error) {
-        console.error('[AuthStore] Supabase sign out error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log('[AuthStore] Supabase sign out successful, clearing state');
       set({
         user: null,
         profile: null,
         session: null,
       });
-      console.log('[AuthStore] State cleared, user should be null now');
     } catch (error) {
       console.error('[AuthStore] Sign out failed:', error);
       throw error;
     } finally {
       set({ isLoading: false });
-      console.log('[AuthStore] Sign out completed, isLoading set to false');
     }
   },
 

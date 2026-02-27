@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import { supabase } from '../config/supabase';
 import { ApiResponse, User, UserPreference } from '../types/api';
 
@@ -7,21 +8,37 @@ import { ApiResponse, User, UserPreference } from '../types/api';
  * Queries Supabase directly
  */
 
+interface DbUserRow {
+  id: string;
+  email: string;
+  first_name?: string | null;
+  firstName?: string | null;
+  last_name?: string | null;
+  lastName?: string | null;
+  avatar_url?: string | null;
+  avatarUrl?: string | null;
+  fitness_level?: string;
+  fitnessLevel?: string;
+  created_at?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // Supabase returns snake_case columns; map to the camelCase User interface.
-const mapDbUser = (row: any): User => ({
+const mapDbUser = (row: DbUserRow): User => ({
   id: row.id,
   email: row.email,
-  firstName: row.first_name ?? row.firstName,
-  lastName: row.last_name ?? row.lastName,
-  avatarUrl: row.avatar_url ?? row.avatarUrl,
+  firstName: row.first_name ?? row.firstName ?? null,
+  lastName: row.last_name ?? row.lastName ?? null,
+  avatarUrl: row.avatar_url ?? row.avatarUrl ?? null,
   fitnessLevel: row.fitness_level ?? row.fitnessLevel ?? 'beginner',
-  createdAt: row.created_at ?? row.createdAt,
+  createdAt: row.created_at ?? row.createdAt ?? new Date().toISOString(),
   preferences: null,
 });
 
 // Convert camelCase User fields back to snake_case for DB writes.
-const mapUserToDb = (data: Partial<User>): Record<string, any> => {
-  const result: Record<string, any> = {};
+const mapUserToDb = (data: Partial<User>): Record<string, unknown> => {
+  const result: Record<string, unknown> = {};
   if (data.firstName !== undefined) result.first_name = data.firstName;
   if (data.lastName !== undefined) result.last_name = data.lastName;
   if (data.avatarUrl !== undefined) result.avatar_url = data.avatarUrl;
@@ -82,12 +99,12 @@ export const usersApi = {
         status: 201,
         message: 'User created'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[UsersAPI] Sync failed:', error);
       return {
         data: {} as User,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -116,11 +133,11 @@ export const usersApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as User,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -151,7 +168,7 @@ export const usersApi = {
         status: 200,
         message: 'Profile updated'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[UsersAPI] Update profile failed:', error);
       throw error;
     }
@@ -181,11 +198,11 @@ export const usersApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as UserPreference,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -215,11 +232,11 @@ export const usersApi = {
         status: 200,
         message: 'Preferences updated'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as UserPreference,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },

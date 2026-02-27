@@ -7,7 +7,7 @@ interface UseExerciseAnimationOptions {
   cdnBaseUrl?: string;
   preload?: boolean;
   onLoad?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 interface UseExerciseAnimationResult {
@@ -108,7 +108,7 @@ export const usePreloadAnimations = (
     cdnBaseUrl?: string;
     onProgress?: (loaded: number, total: number) => void;
     onComplete?: () => void;
-    onError?: (slug: string, error: any) => void;
+    onError?: (slug: string, error: unknown) => void;
   }
 ) => {
   const [loadedCount, setLoadedCount] = useState(0);

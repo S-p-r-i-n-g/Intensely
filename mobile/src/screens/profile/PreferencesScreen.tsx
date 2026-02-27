@@ -94,7 +94,7 @@ const PreferencesScreen = () => {
           onPress: () => navigation.goBack(),
         },
       ]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update preferences:', error);
       Alert.alert(
         'Error',

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import { supabase } from '../config/supabase';
 import { ApiResponse, FavoriteExercise, FavoriteWorkout } from '../types/api';
 
@@ -54,11 +55,11 @@ export const favoritesApi = {
         status: 201,
         message: 'Added to favorites'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as FavoriteExercise,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -88,11 +89,11 @@ export const favoritesApi = {
         status: 200,
         message: 'Removed from favorites'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: undefined,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -126,11 +127,11 @@ export const favoritesApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: [],
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -181,11 +182,11 @@ export const favoritesApi = {
         status: 201,
         message: 'Added to favorites'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: {} as FavoriteWorkout,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -215,11 +216,11 @@ export const favoritesApi = {
         status: 200,
         message: 'Removed from favorites'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: undefined,
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },
@@ -253,11 +254,11 @@ export const favoritesApi = {
         status: 200,
         message: 'Success'
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         data: [],
         status: 500,
-        message: error.message
+        message: getErrorMessage(error)
       };
     }
   },

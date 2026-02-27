@@ -79,7 +79,7 @@ const SignUpScreen = () => {
       await signUp(email, password, { firstName, lastName });
       // Show success message - user needs to verify email
       setSignupSuccess(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Sign up error:', error);
 
       // Check for rate limit

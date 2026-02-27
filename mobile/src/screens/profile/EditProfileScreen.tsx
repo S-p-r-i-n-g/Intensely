@@ -63,7 +63,7 @@ const EditProfileScreen = () => {
       await syncProfile();
 
       setFeedback({ msg: 'Profile updated!', type: 'success' });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update profile:', error);
       setFeedback({ msg: error.message || 'Could not update profile. Please try again.', type: 'error' });
     } finally {

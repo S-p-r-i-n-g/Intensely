@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- example/demo file, not production code */
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import {

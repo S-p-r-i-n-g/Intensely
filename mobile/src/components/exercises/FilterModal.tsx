@@ -149,7 +149,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
     onClose();
   };
 
-  const updateFilter = (key: keyof ExerciseFilters, value: any) => {
+  const updateFilter = (key: keyof ExerciseFilters, value: ExerciseFilters[typeof key]) => {
     setLocalFilters((prev) => ({ ...prev, [key]: value }));
   };
 

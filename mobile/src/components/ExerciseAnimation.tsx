@@ -8,7 +8,7 @@ interface ExerciseAnimationProps {
   cdnBaseUrl?: string;
   onLoadStart?: () => void;
   onLoadEnd?: () => void;
-  onError?: (error: any) => void;
+  onError?: (error: unknown) => void;
 }
 
 /**
@@ -54,7 +54,7 @@ export const ExerciseAnimation: React.FC<ExerciseAnimationProps> = ({
     onLoadEnd?.();
   };
 
-  const handleError = (error: any) => {
+  const handleError = (error: unknown) => {
     setIsLoading(false);
     setHasError(true);
     onError?.(error);

@@ -14,7 +14,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/types';
 import { exercisesApi, favoritesApi } from '../../api';
-import type { Exercise } from '../../types/api';
+import type { Exercise, FavoriteExercise } from '../../types/api';
 import { useTheme } from '../../theme';
 import { colors, spacing, borderRadius } from '../../tokens';
 import { HeartIcon } from 'react-native-heroicons/outline';
@@ -71,14 +71,14 @@ const ExerciseSelectionScreen = () => {
         const favoritesResponse = await favoritesApi.getFavoriteExercises();
         const favIds = new Set(
           favoritesResponse.data
-            .map((fav: any) => fav.exercise_id || fav.exerciseId)
+            .map((fav: FavoriteExercise) => fav.exerciseId)
             .filter(Boolean)
         );
         setFavoriteIds(favIds);
       } catch {
         setFavoriteIds(new Set());
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load exercises:', error);
       Alert.alert('Error', 'Could not load exercises. Please try again.');
     } finally {
@@ -100,26 +100,19 @@ const ExerciseSelectionScreen = () => {
 
     // Bodyweight Only
     if (qf.bodyweightOnly) {
-      filtered = filtered.filter((ex) => {
-        const equipment = (ex as any).equipment;
-        return !equipment || equipment.length === 0 || equipment.includes('bodyweight');
-      });
+      filtered = filtered.filter((ex) =>
+        !ex.equipment || ex.equipment.length === 0 || ex.equipment.includes('bodyweight')
+      );
     }
 
     // Apartment Friendly (small space + quiet)
     if (qf.apartmentFriendly) {
-      filtered = filtered.filter((ex) => {
-        const e = ex as any;
-        return (e.small_space ?? e.smallSpace) && (e.quiet ?? e.quiet);
-      });
+      filtered = filtered.filter((ex) => ex.smallSpace && ex.quiet);
     }
 
     // Verified Only
     if (qf.verifiedOnly) {
-      filtered = filtered.filter((ex) => {
-        const e = ex as any;
-        return e.is_verified ?? e.isVerified ?? true;
-      });
+      filtered = filtered.filter((ex) => ex.isVerified ?? true);
     }
 
     // Search filter
@@ -129,7 +122,7 @@ const ExerciseSelectionScreen = () => {
         (ex) =>
           ex.name.toLowerCase().includes(query) ||
           ex.description?.toLowerCase().includes(query) ||
-          (ex as any).primaryMuscles?.some((m: string) => m.toLowerCase().includes(query)) ||
+          ex.primaryMuscles?.some((m: string) => m.toLowerCase().includes(query)) ||
           ex.targetMuscleGroups?.some((muscle) => muscle.toLowerCase().includes(query))
       );
     }

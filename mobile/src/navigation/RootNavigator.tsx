@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -11,24 +11,18 @@ import { useAuthStore } from '../stores';
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const RootNavigator = () => {
-  const { user, isLoading, isInitialized, initialize } = useAuthStore();
+  const { user, isInitialized, initialize } = useAuthStore();
+  const initialized = useRef(false);
 
   useEffect(() => {
-    initialize();
+    if (!initialized.current) {
+      initialized.current = true;
+      initialize();
+    }
   }, []);
-
-  useEffect(() => {
-    console.log('[RootNavigator] Auth state changed:', {
-      hasUser: !!user,
-      userId: user?.id,
-      isLoading,
-      isInitialized,
-    });
-  }, [user, isLoading, isInitialized]);
 
   // Show loading only while initializing auth (not during operations like sign out)
   if (!isInitialized) {
-    console.log('[RootNavigator] Showing loading screen - initializing');
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />
@@ -36,7 +30,6 @@ export const RootNavigator = () => {
     );
   }
 
-  console.log('[RootNavigator] Rendering navigator, user exists:', !!user);
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>

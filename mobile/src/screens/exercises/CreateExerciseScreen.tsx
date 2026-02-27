@@ -146,7 +146,7 @@ const CreateExerciseScreen = () => {
 
       // Navigate back immediately - list will refresh via useFocusEffect
       navigation.goBack();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to save exercise:', error);
       const message = error.response?.data?.message || 'Failed to save exercise. Please try again.';
       Alert.alert('Error', message);

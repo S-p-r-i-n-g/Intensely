@@ -25,10 +25,11 @@ import { useWorkoutBuilder, DifficultyResult } from '../../hooks/useWorkoutBuild
 import { useAuthStore } from '../../stores';
 import { useWorkoutStore } from '../../stores/workoutStore';
 import { workoutsApi, exercisesApi } from '../../api';
-import type { Exercise } from '../../types/api';
+import type { Exercise, Circuit, CircuitExercise, Workout } from '../../types/api';
 import { Text, Button, PillSelector, Stepper } from '../../components/ui';
 import { SettingsAccordion } from '../../components/workout/SettingsAccordion';
 import { useTheme } from '../../theme';
+import type { LightModeColors, DarkModeColors } from '../../tokens/colors';
 import { spacing, colors, borderRadius } from '../../tokens';
 import { PlayIcon, ArrowsRightLeftIcon, ChevronRightIcon, PencilIcon } from 'react-native-heroicons/outline';
 
@@ -78,7 +79,7 @@ const difficultyToNumber = (difficulty: string): number => {
   }
 };
 
-const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: any }) => (
+const MetricChip = ({ value, label, theme }: { value: string; label: string; theme: LightModeColors | DarkModeColors }) => (
   <View style={[styles.chip, { backgroundColor: theme.background.tertiary, borderColor: theme.border.strong }]}>
     <Text variant="caption" style={[styles.chipValue, { color: theme.text.primary }]}>
       {value}
@@ -205,19 +206,19 @@ const NewWorkoutScreen = () => {
       try {
         setIsHydrating(true);
         const response = await workoutsApi.getById(route.params!.workoutId!);
-        const workout = (response as any).data;
+        const workout = response.data as Workout & { circuits?: Circuit[] };
 
         if (!workout) return;
 
         // Build exercises map from workout circuits
         const exercisesMap: Record<number, string[]> = {};
         const allSame = workout.circuits?.every(
-          (c: any) => JSON.stringify(c.exercises.map((e: any) => e.exerciseId)) ===
-                      JSON.stringify(workout.circuits[0]?.exercises.map((e: any) => e.exerciseId))
+          (c: Circuit) => JSON.stringify(c.exercises.map((e: CircuitExercise) => e.exerciseId)) ===
+                          JSON.stringify(workout.circuits?.[0]?.exercises.map((e: CircuitExercise) => e.exerciseId))
         );
 
-        workout.circuits?.forEach((circuit: any, index: number) => {
-          exercisesMap[index] = circuit.exercises.map((ex: any) => ex.exerciseId);
+        workout.circuits?.forEach((circuit: Circuit, index: number) => {
+          exercisesMap[index] = circuit.exercises.map((ex: CircuitExercise) => ex.exerciseId);
         });
 
         loadWorkout({
@@ -291,7 +292,7 @@ const NewWorkoutScreen = () => {
       try {
         const response = await exercisesApi.getAll({ limit: 500 });
         // Handle both response formats: direct array or nested data
-        const data = (response as any).data || {};
+        const data = response.data || {};
         const exercises = Array.isArray(data)
           ? data
           : data.exercises || data.data || [];
@@ -404,7 +405,7 @@ const NewWorkoutScreen = () => {
       };
 
       const response = await workoutsApi.create(params);
-      const newWorkoutId = (response as any).data?.id || (response as any).id;
+      const newWorkoutId = response.data?.id ?? response.id;
 
       clearDraft();
 
@@ -421,7 +422,7 @@ const NewWorkoutScreen = () => {
         // @ts-ignore - navigating across stacks
         navigation.navigate('Workouts', { screen: 'WorkoutsList' });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to save workout:', error);
 
       // Check for duplicate workout name error
