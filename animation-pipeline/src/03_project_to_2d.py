@@ -80,7 +80,13 @@ def orthographic_projection(points_3d, camera_angle):
     points_rotated = points_3d @ R.T  # (N, 3)
 
     # Orthographic projection: drop Z coordinate
-    points_2d = points_rotated[:, :2]  # (N, 2) - take X, Y
+    points_2d = points_rotated[:, :2].copy()  # (N, 2) - take X, Y
+
+    # Mirror X: SMPL-H +X = anatomical right, but screen convention when
+    # viewing face-on requires flipping so the character's right → screen-left.
+    # Without this, front-view exercises are mirrored and side-view arm
+    # directions are inverted.
+    points_2d[:, 0] *= -1
 
     return points_2d
 

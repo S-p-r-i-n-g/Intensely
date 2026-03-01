@@ -67,6 +67,7 @@ async function uploadFile(filePath, blobPathname) {
     const blob = await put(blobPathname, fileBuffer, {
       access: 'public',
       addRandomSuffix: false, // Keep predictable URLs
+      allowOverwrite: true,
     });
 
     return blob;

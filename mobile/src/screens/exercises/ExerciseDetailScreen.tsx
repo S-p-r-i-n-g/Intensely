@@ -24,6 +24,7 @@ import { HeartIcon as HeartIconSolid } from 'react-native-heroicons/solid';
 import { DIFFICULTY_COLORS, DifficultyLevel } from '../../hooks/useWorkoutBuilder';
 import { useAuthStore } from '../../stores/authStore';
 import { isAdmin } from '../../config/env';
+import { ExerciseAnimation } from '../../components/ExerciseAnimation';
 
 type NavigationProp = NativeStackNavigationProp<ExercisesStackParamList, 'ExerciseDetail'>;
 type RoutePropType = RouteProp<ExercisesStackParamList, 'ExerciseDetail'>;
@@ -286,6 +287,11 @@ const ExerciseDetailScreen = () => {
         </View>
       </View>
 
+      {/* Animation Demonstration */}
+      <View style={[styles.animationSection, { backgroundColor: theme.background.elevated }]}>
+        <ExerciseAnimation slug={exercise.slug} size="expanded" />
+      </View>
+
       {/* Video Button */}
       {exercise.videoUrl && (
         <TouchableOpacity
@@ -495,6 +501,12 @@ const styles = StyleSheet.create({
   equipmentValue: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  animationSection: {
+    borderRadius: 16,
+    padding: spacing[4],
+    marginBottom: spacing[3],
+    alignItems: 'center',
   },
   videoButton: {
     flexDirection: 'row',

@@ -15,5 +15,8 @@
     "motion"
   ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@vercel/blob": "^2.3.0"
+  }
 }
